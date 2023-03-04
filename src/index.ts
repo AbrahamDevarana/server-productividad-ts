@@ -13,8 +13,6 @@ require('dotenv').config();
 
 import './services/googleService';
 
-
-
 const COOKIE_SECRET = process.env.COOKIE_SECRET as string;
 
 const app = express();
