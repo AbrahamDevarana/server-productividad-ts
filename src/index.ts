@@ -9,6 +9,8 @@ import dbConfig from './config/database';
 import router from './routes';
 import socketService from './services/socketService';
 
+// const FileStore = require('session-file-store')(cookieSession);
+
 require('dotenv').config();
 
 import './services/googleService';
@@ -21,14 +23,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({
     credentials: true,
-    origin: process.env.CLIENT_URL
+    origin: process.env.CLIENT_URL,
+    optionsSuccessStatus: 200
 }));
 
 app.use(cookieSession({
     secret: COOKIE_SECRET,
-    name: 'connect.sid',
+    name: 'productivity-app',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
         sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
         secure: process.env.NODE_ENV === "production", // must be true if sameSite='none'
@@ -42,7 +45,9 @@ app.use(passport.session());
 
 app.use('/api', router);
 
-dbConfig.sync({}).then(() => {
+dbConfig.sync({
+    // force: true
+}).then(() => {
 
     console.log("Database connected");
 

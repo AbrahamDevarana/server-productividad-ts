@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { getUsuarios } from '../../controllers/UsuarioContoller';
+import { getUsuario, getUsuarios } from '../../controllers/UsuarioContoller';
 import { check } from 'express-validator';
 const router = Router();
 
 
 router.get('/', getUsuarios);
-router.get('/:id', getUsuarios);
+router.get('/:id', getUsuario);
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('apellidoPaterno', 'El apellido paterno es obligatorio').not().isEmpty(),

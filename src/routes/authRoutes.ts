@@ -14,14 +14,14 @@ router.get('/logout', ( req:Request, res:Response ) => {
     res.status(200).json({ message: 'Has cerrado sesión correctamente'})
 })
 
-router.get('/', 
+router.get('/',
     isUserAuthenticated,
     (req:Request, res:Response) => {    
     if (req.user) {
         const accessToken = createAccessToken(req.user);
         const refreshToken = createRefreshToken(req.user);
 
-        res.status(200).json({ accessToken, refreshToken });
+        res.status(200).json({ accessToken, refreshToken, status: 200 });
     }else{
         res.status(401).json({ message: 'No has iniciado sesión' })
     }

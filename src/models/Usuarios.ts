@@ -1,9 +1,8 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from 'uuid';
-import slugify from "slugify";
+import { Areas } from "./Areas";
 
 export const Usuarios = database.define('usuarios', {
     id: {
@@ -23,6 +22,12 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    iniciales: {
+        type: Sequelize.STRING,
+    },
+    nombreCorto: {
+        type: Sequelize.STRING,
+    },
     email: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -32,9 +37,7 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    iniciales: {
-        type: Sequelize.STRING,
-    },
+    
     status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -52,9 +55,11 @@ export const Usuarios = database.define('usuarios', {
     descripcionPerfil: {
         type: Sequelize.TEXT,
     },
+    // Se refiere a su departamento
     areaId: {
         type: Sequelize.INTEGER,
     },
+    // Se refiere a su lider
     leaderId: {
         type: Sequelize.INTEGER,
     },
@@ -78,10 +83,30 @@ export const Usuarios = database.define('usuarios', {
             .replace(/([^n\u0300-\u036f]|n(?!\u0303(?![\u0300-\u036f])))[\u0300-\u036f]+/gi,"$1")
             .normalize().concat(' ').replace(/([a-zA-Z]{0,} )/g, function(match){ return (match.trim()[0])}); 
         },
+        beforeSave: async (usuario: any, options) => {
+            if(usuario.leaderId) {
+                const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
+                const usuarioArea = await usuario.getArea();
+                const leaderArea = await leader.getArea();
+                if(usuarioArea.id !== leaderArea.id && leaderArea.parentId !== usuarioArea.id) {
+                    throw new Error('El usuario no pertenece al mismo area o a un area padre del lider');
+                }
+            }
+        },
+
         beforeUpdate: async (usuario: any) => {
             usuario.updatedAt = new Date();
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 
 
+Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
+Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
+
+
+
+Usuarios.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
