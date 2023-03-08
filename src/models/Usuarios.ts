@@ -65,17 +65,10 @@ export const Usuarios = database.define('usuarios', {
     },
     googleId: {
         type: Sequelize.STRING,
-    },
-    createdAt: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
-    },
-    updatedAt: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
     }
 }, {
     paranoid: true,
+    timestamps: true,
     hooks: {
         beforeCreate: async (usuario: any) => {
             usuario.password = await bcrypt.hash(usuario.password, 10);
@@ -83,7 +76,7 @@ export const Usuarios = database.define('usuarios', {
             .replace(/([^n\u0300-\u036f]|n(?!\u0303(?![\u0300-\u036f])))[\u0300-\u036f]+/gi,"$1")
             .normalize().concat(' ').replace(/([a-zA-Z]{0,} )/g, function(match){ return (match.trim()[0])}); 
         },
-        beforeSave: async (usuario: any, options) => {
+        beforeSave: async (usuario: any) => {
             if(usuario.leaderId) {
                 const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
                 const usuarioArea = await usuario.getArea();

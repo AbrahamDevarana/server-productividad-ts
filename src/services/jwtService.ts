@@ -12,7 +12,7 @@ export const createAccessToken = (usuario: any) => {
         apellidoMaterno:usuario.apellidoMaterno,
         email:usuario.email,
         picture:usuario.picture,
-        expiresIn: process.env.SESSION_MAX_TIME,
+        expiresIn: moment().add(7, 'days').unix(),
     }
     return jwt.sign(payload, JWT_SECRET);
 }
@@ -27,5 +27,24 @@ export const createRefreshToken = (usuario: any) => {
 
 export const decodeToken = (token: any) => {
     return jwt.verify(token, JWT_SECRET);
+}
+
+
+export const willExpireToken = (token: any) => {
+
+    const { expiresIn }: any = decodeToken(token);
+    
+    const now = moment().unix();
+
+    // Expira en...
+    // console.log('Expira en: ', moment.unix(expiresIn).format('DD/MM/YYYY HH:mm:ss')); 
+
+    if (now > expiresIn) {
+        return true;
+    }else{
+        return false;
+    }
+
+    
 }
 

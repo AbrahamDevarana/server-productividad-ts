@@ -1,14 +1,11 @@
 import { Request, Response, Router } from "express";
 import { OAuth2Client, UserRefreshClient } from "google-auth-library";
 import passport from "passport";
+import { createAccessToken, createRefreshToken } from "../services/jwtService";
 require('dotenv').config();
 const router = Router();
 
-const oAuth2Client = new OAuth2Client(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    'postmessage'
-  );
+
 
 
 router.get('/', passport.authenticate('google', {
@@ -17,16 +14,26 @@ router.get('/', passport.authenticate('google', {
 
 router.get('/callback', passport.authenticate('google', {
     failureMessage: 'Error al iniciar sesión, porfavor intenta más tarde',
-    failureRedirect: '/login',
+    failureRedirect: process.env.CLIENT_URL + '/error'
 }), (req: Request, res: Response) => {
-    res.redirect(process.env.CLIENT_URL + '/');
+    const accessToken = createAccessToken(req.user);
+    const refreshToken = createRefreshToken(req.user);    
+    
+    res.redirect(process.env.CLIENT_URL + '/success?accessToken=' + accessToken + '&refreshToken=' + refreshToken);
+
+    
 });
 
 
+
+// const oAuth2Client = new OAuth2Client(
+//     process.env.GOOGLE_CLIENT_ID,
+//     process.env.GOOGLE_CLIENT_SECRET,
+//     'postmessage'
+// );
+
 // router.post('/google', async (req: Request, res: Response) => {
-//     const { tokens } = await oAuth2Client.getToken(req.body.code); // exchange code for tokens
-//     console.log(tokens);
-  
+//     const { tokens } = await oAuth2Client.getToken(req.body.code); // exchange code for tokens  
 //     res.json(tokens);
 // });
 

@@ -1,5 +1,6 @@
-import { createAccessToken, createRefreshToken } from '../services/jwtService';
+import { createAccessToken, createRefreshToken, decodeToken, willExpireToken } from '../services/jwtService';
 import moment from 'moment';
+import jwt from 'jsonwebtoken';
 import { Usuarios } from '../models';
 
 
@@ -13,16 +14,6 @@ const getAccessToken = async (req: any, res: any) => {
     }else{
         res.status(401).json({ message: 'No has iniciado sesión' })
     }
-}
-
-const willExpireToken = (token: any) => {
-    const { exp } = token;
-    const currentDate = moment().unix();
-
-    if (currentDate > exp) {
-        return true;
-    }
-    return false;
 }
 
 const refreshAccessToken = async (req: any, res: any) => {
@@ -50,5 +41,39 @@ const refreshAccessToken = async (req: any, res: any) => {
     }
 }
 
+const sessionValidate = async (req: any, res: any) => {
 
-export { getAccessToken, refreshAccessToken }
+    const token = req.header('Authorization')   
+
+    if (!token) {
+        res.status(401).json({ message: 'No has iniciado sesión', ok: false })
+    }else{
+        if (willExpireToken(token)) {
+            res.status(401).json({ message: 'Sesión ha expirado', ok: false })
+        }else{            
+            jwt.verify(token, process.env.JWT_SECRET as string, async (error: any, decoded: any) => {
+                if (error) {
+                  res.status(401).json({ msg: 'Token no valido' });
+                } else {
+                    if (decoded) {
+                        const usuario = await Usuarios.findOne({ where: { id: decoded.id } });
+                        if (!usuario) {
+                            res.status(401).json({ message: 'No has iniciado sesión', ok: false })
+                        }else{
+                            res.status(200).json({ message: 'Has iniciado sesión correctamente', ok: true, accessToken: token})
+                        }
+                    }else{
+                        res.status(401).json({ message: 'No has iniciado sesión', ok: false })
+                    }
+                }
+            })
+        }
+    }
+
+       
+
+    
+}
+
+
+export { getAccessToken, refreshAccessToken, sessionValidate }
