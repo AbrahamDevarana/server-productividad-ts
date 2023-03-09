@@ -88,6 +88,5 @@ const server =  app.listen(app.get('port'), HOST, () => {
     console.log(server.address())
 });
 
-throw new Error(process.env.GOOGLE_CLIENT_ID)
 
 socketService(server)
