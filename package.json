@@ -9,7 +9,7 @@
     "cleanWin": "rmdir /s /q build",
     "build": "tsc",
     "dev": "nodemon src/index.ts",
-    "start": "node build/index.js"
+    "start": "node build/src/index.js"
   },
   "keywords": [],
   "author": "",
