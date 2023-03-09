@@ -156,3 +156,5 @@ desktop.ini
 package-lock.json
 
 /build
+
+.env.*
