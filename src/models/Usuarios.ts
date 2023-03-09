@@ -61,7 +61,7 @@ export const Usuarios = database.define('usuarios', {
     },
     // Se refiere a su lider
     leaderId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
     },
     googleId: {
         type: Sequelize.STRING,

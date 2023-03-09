@@ -1,6 +1,5 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
-import { Usuarios } from './Usuarios';
 
 export const Areas = database.define('Areas', {
     id: {
