@@ -9,7 +9,8 @@
     "cleanWin": "rmdir /s /q build",
     "build": "tsc",
     "dev": "nodemon src/index.ts",
-    "start": "node build/src/index.js"
+    "start": "node build/src/index.js",
+    "production": "npm run cleanLinux && npm run build"
   },
   "keywords": [],
   "author": "",

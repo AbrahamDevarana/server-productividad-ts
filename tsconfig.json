@@ -102,6 +102,7 @@
     },
     "include": [
         "src/**/*",
+        "logs/"
     ],
     "exclude": [
         "node_modules",
