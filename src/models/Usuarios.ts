@@ -8,7 +8,8 @@ export const Usuarios = database.define('usuarios', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
-        defaultValue: uuidv4()
+        defaultValue: uuidv4(),
+        unique: true
     },
     nombre: {
         type: Sequelize.STRING,
@@ -75,6 +76,9 @@ export const Usuarios = database.define('usuarios', {
             usuario.iniciales = `${usuario.nombre} ${usuario.apellidoPaterno} ${usuario.apellidoMaterno}`.normalize('NFD')
             .replace(/([^n\u0300-\u036f]|n(?!\u0303(?![\u0300-\u036f])))[\u0300-\u036f]+/gi,"$1")
             .normalize().concat(' ').replace(/([a-zA-Z]{0,} )/g, function(match){ return (match.trim()[0])}); 
+
+            usuario.createdAt = new Date();
+            usuario.updatedAt = new Date();
         },
         beforeSave: async (usuario: any) => {
             if(usuario.leaderId) {
@@ -86,10 +90,9 @@ export const Usuarios = database.define('usuarios', {
                 }
             }
         },
-
         beforeUpdate: async (usuario: any) => {
             usuario.updatedAt = new Date();
-        }
+        },
     },
     defaultScope: {
         attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'] }

@@ -14,8 +14,7 @@ export const getAreas = async (req: Request, res: Response) => {
 
         nombre && (where.nombre = { [Op.like]: `%${nombre}%` });
 
-        console.log(where);
-        
+      
 
         try {
             const result = await Areas.findAndCountAll({ 
@@ -26,9 +25,8 @@ export const getAreas = async (req: Request, res: Response) => {
             });
 
             const areas = getPagingData (result, Number(page), Number(size));
-      
-            
             res.json({ areas });
+            
         } catch (error) {
             console.log(error);
             res.status(500).json({

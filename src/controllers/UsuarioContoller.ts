@@ -2,11 +2,15 @@
 import { Usuarios } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
+import { getPagination, getPagingData } from "../helpers/pagination";
 
 export const getUsuarios = async (req: Request, res: Response) => {
+   
 
-    const { nombre, apellidoPaterno, apellidoMaterno, email } = req.query;
+    const { nombre, apellidoPaterno, apellidoMaterno, email, page = 0, size = 10 } = req.query;
     
+    const { limit, offset } = getPagination(Number(page), Number(size));
+
     const where: any = {};  
 
     nombre && (where.nombre = { [Op.like]: `%${nombre}%` });
@@ -15,12 +19,15 @@ export const getUsuarios = async (req: Request, res: Response) => {
     email && (where.email = { [Op.like]: `%${email}%` });
 
     try {
-        const usuarios = await Usuarios.findAll({ 
+        const result = await Usuarios.findAndCountAll({ 
             where,
             include: ['area'],
             
         })
+
+        const usuarios = getPagingData(result, Number(page), Number(size));
         res.json({ usuarios });
+
     } catch (error) {
         console.log(error);
         res.status(500).json({

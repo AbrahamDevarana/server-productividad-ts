@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 
-export const Areas = database.define('Areas', {
+export const Areas = database.define('areas', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
