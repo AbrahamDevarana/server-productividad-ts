@@ -1,8 +1,9 @@
 // Path: src\models\Usuario.ts
-import { Usuarios } from "../models";
+import { Areas, Usuarios, Direccion } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
+
 
 export const getUsuarios = async (req: Request, res: Response) => {
    
@@ -19,13 +20,18 @@ export const getUsuarios = async (req: Request, res: Response) => {
     email && (where.email = { [Op.like]: `%${email}%` });
 
     try {
-        const result = await Usuarios.findAndCountAll({ 
+        const result = await Usuarios.findAndCountAll({
             where,
-            include: ['area'],
-            
+            // include: ['area', 'direccion'],
+            include: [{model: Areas, as: 'area'}, {model: Direccion, as: 'direccion' }],
+            limit,
+            offset            
         })
 
         const usuarios = getPagingData(result, Number(page), Number(size));
+
+        console.log(usuarios);
+        
         res.json({ usuarios });
 
     } catch (error) {

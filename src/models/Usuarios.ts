@@ -3,6 +3,7 @@ import database from "../config/database";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import { Areas } from "./Areas";
+import { Direccion } from './Direccion';
 
 export const Usuarios = database.define('usuarios', {
     id: {
@@ -66,6 +67,9 @@ export const Usuarios = database.define('usuarios', {
     },
     googleId: {
         type: Sequelize.STRING,
+    },
+    direccionId: {
+        type: Sequelize.INTEGER,
     }
 }, {
     paranoid: true,
@@ -103,6 +107,6 @@ export const Usuarios = database.define('usuarios', {
 Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
 
-
-
 Usuarios.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
+
+Usuarios.belongsTo(Direccion, { foreignKey: 'direccionId', as: 'direccion' });
