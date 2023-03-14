@@ -19,7 +19,7 @@ export const getAreas = async (req: Request, res: Response) => {
         try {
             const result = await Areas.findAndCountAll({ 
                 where,
-                include: ['subAreas'],
+                include: ['subAreas', 'departamentos'],
                 limit,
                 offset
             });
@@ -42,7 +42,7 @@ export const getArea = async (req: Request, res: Response) => {
     try {
         const area = await Areas.findByPk(id,
             { 
-                include: ['subAreas']
+                include: ['subAreas', 'departamentos']
             }
         );
         if (area) {

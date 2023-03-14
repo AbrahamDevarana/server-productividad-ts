@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 
-export const Areas = database.define('areas', {
+export const Departamentos = database.define('departamentos', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -10,11 +10,9 @@ export const Areas = database.define('areas', {
     nombre: {
         type: Sequelize.STRING,
         allowNull: false
-
     },
-    parentId: {
+    areaId: {
         type: Sequelize.INTEGER,
-        allowNull: true
     },
     leaderId: {
         type: Sequelize.UUID,
@@ -29,9 +27,10 @@ export const Areas = database.define('areas', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        beforeUpdate: async (area: any) => {
-            area.updatedAt = new Date();
+        beforeUpdate: async (departamento: any) => {
+            departamento.updatedAt = new Date();
         }
     }
 });
+
 

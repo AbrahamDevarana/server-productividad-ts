@@ -1,29 +1,23 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { getArea, getAreas, createArea, updateArea, deleteArea} from '../../controllers/AreaController';
+import { getDepartamento, getDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento} from '../../controllers/DepartamentoController';
+
 const router = Router();
 
-
-router.get('/', getAreas);
-router.get('/:id', getArea);
+router.get('/', getDepartamentos);
+router.get('/:id', getDepartamento);
 
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
-], createArea);
+], createDepartamento);
 
 router.put('/:id', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
-], updateArea);
+], updateDepartamento);
 
-router.delete('/:id', deleteArea);
-
-
-
-
-
-
+router.delete('/:id', deleteDepartamento);
 
 export default router;

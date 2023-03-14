@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Areas, Usuarios, Direccion } from "../models";
+import { Usuarios,Departamentos } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -22,15 +22,12 @@ export const getUsuarios = async (req: Request, res: Response) => {
     try {
         const result = await Usuarios.findAndCountAll({
             where,
-            // include: ['area', 'direccion'],
-            include: [{model: Areas, as: 'area'}, {model: Direccion, as: 'direccion' }],
+            include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
             limit,
             offset            
         })
 
-        const usuarios = getPagingData(result, Number(page), Number(size));
-
-        console.log(usuarios);
+        const usuarios = getPagingData(result, Number(page), Number(size))
         
         res.json({ usuarios });
 
@@ -49,7 +46,7 @@ export const getUsuario = async (req: Request, res: Response) => {
         try {
             const usuario = await Usuarios.findByPk(id,
                 { 
-                    include: ['area']
+                    include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
                 }
             );
             if (usuario) {
@@ -65,5 +62,97 @@ export const getUsuario = async (req: Request, res: Response) => {
                 msg: 'Hable con el administrador'
             });
         }
-    }
+}
 
+export const createUsuario = async (req: Request, res: Response) => {
+        
+    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono } = req.body;    
+
+    try {
+        const existeEmail = await Usuarios.findOne({
+            where: {
+                email
+            }
+        });
+
+        if (existeEmail) {
+            return res.status(400).json({
+                msg: 'Ya existe un usuario con el email ' + email
+            });
+        }
+
+        const usuario = Usuarios.build({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, password: '123456' });
+        await usuario.save();
+
+        // 
+
+        await usuario.reload({
+            include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
+        });
+
+        res.json({usuario});
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
+export const updateUsuario = async (req: Request, res: Response) => {
+        
+        const { id } = req.params;
+        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, direccionId } = req.body;
+    
+        try {
+            const usuario = await Usuarios.findByPk(id,
+                {
+                    include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
+                });
+    
+            if (!usuario) {
+                return res.status(404).json({
+                    msg: 'No existe un usuario con el id ' + id
+                });
+            }
+    
+            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono });
+
+            console.log(usuario);
+            
+    
+            res.json({usuario});
+    
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                msg: 'Hable con el administrador'
+            });
+        }
+}
+
+export const deleteUsuario = async (req: Request, res: Response) => {
+            
+    const { id } = req.params;
+
+    try {
+        const usuario = await Usuarios.findByPk(id);
+
+        if (!usuario) {
+            return res.status(404).json({
+                msg: 'No existe un usuario con el id ' + id
+            });
+        }
+
+        await usuario.destroy();
+
+        res.json({usuario});
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}   

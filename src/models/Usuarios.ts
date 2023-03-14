@@ -2,8 +2,6 @@ import Sequelize from "sequelize";
 import database from "../config/database";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
-import { Areas } from "./Areas";
-import { Direccion } from './Direccion';
 
 export const Usuarios = database.define('usuarios', {
     id: {
@@ -39,11 +37,14 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    
     status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true
+    },
+    foto: {
+        type: Sequelize.TEXT,
+        allowNull: true
     },
     fechaNacimiento: {
         type: Sequelize.DATE,
@@ -57,11 +58,9 @@ export const Usuarios = database.define('usuarios', {
     descripcionPerfil: {
         type: Sequelize.TEXT,
     },
-    // Se refiere a su departamento
-    areaId: {
+    departamentoId: {
         type: Sequelize.INTEGER,
     },
-    // Se refiere a su lider
     leaderId: {
         type: Sequelize.UUID,
     },
@@ -85,11 +84,20 @@ export const Usuarios = database.define('usuarios', {
             usuario.updatedAt = new Date();
         },
         beforeSave: async (usuario: any) => {
+            // if(usuario.leaderId) {
+            //     const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
+            //     const usuarioArea = await usuario.getArea();
+            //     const leaderArea = await leader.getArea();
+            //     if(usuarioArea.id !== leaderArea.id && leaderArea.parentId !== usuarioArea.id) {
+            //         throw new Error('El usuario no pertenece al mismo area o a un area padre del lider');
+            //     }
+            // }
+
             if(usuario.leaderId) {
                 const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
-                const usuarioArea = await usuario.getArea();
-                const leaderArea = await leader.getArea();
-                if(usuarioArea.id !== leaderArea.id && leaderArea.parentId !== usuarioArea.id) {
+                const usuarioDepartamento = await usuario.getDepartamento();
+                const leaderDepartamento = await leader.getDepartamento();
+                if(usuarioDepartamento.areaId !== leaderDepartamento.areaId && usuarioDepartamento.areaId !== leaderDepartamento.area.parentId) {
                     throw new Error('El usuario no pertenece al mismo area o a un area padre del lider');
                 }
             }
@@ -104,9 +112,4 @@ export const Usuarios = database.define('usuarios', {
 });
 
 
-Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
-Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
 
-Usuarios.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
-
-Usuarios.belongsTo(Direccion, { foreignKey: 'direccionId', as: 'direccion' });
