@@ -22,7 +22,15 @@ export const Departamentos = database.define('departamentos', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true
-    }
+    },
+    createdAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updatedAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
 }, {
     paranoid: true,
     timestamps: true,

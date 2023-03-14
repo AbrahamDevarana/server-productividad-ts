@@ -1,9 +1,9 @@
 // Path: src\models\Usuario.ts
-import { Usuarios,Departamentos } from "../models";
+import { Usuarios, Departamentos } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
-
+import dayjs from "dayjs";
 
 export const getUsuarios = async (req: Request, res: Response) => {
    
@@ -49,7 +49,7 @@ export const getUsuario = async (req: Request, res: Response) => {
                     include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
                 }
             );
-            if (usuario) {
+            if (usuario) {                
                 res.json({ usuario });
             } else {
                 res.status(404).json({
@@ -103,7 +103,13 @@ export const createUsuario = async (req: Request, res: Response) => {
 export const updateUsuario = async (req: Request, res: Response) => {
         
         const { id } = req.params;
-        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, direccionId } = req.body;
+        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, 
+            departamentoId = null, puesto = null, leaderId = null,
+            fechaNacimiento = null, fechaIngreso = null,
+            direccion = {}
+        } = req.body;
+
+        const { codigoPostal = null, colonia = null, calle = null, numeroExterior = null, numeroInterior = null, estado = null, ciudad = null } = direccion;
     
         try {
             const usuario = await Usuarios.findByPk(id,
@@ -116,12 +122,22 @@ export const updateUsuario = async (req: Request, res: Response) => {
                     msg: 'No existe un usuario con el id ' + id
                 });
             }
-    
-            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono });
 
-            console.log(usuario);
+            // Format from string to mysqlDay using dayjs
+            const formatFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD HH:mm:ss') : null;
+            const formatFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD HH:mm:ss') : null;
             
-    
+            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento:formatFechaNacimiento, fechaIngreso:formatFechaIngreso });
+
+
+            if(direccion){
+                if (usuario.direccion) {
+                    await usuario.direccion.update({ codigoPostal, colonia, calle, numeroExterior, numeroInterior, estado, ciudad });
+                } else {
+                    await usuario.createDireccion({ codigoPostal, colonia, calle, numeroExterior, numeroInterior, estado, ciudad });
+                }
+            }
+
             res.json({usuario});
     
         } catch (error) {
@@ -156,3 +172,4 @@ export const deleteUsuario = async (req: Request, res: Response) => {
         });
     }
 }   
+

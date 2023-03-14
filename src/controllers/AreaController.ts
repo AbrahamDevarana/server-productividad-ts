@@ -19,12 +19,15 @@ export const getAreas = async (req: Request, res: Response) => {
         try {
             const result = await Areas.findAndCountAll({ 
                 where,
-                include: ['subAreas', 'departamentos'],
+                include: ['subAreas', 'departamentos', 'leader'],
                 limit,
                 offset
             });
 
             const areas = getPagingData (result, Number(page), Number(size));
+
+            console.log(areas.rows);
+            
             res.json({ areas });
             
         } catch (error) {
@@ -42,7 +45,7 @@ export const getArea = async (req: Request, res: Response) => {
     try {
         const area = await Areas.findByPk(id,
             { 
-                include: ['subAreas', 'departamentos']
+                include: ['subAreas', 'departamentos', 'leader']
             }
         );
         if (area) {
@@ -62,11 +65,14 @@ export const getArea = async (req: Request, res: Response) => {
 
 export const createArea = async (req: Request, res: Response) => {
 
-    const { nombre, parentId } = req.body;
+    const { nombre, parentId = null, leaderId = null} = req.body;
 
     try {
-        const area = await Areas.create({ nombre, parentId: parentId || null });
+        const area = await Areas.create({ nombre, parentId, leaderId});
+
+        area.reload({ include: ['subAreas', 'departamentos', 'leader'] });
         res.json({ area });
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -78,14 +84,12 @@ export const createArea = async (req: Request, res: Response) => {
 export const updateArea = async (req: Request, res: Response) => {
     
     const { id } = req.params;
-    const { nombre, parentId } = req.body;
-    console.log(parentId);
-    
+    const { nombre, parentId = null, leaderId = null } = req.body;    
 
     try {
-        const area = await Areas.findByPk(id);
+        const area = await Areas.findByPk(id, { include: ['subAreas', 'departamentos', 'leader'] });
         if (area) {
-            await area.update({ nombre, parentId: parentId || null })
+            await area.update({ nombre, parentId, leaderId })
             
             res.json({ area });
         } else {

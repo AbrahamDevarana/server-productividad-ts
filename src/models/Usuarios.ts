@@ -8,7 +8,6 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.UUID,
         primaryKey: true,
         defaultValue: uuidv4(),
-        unique: true
     },
     nombre: {
         type: Sequelize.STRING,
@@ -31,17 +30,11 @@ export const Usuarios = database.define('usuarios', {
     email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
     },
     password: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false
-    },
-    status: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
-    },
+    },    
     foto: {
         type: Sequelize.TEXT,
         allowNull: true
@@ -53,10 +46,19 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.DATE,
     },
     telefono: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
+    },
+    puesto: {
+        type: Sequelize.STRING,
+        allowNull: true
     },
     descripcionPerfil: {
         type: Sequelize.TEXT,
+    },
+    status: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     },
     departamentoId: {
         type: Sequelize.INTEGER,
@@ -69,7 +71,15 @@ export const Usuarios = database.define('usuarios', {
     },
     direccionId: {
         type: Sequelize.INTEGER,
-    }
+    },
+    createdAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updatedAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
 }, {
     paranoid: true,
     timestamps: true,
@@ -107,7 +117,7 @@ export const Usuarios = database.define('usuarios', {
         },
     },
     defaultScope: {
-        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'] }
+        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt' , 'googleId'] }
     },
 });
 

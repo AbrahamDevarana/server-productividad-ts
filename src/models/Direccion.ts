@@ -1,8 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
-import { Usuarios } from "./Usuarios";
 
-export const Direccion = database.define('direccion', {
+export const Direccion = database.define('direcciones', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -35,9 +34,17 @@ export const Direccion = database.define('direccion', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    createdAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updatedAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
 }, {
-    timestamps: true,
     paranoid: true,
+    timestamps: true,
     hooks: {
         beforeCreate: async (direccion: any) => {
             
