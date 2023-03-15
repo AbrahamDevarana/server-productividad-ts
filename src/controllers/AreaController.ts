@@ -4,17 +4,10 @@ import { Areas } from "../models/Areas";
 import { getPagination, getPagingData } from "../helpers/pagination";
 
 export const getAreas = async (req: Request, res: Response) => {
-        
         const { page = 0, size = 10, nombre } = req.query;
-
-
         const { limit, offset } = getPagination(Number(page), Number(size));
-
         const where: any = {};
-
         nombre && (where.nombre = { [Op.like]: `%${nombre}%` });
-
-      
 
         try {
             const result = await Areas.findAndCountAll({ 
@@ -25,11 +18,7 @@ export const getAreas = async (req: Request, res: Response) => {
             });
 
             const areas = getPagingData (result, Number(page), Number(size));
-
-            console.log(areas.rows);
-            
-            res.json({ areas });
-            
+            res.json({ areas });            
         } catch (error) {
             console.log(error);
             res.status(500).json({

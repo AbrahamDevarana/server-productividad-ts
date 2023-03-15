@@ -105,12 +105,9 @@ export const updateUsuario = async (req: Request, res: Response) => {
         const { id } = req.params;
         const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, 
             departamentoId = null, puesto = null, leaderId = null,
-            fechaNacimiento = null, fechaIngreso = null,
-            direccion = {}
+            fechaNacimiento = null, fechaIngreso = null, direccion = {}
         } = req.body;
 
-        const { codigoPostal = null, colonia = null, calle = null, numeroExterior = null, numeroInterior = null, estado = null, ciudad = null } = direccion;
-    
         try {
             const usuario = await Usuarios.findByPk(id,
                 {
@@ -123,14 +120,15 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 });
             }
 
-            // Format from string to mysqlDay using dayjs
             const formatFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD HH:mm:ss') : null;
             const formatFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD HH:mm:ss') : null;
             
-            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento:formatFechaNacimiento, fechaIngreso:formatFechaIngreso });
-
+            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento:formatFechaNacimiento, fechaIngreso:formatFechaIngreso });            
 
             if(direccion){
+
+                const { codigoPostal = null, colonia = null, calle = null, numeroExterior = null, numeroInterior = null, estado = null, ciudad = null } = direccion;  
+
                 if (usuario.direccion) {
                     await usuario.direccion.update({ codigoPostal, colonia, calle, numeroExterior, numeroInterior, estado, ciudad });
                 } else {

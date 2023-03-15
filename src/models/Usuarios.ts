@@ -71,6 +71,7 @@ export const Usuarios = database.define('usuarios', {
     },
     direccionId: {
         type: Sequelize.INTEGER,
+        allowNull: true
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -94,22 +95,13 @@ export const Usuarios = database.define('usuarios', {
             usuario.updatedAt = new Date();
         },
         beforeSave: async (usuario: any) => {
-            // if(usuario.leaderId) {
-            //     const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
-            //     const usuarioArea = await usuario.getArea();
-            //     const leaderArea = await leader.getArea();
-            //     if(usuarioArea.id !== leaderArea.id && leaderArea.parentId !== usuarioArea.id) {
-            //         throw new Error('El usuario no pertenece al mismo area o a un area padre del lider');
-            //     }
-            // }
-
             if(usuario.leaderId) {
-                const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
-                const usuarioDepartamento = await usuario.getDepartamento();
-                const leaderDepartamento = await leader.getDepartamento();
-                if(usuarioDepartamento.areaId !== leaderDepartamento.areaId && usuarioDepartamento.areaId !== leaderDepartamento.area.parentId) {
-                    throw new Error('El usuario no pertenece al mismo area o a un area padre del lider');
-                }
+                // const leader = await Usuarios.findOne({ where: { id: usuario.leaderId } });
+                // const usuarioDepartamento = await usuario.getDepartamento();
+                // const leaderDepartamento = await leader.getDepartamento();
+                // if(usuarioDepartamento.areaId !== leaderDepartamento.areaId && usuarioDepartamento.areaId !== leaderDepartamento.area.parentId) {
+                //     throw new Error('El usuario no pertenece al mismo area o a un area padre del lider');
+                // }
             }
         },
         beforeUpdate: async (usuario: any) => {

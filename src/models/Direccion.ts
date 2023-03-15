@@ -9,30 +9,30 @@ export const Direccion = database.define('direcciones', {
     },
     calle: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     numeroExterior: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     numeroInterior: {
         type: Sequelize.STRING,
     },
     colonia: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     codigoPostal: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     ciudad: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     estado: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     createdAt: {
         type: Sequelize.DATE,

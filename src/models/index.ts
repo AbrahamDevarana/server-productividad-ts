@@ -8,8 +8,8 @@ import { Departamentos } from './Departamentos';
 Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
-Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId' });
 
+Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -21,6 +21,7 @@ Areas.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 Departamentos.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
 Departamentos.hasMany(Usuarios, { as: 'usuarios', foreignKey: 'departamentoId' });
 Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
+
 
 
 export {
