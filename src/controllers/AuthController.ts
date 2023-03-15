@@ -2,9 +2,9 @@ import { createAccessToken, createRefreshToken, decodeToken, willExpireToken } f
 import moment from 'moment';
 import jwt from 'jsonwebtoken';
 import { Usuarios } from '../models';
+import { Request, Response } from "express";
 
-
-const getAccessToken = async (req: any, res: any) => {
+const getAccessToken = async (req: Request, res: Response) => {
     
     if (req.user) {
         const accessToken = createAccessToken(req.user);
@@ -16,7 +16,7 @@ const getAccessToken = async (req: any, res: any) => {
     }
 }
 
-const refreshAccessToken = async (req: any, res: any) => {
+const refreshAccessToken = async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
     const isTokenExpired = willExpireToken(refreshToken);
 
@@ -41,7 +41,7 @@ const refreshAccessToken = async (req: any, res: any) => {
     }
 }
 
-const sessionValidate = async (req: any, res: any) => {
+const sessionValidate = async (req: Request, res: Response) => {
 
     const token = req.header('Authorization')   
 

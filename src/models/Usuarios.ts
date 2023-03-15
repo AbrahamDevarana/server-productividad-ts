@@ -7,7 +7,7 @@ export const Usuarios = database.define('usuarios', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
-        defaultValue: uuidv4(),
+        defaultValue: () => uuidv4()
     },
     nombre: {
         type: Sequelize.STRING,

@@ -2,14 +2,16 @@ import { Usuarios } from './Usuarios';
 import { Areas } from './Areas';
 import { Direccion } from './Direccion';
 import { Departamentos } from './Departamentos';
+import { Perspectivas } from './Perspectivas';
+import { ObjetivoEstrategico } from './Estrategico';
 
 
 // Usuarios
 Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
-
 Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
+
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -23,12 +25,21 @@ Departamentos.hasMany(Usuarios, { as: 'usuarios', foreignKey: 'departamentoId' }
 Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 
 
+// Perspectivas
+
+
+// Objetivo Estratégico
+Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr',  through: 'pivot_obj_estr_persp', timestamps: true });
+
+
 
 export {
     Usuarios,
     Areas,
     Direccion,
-    Departamentos
+    Departamentos,
+    Perspectivas,
+    ObjetivoEstrategico
 }
 
 

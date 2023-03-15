@@ -94,7 +94,6 @@ export const updateArea = async (req: Request, res: Response) => {
     }
 }
 
-
 export const deleteArea = async (req: Request, res: Response) => {
         
     const { id } = req.params;
