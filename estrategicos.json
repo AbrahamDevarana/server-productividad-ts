@@ -1,0 +1,194 @@
+[
+    {
+        "id": "d44ae340-8a99-4a89-8e9b-8cff68cd2cf0",
+        "nombre":"Adquisición de reserva territorial para nuevos proyectos.",
+        "clave": "F1",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "3e1cb954-7f89-44e8-b957-f1cdab895be3",
+        "nombre":"Garantizar financiamiento para para los próximos 3 proyectos.",
+        "clave": "F2",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "ad8faed0-c435-11ed-afa1-0242ac120002",
+        "nombre":"Contener el incremento de costos por inflación en Royal View. ",
+        "clave": "F3",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "afac5358-c435-11ed-afa1-0242ac120002",
+        "nombre":"Contener el incremento de costos por interéses de crédito en Royal View.",
+        "clave": "F4",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+
+
+    {
+        "id": "6121e77d-eb59-46b6-98a2-f19f361ae545",
+        "nombre":"Adquisición de reserva territorial para nuevos proyectos.",
+        "clave": "F1",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "ef01cdf7-b52e-40b0-9def-4534b8677ca1",
+        "nombre":"Lograr ventas anuales proyectadas de Royal View.",
+        "clave": "C1",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "2407a72b-e575-494e-8d74-3c3b4d6b3b80",
+        "nombre":"Lograr ventas anuales proyectadas de Royal View Light. ",
+        "clave": "C2",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "43c340c5-6aa2-4181-b125-7f71006c74fd",
+        "nombre":"Consolidar el equipo de Asesores Comerciales",
+        "clave": "C3",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "04267f33-84ef-487e-9c15-16c3a7ec0c09",
+        "nombre":"Mejorar la estratégia de Marketing.",
+        "clave": "C4",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "1641cb13-323c-4ba7-8f52-0d1437a0dbb3",
+        "nombre":"Contener el costo de construcción de Royal View.",
+        "clave": "O1",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "888f2e10-9840-4a05-bee6-c93b5d79b8af",
+        "nombre":"Costeo con precisión y en tiempo de nuevos proyectos, reducir costo sin mermar calidad.",
+        "clave": "O2",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "c7a9aeba-5742-4d0b-b813-16f9e99eefb3",
+        "nombre":"Asegurar la operación y control adecuados para un segundo proyecto en paralelo. ",
+        "clave": "O3",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "21e35041-8d13-4b26-a461-0edad35bf5bc",
+        "nombre":"Implementación de CRM Salesforce.",
+        "clave": "CD1",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "2fcdb408-4fa8-4e11-8439-d482d1564fe7",
+        "nombre":"Implementación de un nuevo ERP.",
+        "clave": "CD2",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "aba44f84-c0fc-4c2f-9be9-dd671e5bdbc9",
+        "nombre":"Desarrollar internamente software para optimizar procesos clave. ",
+        "clave": "CD3",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "21e5a0fe-bc4f-45c5-8b42-9eebccf52d54",
+        "nombre":"Diseñar e implementar el plan de carrera DEVARANA. ",
+        "clave": "CD4",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "8cf01f29-ed94-410a-99f5-25055cd8d703",
+        "nombre":"Desarrollo de proyectos conceptuales y arquitectónicos de Royal View Light.",
+        "clave": "NP1",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "f8530e9a-ffce-4089-bc8c-4f2159829afc",
+        "nombre":"Desarrollo de proyectos conceptuales y arquitectónicos de Centro Médico y Deportivo.",
+        "clave": "NP2",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    },
+    {
+        "id": "7242df9e-08ab-4bd9-a795-485c8cdd02c1",
+        "nombre":"Desarrollo de proyectos conceptuales Corredor Turístico SMA-Dolóres.",
+        "clave": "Np3",
+        "descripcion": "",
+        "progreso": 0,
+        "fechaInicio": "",
+        "fechaFin": "",
+        "status": 0
+    }    
+]

@@ -33,8 +33,8 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
                 where: wherePerspectiva,
             }],
             where,
-            limit,
-            offset
+            // limit,
+            // offset
         });
 
         const objetivosEstrategicos = getPagingData(result, Number(page), Number(size))
