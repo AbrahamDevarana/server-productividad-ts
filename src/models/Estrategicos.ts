@@ -33,7 +33,7 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         allowNull: true
     },
     status: {
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: true
     },
@@ -52,7 +52,10 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         beforeUpdate: async (objetivoEstrategico: any) => {
             objetivoEstrategico.updatedAt = new Date();
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 
 

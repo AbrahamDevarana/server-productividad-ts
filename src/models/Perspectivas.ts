@@ -44,7 +44,10 @@ export const Perspectivas = database.define('perspectivas', {
         beforeUpdate: async (perspectiva: any) => {
             perspectiva.updatedAt = new Date();
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 
 

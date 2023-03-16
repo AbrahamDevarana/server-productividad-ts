@@ -3,7 +3,7 @@ import { Areas } from './Areas';
 import { Direccion } from './Direccion';
 import { Departamentos } from './Departamentos';
 import { Perspectivas } from './Perspectivas';
-import { ObjetivoEstrategico } from './Estrategico';
+import { ObjetivoEstrategico } from './Estrategicos';
 
 
 // Usuarios
@@ -26,7 +26,7 @@ Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 
 
 // Perspectivas
-
+ObjetivoEstrategico.belongsToMany(Perspectivas, { as: 'perspectivas', through: 'pivot_obj_estr_persp', timestamps: true });
 
 // Objetivo Estratégico
 Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr',  through: 'pivot_obj_estr_persp', timestamps: true });
