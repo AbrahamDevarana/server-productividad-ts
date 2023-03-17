@@ -35,7 +35,7 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: true
+        defaultValue: 1
     },
     createdAt: {
         type: Sequelize.DATE,
