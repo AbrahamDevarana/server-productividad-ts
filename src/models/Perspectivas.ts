@@ -24,6 +24,11 @@ export const Perspectivas = database.define('perspectivas', {
         type: Sequelize.STRING,
         allowNull: true
     },
+    orden:{
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        unique: true
+    },
     status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

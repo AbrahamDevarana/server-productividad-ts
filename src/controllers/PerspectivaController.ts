@@ -9,6 +9,8 @@ export const getPerspectivas = async (req: Request, res: Response) => {
 
         const perspectivas = await Perspectivas.findAll({
             where,
+            order: [['orden', 'ASC']],
+            include: ['objetivo_estr']
         });
 
         res.json({ perspectivas });

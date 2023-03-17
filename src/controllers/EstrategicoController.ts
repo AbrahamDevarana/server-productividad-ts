@@ -33,8 +33,6 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
                 where: wherePerspectiva,
             }],
             where,
-            // limit,
-            // offset
         });
 
         const objetivosEstrategicos = getPagingData(result, Number(page), Number(size))
@@ -74,12 +72,20 @@ export const getObjetivoEstrategico = async (req: Request, res: Response) => {
 }
 
 export const createObjetivoEstrategico = async (req: Request, res: Response) => {
-    const { body } = req;
+    const { nombre, clave, descripcion, fechaInicio, fechaFin, perspectivaId } = req.body;
 
     try {
-        const objetivoEstrategico = ObjetivoEstrategico.build(body);
-        await objetivoEstrategico.save();
-        res.json(objetivoEstrategico);
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, clave, descripcion, fechaInicio, fechaFin });
+        await objetivoEstrategico.setPerspectivas(perspectivaId);
+
+
+        await objetivoEstrategico.reload();
+     
+        res.json({
+            objetivoEstrategico,
+            perspectivaId
+        });
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -90,18 +96,20 @@ export const createObjetivoEstrategico = async (req: Request, res: Response) => 
 
 export const updateObjetivoEstrategico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { body } = req;
+    const { nombre, clave, descripcion, fechaInicio, fechaFin } = req.body;
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
-        if (!objetivoEstrategico) {
-            return res.status(404).json({
+        if (objetivoEstrategico) {
+            await objetivoEstrategico.update({ nombre, clave, descripcion, fechaInicio, fechaFin });
+            res.json({
+                objetivoEstrategico
+            });
+        } else {
+            res.status(404).json({
                 msg: `No existe un objetivo estrategico con el id ${id}`
             });
         }
-
-        await objetivoEstrategico.update(body);
-        res.json(objetivoEstrategico);
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -112,17 +120,18 @@ export const updateObjetivoEstrategico = async (req: Request, res: Response) => 
 
 export const deleteObjetivoEstrategico = async (req: Request, res: Response) => {
     const { id } = req.params;
-
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
-        if (!objetivoEstrategico) {
-            return res.status(404).json({
+        if (objetivoEstrategico) {
+            await objetivoEstrategico.destroy();
+            res.json({
+                objetivoEstrategico
+            });
+        } else {
+            res.status(404).json({
                 msg: `No existe un objetivo estrategico con el id ${id}`
             });
         }
-
-        await objetivoEstrategico.destroy();
-        res.json(objetivoEstrategico);
     } catch (error) {
         console.log(error);
         res.status(500).json({
