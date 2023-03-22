@@ -52,7 +52,7 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
 export const getObjetivoEstrategico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas'] });
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'tacticos'] });
         if (objetivoEstrategico) {
 
             res.json({
@@ -76,9 +76,7 @@ export const createObjetivoEstrategico = async (req: Request, res: Response) => 
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, clave, descripcion, fechaInicio, fechaFin });
-        await objetivoEstrategico.setPerspectivas(perspectivaId);
-
-
+        await objetivoEstrategico.setPerspectiva(perspectivaId);
         await objetivoEstrategico.reload();
      
         res.json({
