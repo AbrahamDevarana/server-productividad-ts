@@ -11,6 +11,7 @@ import { PivotPerspEstr } from './pivot/PivotPerspectivaEstrategia';
 import { PivotEstrTact } from './pivot/PivotEstrategiaTactico';
 import { PivotRespTact } from './pivot/PivotResponsablesTactico';
 import { PivotAreaTactico } from './pivot/PivotAreaTactico';
+import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 
 
 
@@ -38,6 +39,8 @@ Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 ObjetivoEstrategico.belongsToMany(Perspectivas, { as: 'perspectivas', through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
 // Objetivo Estratégico - Tacticos
 ObjetivoEstrategico.belongsToMany(Tacticos, { as: 'tacticos', through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
+// Objetivo Estratégico - Usuarios
+ObjetivoEstrategico.belongsToMany(Usuarios, { as: 'responsables', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
 
 
 // Perspectivas - Objetivo Estratégico
@@ -56,6 +59,8 @@ Areas.belongsToMany(Tacticos, { as: 'tacticos', through: PivotAreaTactico, onDel
 
 // Usuarios - Tacticos
 Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
+// Usuarios - Objetivo Estratégico
+Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 
 

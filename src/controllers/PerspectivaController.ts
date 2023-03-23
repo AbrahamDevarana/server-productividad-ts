@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Perspectivas } from "../models/Perspectivas";
+import { Perspectivas, ObjetivoEstrategico, Usuarios } from "../models";
 
 export const getPerspectivas = async (req: Request, res: Response) => {
 
@@ -10,7 +10,18 @@ export const getPerspectivas = async (req: Request, res: Response) => {
         const perspectivas = await Perspectivas.findAll({
             where,
             order: [['orden', 'ASC']],
-            include: ['objetivo_estr']
+            include: [
+                {
+                    model: ObjetivoEstrategico,
+                    as: 'objetivo_estr',
+                    include: [{
+                        model: Usuarios,
+                        as: 'responsables',
+                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
+                    }]
+                    
+                }
+            ]
         });
 
         res.json({ perspectivas });

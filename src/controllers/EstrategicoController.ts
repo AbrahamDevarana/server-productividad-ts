@@ -27,11 +27,13 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
         
         const result = await ObjetivoEstrategico.findAndCountAll({
             include: [{
-                model: Perspectivas,
-                as: 'perspectivas',
-                through: { attributes: [] },
-                where: wherePerspectiva,
-            }],
+                    model: Perspectivas,
+                    as: 'perspectivas',
+                    through: { attributes: [] },
+                    where: wherePerspectiva,
+                },
+                'responsables'
+        ],
             where,
         });
 
@@ -52,7 +54,7 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
 export const getObjetivoEstrategico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'tacticos'] });
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'tacticos', 'responsables'] });
         if (objetivoEstrategico) {
 
             res.json({
@@ -72,12 +74,15 @@ export const getObjetivoEstrategico = async (req: Request, res: Response) => {
 }
 
 export const createObjetivoEstrategico = async (req: Request, res: Response) => {
-    const { nombre, clave, descripcion, fechaInicio, fechaFin, perspectivaId } = req.body;
+    const { nombre, clave, descripcion, fechaInicio, fechaFin, perspectivaId, responsables = [] } = req.body;
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, clave, descripcion, fechaInicio, fechaFin });
-        await objetivoEstrategico.setPerspectiva(perspectivaId);
-        await objetivoEstrategico.reload();
+        await objetivoEstrategico.setPerspectivas(perspectivaId);
+        await objetivoEstrategico.setResponsables(responsables);
+        await objetivoEstrategico.reload({
+            include: ['perspectivas', 'tacticos', 'responsables']
+        });
      
         res.json({
             objetivoEstrategico,
