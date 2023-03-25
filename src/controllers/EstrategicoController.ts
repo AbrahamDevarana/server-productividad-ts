@@ -99,12 +99,18 @@ export const createObjetivoEstrategico = async (req: Request, res: Response) => 
 
 export const updateObjetivoEstrategico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, clave, descripcion, fechaInicio, fechaFin } = req.body;
+    const { nombre, clave, descripcion, fechaInicio, fechaFin, responsables = [], progreso } = req.body;
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
-            await objetivoEstrategico.update({ nombre, clave, descripcion, fechaInicio, fechaFin });
+            await objetivoEstrategico.update({ nombre, clave, descripcion, fechaInicio, fechaFin, progreso });
+            await objetivoEstrategico.setResponsables(responsables);
+
+            await objetivoEstrategico.reload({
+                include: ['perspectivas', 'tacticos', 'responsables']
+            });
+
             res.json({
                 objetivoEstrategico
             });
