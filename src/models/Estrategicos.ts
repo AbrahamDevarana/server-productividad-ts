@@ -12,11 +12,15 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    clave: {
+    codigo: {
         type: Sequelize.STRING,
         allowNull: false
     },
     descripcion: {
+        type: Sequelize.TEXT,
+        allowNull: true
+    },
+    indicador: {
         type: Sequelize.TEXT,
         allowNull: true
     },

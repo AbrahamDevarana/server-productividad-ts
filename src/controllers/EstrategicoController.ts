@@ -21,7 +21,6 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
 
     idPerspectiva && (wherePerspectiva.id = idPerspectiva);
     
-    // id &&  si el id existe en la relacion muchos a muchos
 
     try {
         
@@ -74,10 +73,10 @@ export const getObjetivoEstrategico = async (req: Request, res: Response) => {
 }
 
 export const createObjetivoEstrategico = async (req: Request, res: Response) => {
-    const { nombre, clave, descripcion, fechaInicio, fechaFin, perspectivaId, responsables = [] } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, perspectivaId, responsables = [] } = req.body;
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, clave, descripcion, fechaInicio, fechaFin });
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, indicador });
         await objetivoEstrategico.setPerspectivas(perspectivaId);
         await objetivoEstrategico.setResponsables(responsables);
         await objetivoEstrategico.reload({
@@ -99,13 +98,14 @@ export const createObjetivoEstrategico = async (req: Request, res: Response) => 
 
 export const updateObjetivoEstrategico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, clave, descripcion, fechaInicio, fechaFin, responsables = [], progreso } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId } = req.body;
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
-            await objetivoEstrategico.update({ nombre, clave, descripcion, fechaInicio, fechaFin, progreso });
+            await objetivoEstrategico.update({ nombre, codigo, descripcion, fechaInicio, fechaFin, progreso, indicador });
             await objetivoEstrategico.setResponsables(responsables);
+            await objetivoEstrategico.setPerspectivas(perspectivaId);
 
             await objetivoEstrategico.reload({
                 include: ['perspectivas', 'tacticos', 'responsables']
