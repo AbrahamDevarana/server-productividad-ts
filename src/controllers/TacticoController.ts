@@ -1,6 +1,8 @@
 import { Areas, ObjetivoEstrategico, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
+import dayjs from 'dayjs'
+
 
 export const getTacticos = async (req: Request, res: Response) => {
     const {nombre, codigo, fechaInicio, fechaFin, tipoObjetivo, status, order} = req.query;
@@ -69,15 +71,15 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], estrategicoId } = req.body;
+    const { nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico } = req.body;
     
     try {
         const tactico = await Tacticos.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status });
         
         
         await tactico.setResponsables(responsables);
+        await tactico.setObjetivo_tact(objetivoEstrategico);
         await tactico.setAreas(areas);
-        await tactico.setObjetivo_tact(estrategicoId);
         
 
         await tactico.reload({ include: ['responsables', 'areas'] });
@@ -142,23 +144,66 @@ export const deleteTactico = async (req: Request, res: Response) => {
 
 export const getTacticosByArea = async (req: Request, res: Response) => {
     const { slug } = req.params;
+    const { year, quarter, limit, offset } = req.query;
+   
+
+    let where = {};
+    
+
+    
+    if( year && quarter ) {
+        const { startDate, endDate } = getQuarterDates(Number(year), Number(quarter));
+
+        where = {
+            fechaInicio: { [Op.between]: [startDate.toDate(), endDate.toDate()] }
+        }
+    }
+
+    const includes = [
+        {
+            model: Areas,
+            as: 'areas',
+            through: { attributes: [] },
+            attributes: ['id', 'nombre'],
+            where: { slug }
+        },
+        {
+            model: Usuarios,
+            as: 'responsables',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email'],
+            through: {
+                attributes: []
+            },
+        },
+    ]
+    
     try {
         const tacticos = await Tacticos.findAll({
-            include: [
-                {
-                    model: Areas,
-                    as: 'areas',
-                    through: { attributes: [] },
-                    where: { slug }
-                },
-                {
-                    model: Usuarios,
-                    as: 'responsables',
-                    through: { attributes: [] },
-                },
-            ]
+            include: includes,
+            where: {
+                ...where,
+                tipoObjetivo: 1
+            }
         });
-        res.json({ tacticos });
+
+        const tacticos_core = await Tacticos.findAll({
+            include: includes,
+            where: {
+                ...where,
+                tipoObjetivo: 2
+            },
+            logging: console.log
+        });
+
+
+        
+        
+
+        
+        res.json({ 
+            tacticos,
+            tacticos_core
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -195,3 +240,12 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
     }
 }
 
+
+
+const getQuarterDates = (year:number, quarter:number) => {
+    const startQuarter = (quarter - 1) * 3 + 1;
+    const startDate = dayjs(`${year}-${startQuarter}-01`).startOf('month');
+    const endDate = startDate.add(2, 'month').endOf('month');
+    return { startDate, endDate };
+  }
+  
