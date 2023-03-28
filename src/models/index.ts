@@ -52,7 +52,7 @@ Tacticos.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_tact',  through: Piv
 Tacticos.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
 // Tacticos - Áreas
-Tacticos.belongsToMany(Areas, { as: 'area', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'areaId' });
+Tacticos.belongsToMany(Areas, { as: 'areas', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'areaId' });
 
 // Áreas - Tacticos
 Areas.belongsToMany(Tacticos, { as: 'tacticos', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'tacticoId' });

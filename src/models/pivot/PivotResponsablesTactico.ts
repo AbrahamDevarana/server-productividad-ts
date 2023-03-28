@@ -2,7 +2,7 @@ import Sequelize from "sequelize";
 import database from "../../config/database";
 
 export const PivotRespTact = database.define('pivot_resp_tact', {
-    objTacticoId: {
+    tacticoId: {
         type: Sequelize.UUID,
         allowNull: false,
     },

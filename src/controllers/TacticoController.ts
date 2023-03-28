@@ -1,4 +1,4 @@
-import { Areas, Tacticos, Usuarios } from '../models'
+import { Areas, ObjetivoEstrategico, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 
@@ -19,12 +19,19 @@ export const getTacticos = async (req: Request, res: Response) => {
 
         const tacticos = await Tacticos.findAll({
             where,
-            include: {
+            include: [{
                 model: Usuarios,
                 as: 'responsables',
                 through: { attributes: [] },
                 where: whereResponsable,
+            },{
+                model: Areas,
+                as: 'areas',
+                through: { attributes: [] },
+                where: whereArea,
+                attributes: ['id', 'nombre']
             }
+        ]
         });
 
         res.json({ tacticos });           
@@ -42,7 +49,7 @@ export const getTacticos = async (req: Request, res: Response) => {
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const tactico = await Tacticos.findByPk(id, { include: ['responsables'] });
+        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas'] });
         if (tactico) {
 
             res.json({
@@ -62,11 +69,18 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsable } = req.body;
+    const { nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], estrategicoId } = req.body;
+    
     try {
-        const tactico = await Tacticos.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsable });
+        const tactico = await Tacticos.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status });
+        
+        
+        await tactico.setResponsables(responsables);
+        await tactico.setAreas(areas);
+        await tactico.setObjetivo_tact(estrategicoId);
+        
 
-        await tactico.reload({ include: ['responsables'] });
+        await tactico.reload({ include: ['responsables', 'areas'] });
 
         res.json({
             tactico
@@ -133,7 +147,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             include: [
                 {
                     model: Areas,
-                    as: 'area',
+                    as: 'areas',
                     through: { attributes: [] },
                     where: { slug }
                 },
@@ -152,3 +166,32 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getTacticosByEstrategia = async (req: Request, res: Response) => {
+    const { estrategiaId } = req.params;
+    
+    try {
+        const tacticos = await Tacticos.findAll({
+            include: [
+                {
+                    model: ObjetivoEstrategico,
+                    as: 'objetivo_tact',
+                    through: { attributes: [] },
+                    where: { id: estrategiaId }
+                },
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    through: { attributes: [] },
+                },
+            ]
+        });
+        res.json({ tacticos });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+

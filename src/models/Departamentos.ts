@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
+import slugify from "slugify";
 
 export const Departamentos = database.define('departamentos', {
     id: {
@@ -23,6 +24,9 @@ export const Departamentos = database.define('departamentos', {
         allowNull: false,
         defaultValue: true
     },
+    slug:{
+        type: Sequelize.STRING,
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -37,7 +41,11 @@ export const Departamentos = database.define('departamentos', {
     hooks: {
         beforeUpdate: async (departamento: any) => {
             departamento.updatedAt = new Date();
-        }
+            departamento.slug = slugify(departamento.nombre, { lower: true });
+        },
+        beforeCreate: async (departamento: any) => {
+            departamento.slug = slugify(departamento.nombre, { lower: true });
+        },
     }
 });
 
