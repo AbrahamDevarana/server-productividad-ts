@@ -51,7 +51,7 @@ export const getTacticos = async (req: Request, res: Response) => {
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas'] });
+        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'objetivo_tact'] });
         if (tactico) {
 
             res.json({
@@ -71,10 +71,10 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico } = req.body;
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [] } = req.body;
     
     try {
-        const tactico = await Tacticos.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status });
+        const tactico = await Tacticos.create({ nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status });
         
         
         await tactico.setResponsables(responsables);
@@ -82,7 +82,7 @@ export const createTactico = async (req: Request, res: Response) => {
         await tactico.setAreas(areas);
         
 
-        await tactico.reload({ include: ['responsables', 'areas'] });
+        await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact'] });
 
         res.json({
             tactico
@@ -97,12 +97,18 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsable } = req.body;
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [] } = req.body;
 
     try {
         const tactico = await Tacticos.findByPk(id);
         if (tactico) {
-            await tactico.update({ nombre, codigo, descripcion, fechaInicio, fechaFin, tipoObjetivo, status, responsable });
+            await tactico.update({ nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status });
+            await tactico.setResponsables(responsables);
+            await tactico.setObjetivo_tact(objetivoEstrategico);
+            await tactico.setAreas(areas);
+
+            await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact'] });
+
             res.json({
                 tactico
             });
@@ -175,7 +181,14 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
                 attributes: []
             },
         },
+        {
+            model: ObjetivoEstrategico,
+            as: 'objetivo_tact',
+            attributes: ['nombre'],
+            through: { attributes: [] },
+        }
     ]
+
     
     try {
         const tacticos = await Tacticos.findAll({
@@ -197,9 +210,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
 
 
         
-        
-
-        
+            
         res.json({ 
             tacticos,
             tacticos_core
