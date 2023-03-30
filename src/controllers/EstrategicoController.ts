@@ -100,11 +100,6 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
     const { id } = req.params;
     const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status } = req.body;
 
-    console.log(status);
-    
-
-    
-
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
