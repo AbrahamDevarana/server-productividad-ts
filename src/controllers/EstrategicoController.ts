@@ -1,10 +1,10 @@
 import { ObjetivoEstrategico, Perspectivas } from '../models'
-import { Request, Response } from 'express'
+import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
 
 
-export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
+export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
 
     const {page = 0, size = 5, nombre, fechaInicio, fechaFin, status, idPerspectiva} = req.query;    
     const {limit, offset} = getPagination(Number(page), Number(size));
@@ -50,7 +50,7 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
     }
 }
 
-export const getObjetivoEstrategico = async (req: Request, res: Response) => {
+export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'tacticos', 'responsables'] });
@@ -72,7 +72,7 @@ export const getObjetivoEstrategico = async (req: Request, res: Response) => {
     }
 }
 
-export const createObjetivoEstrategico = async (req: Request, res: Response) => {
+export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, perspectivaId, responsables = [] } = req.body;
 
     try {
@@ -96,16 +96,38 @@ export const createObjetivoEstrategico = async (req: Request, res: Response) => 
     }
 }
 
-export const updateObjetivoEstrategico = async (req: Request, res: Response) => {
+export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status } = req.body;
+
+    console.log(status);
+    
+
+    
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
-            await objetivoEstrategico.update({ nombre, codigo, descripcion, fechaInicio, fechaFin, progreso, indicador });
-            await objetivoEstrategico.setResponsables(responsables);
-            await objetivoEstrategico.setPerspectivas(perspectivaId);
+            await objetivoEstrategico.update({ 
+                nombre,
+                codigo, 
+                descripcion, 
+                fechaInicio, 
+                fechaFin, 
+                progreso, 
+                indicador,
+                status
+            });
+
+            
+            if (perspectivaId) {
+                await objetivoEstrategico.setPerspectivas(perspectivaId);
+            }
+
+            if (responsables.length > 0) {
+                await objetivoEstrategico.setResponsables(responsables);
+            }
+     
 
             await objetivoEstrategico.reload({
                 include: ['perspectivas', 'tacticos', 'responsables']
@@ -127,7 +149,7 @@ export const updateObjetivoEstrategico = async (req: Request, res: Response) => 
     }
 }
 
-export const deleteObjetivoEstrategico = async (req: Request, res: Response) => {
+export const deleteObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
@@ -149,7 +171,7 @@ export const deleteObjetivoEstrategico = async (req: Request, res: Response) => 
     }
 }
 
-export const getObjetivosEstrategicoByPerspectiva = async (req: Request, res: Response) => {
+export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findAll({ 
