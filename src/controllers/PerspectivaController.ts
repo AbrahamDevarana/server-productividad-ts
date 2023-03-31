@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
-import { Perspectivas, ObjetivoEstrategico, Usuarios } from "../models";
+import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, PivotEstrTact } from "../models";
+import { Sequelize } from "sequelize";
+
 
 export const getPerspectivas = async (req: Request, res: Response) => {
 
@@ -14,15 +16,27 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                 {
                     model: ObjetivoEstrategico,
                     as: 'objetivo_estr',
-                    include: [{
-                        model: Usuarios,
-                        as: 'responsables',
-                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
-                    }]
+                    include: [
+                        {
+                            model: Usuarios,
+                            as: 'responsables',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
+                        },
+                        {
+                            model: Tacticos,
+                            as: 'tacticos',
+                        }
+                    ],
+                    attributes: {
+                        include: [
+                          [Sequelize.literal('(SELECT COUNT(*) FROM `pivot_estr_tacts` WHERE `pivot_estr_tacts`.`objEstrategicoId` = `objetivo_estr`.`id`)'), 'tacticos_count']
+                        ]
+                    }
                     
                 }
-            ]
-        });
+            ],
+            
+        });       
 
         res.json({ perspectivas });
 

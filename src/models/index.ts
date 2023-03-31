@@ -71,7 +71,14 @@ export {
     Departamentos,
     Perspectivas,
     ObjetivoEstrategico,
-    Tacticos
+    Tacticos,
+
+    // Pivot tables
+    PivotPerspEstr,
+    PivotEstrTact,
+    PivotRespTact,
+    PivotAreaTactico,
+    PivotEstrResp
 }
 
 
