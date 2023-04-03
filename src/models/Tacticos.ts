@@ -36,10 +36,23 @@ export const Tacticos = database.define('tacticos', {
         type: Sequelize.DATE,
         allowNull: false
     },
+    trimestres: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+    },
+    objetivoPadre: {
+        type: Sequelize.UUID,
+        allowNull: true,  
+    },
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 1
+    },
+    propietarioId: {
+        type: Sequelize.UUID,
+        allowNull: true
     },
     tipoObjetivo: {
         type: Sequelize.INTEGER,

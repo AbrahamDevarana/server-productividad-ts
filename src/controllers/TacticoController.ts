@@ -17,6 +17,7 @@ export const getTacticos = async (req: Request, res: Response) => {
     tipoObjetivo && (where.tipoObjetivo = tipoObjetivo);
     status && (where.status = status);
 
+
     try {
 
         const tacticos = await Tacticos.findAll({
@@ -32,6 +33,11 @@ export const getTacticos = async (req: Request, res: Response) => {
                 through: { attributes: [] },
                 where: whereArea,
                 attributes: ['id', 'nombre']
+            },
+            {
+                model: Usuarios,
+                as: 'propietario',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email'],
             }
         ]
         });
@@ -51,7 +57,7 @@ export const getTacticos = async (req: Request, res: Response) => {
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'objetivo_tact'] });
+        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'objetivo_tact', 'propietario'] });
         if (tactico) {
 
             res.json({
@@ -71,22 +77,47 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [] } = req.body;
-    
-    try {
-        const tactico = await Tacticos.create({ nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status });
-        
-        
-        await tactico.setResponsables(responsables);
-        await tactico.setObjetivo_tact(objetivoEstrategico);
-        await tactico.setAreas(areas);
-        
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [], propietarioId } = req.body;
 
-        await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact'] });
+    try {
+
+        const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);
+        let arrayTactico = []
+        for (let i = 0; i < trimestres; i++) {
+            const fechaInicioTrimestre = dayjs(fechaInicio).add(i*3, 'month').format('YYYY-MM-DD') + ' 00:01:00';
+            const fechaFinTrimestre = i < trimestres - 1 ? dayjs(fechaInicio).add((i+1)*3, 'month').subtract(1, 'day').format('YYYY-MM-DD') : fechaFin;
+            
+
+            const tactico = await Tacticos.create({ 
+                nombre, 
+                codigo, 
+                meta, 
+                indicador, 
+                fechaInicio: fechaInicioTrimestre,
+                fechaFin: fechaFinTrimestre, 
+                tipoObjetivo, 
+                status, 
+                propietarioId, 
+                trimestres: i+1,
+            });
+            arrayTactico.push(tactico);
+            
+            await tactico.setResponsables(responsables);
+            await tactico.setObjetivo_tact(objetivoEstrategico);
+            await tactico.setAreas(areas);
+            await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact', 'propietario'] });
+
+                
+            if ( i > 0 ) {
+                await Tacticos.update({ objetivoPadre: arrayTactico[0].id }, { where: { id: arrayTactico[i].id } });
+            }
+        }
+
 
         res.json({
-            tactico
+            tactico: arrayTactico[0]
         });
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -97,17 +128,17 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [] } = req.body;
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [], propietarioId} = req.body;
 
     try {
         const tactico = await Tacticos.findByPk(id);
         if (tactico) {
-            await tactico.update({ nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status });
+            await tactico.update({ nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, propietarioId });
             await tactico.setResponsables(responsables);
-            await tactico.setObjetivo_tact(objetivoEstrategico);
+            await tactico.setObjetivo_tact(objetivoEstrategico); 
             await tactico.setAreas(areas);
 
-            await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact'] });
+            await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact', 'propietario'] });
 
             res.json({
                 tactico
@@ -155,15 +186,13 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
 
     let where = {};
     
-
-    
     if( year && quarter ) {
         const { startDate, endDate } = getQuarterDates(Number(year), Number(quarter));
 
         where = {
             fechaInicio: { [Op.between]: [startDate.toDate(), endDate.toDate()] }
         }
-    }
+    }    
 
     const includes = [
         {
@@ -186,6 +215,11 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             as: 'objetivo_tact',
             attributes: ['nombre'],
             through: { attributes: [] },
+        },
+        {
+            model: Usuarios,
+            as: 'propietario',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email'],
         }
     ]
 
@@ -240,6 +274,16 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
                     as: 'responsables',
                     through: { attributes: [] },
                 },
+                {
+                    model: Areas,
+                    as: 'areas',
+                    through: { attributes: [] },
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'iniciales'],
+                }
             ]
         });
         res.json({ tacticos });

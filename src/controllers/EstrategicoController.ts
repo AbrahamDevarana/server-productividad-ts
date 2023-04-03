@@ -1,4 +1,4 @@
-import { ObjetivoEstrategico, Perspectivas } from '../models'
+import { ObjetivoEstrategico, Perspectivas, Tacticos } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
@@ -53,9 +53,14 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
 export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'tacticos', 'responsables'] });
-        if (objetivoEstrategico) {
-
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'responsables', 'propietario',
+            {
+                model: Tacticos,
+                as: 'tacticos',
+                include: ['propietario', 'responsables', 'areas']
+            }] });
+        if (objetivoEstrategico) {            
+       
             res.json({
                 objetivoEstrategico
             });
@@ -73,14 +78,14 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
 }
 
 export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, perspectivaId, responsables = [] } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, perspectivaId, responsables = [], propietarioId } = req.body;
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, indicador });
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, indicador, propietarioId });
         await objetivoEstrategico.setPerspectivas(perspectivaId);
         await objetivoEstrategico.setResponsables(responsables);
         await objetivoEstrategico.reload({
-            include: ['perspectivas', 'tacticos', 'responsables']
+            include: ['perspectivas', 'tacticos', 'responsables', 'propietario']
         });
      
         res.json({
@@ -98,7 +103,7 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
@@ -111,7 +116,8 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 fechaFin, 
                 progreso, 
                 indicador,
-                status
+                status,
+                propietarioId
             });
 
             
@@ -125,7 +131,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
      
 
             await objetivoEstrategico.reload({
-                include: ['perspectivas', 'tacticos', 'responsables']
+                include: ['perspectivas', 'tacticos', 'responsables', 'propietario']
             });
 
             res.json({

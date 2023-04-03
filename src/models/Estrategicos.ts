@@ -29,6 +29,10 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         allowNull: true,
         defaultValue: 0
     },
+    propietarioId: {
+        type: Sequelize.UUID,
+        allowNull: true
+    },
     fechaInicio: {
         type: Sequelize.DATE,
         allowNull: true

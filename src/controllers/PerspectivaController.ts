@@ -25,6 +25,11 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                         {
                             model: Tacticos,
                             as: 'tacticos',
+                        },
+                        {
+                            model: Usuarios,
+                            as: 'propietario',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
                         }
                     ],
                     attributes: {
