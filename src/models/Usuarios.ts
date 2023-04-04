@@ -2,6 +2,7 @@ import Sequelize from "sequelize";
 import database from "../config/database";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
+import { UsuarioInterface } from "../interfaces";
 
 export const Usuarios = database.define('usuarios', {
     id: {

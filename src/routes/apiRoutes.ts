@@ -6,6 +6,7 @@ import departamentoRoutes from "./api/departamentosRoutes";
 import perspectivaRoutes from "./api/perspectivasRoutes";
 import estrategicoRoutes from './api/estrategicoRoutes'
 import tacticoRoutes from './api/tacticoRoutes'
+import operativoRoutes from './api/operativosRoutes'
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/departamentos', departamentoRoutes)
 router.use('/perspectivas', perspectivaRoutes)
 router.use('/estrategicos', estrategicoRoutes)
 router.use('/tacticos', tacticoRoutes)
+router.use('/operativos', operativoRoutes)
 
 
 

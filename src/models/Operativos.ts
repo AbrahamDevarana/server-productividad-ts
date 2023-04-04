@@ -20,6 +20,10 @@ export const ObjetivoOperativos = database.define('obj_operativos', {
         type: Sequelize.TEXT,
         allowNull: true
     },
+    tacticoId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+    },
     fechaInicio: {
         type: Sequelize.DATE,
         allowNull: false
@@ -27,10 +31,6 @@ export const ObjetivoOperativos = database.define('obj_operativos', {
     fechaFin: {
         type: Sequelize.DATE,
         allowNull: false
-    },
-    propietarioId: {
-        type: Sequelize.UUID,
-        allowNull: true
     },
     createdAt: {
         type: Sequelize.DATE,
