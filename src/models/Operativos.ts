@@ -28,6 +28,10 @@ export const ObjetivoOperativos = database.define('obj_operativos', {
         type: Sequelize.DATE,
         allowNull: false
     },
+    propietarioId: {
+        type: Sequelize.UUID,
+        allowNull: true
+    },
     fechaFin: {
         type: Sequelize.DATE,
         allowNull: false
@@ -50,6 +54,8 @@ export const ObjetivoOperativos = database.define('obj_operativos', {
             });
 
         }
-
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });

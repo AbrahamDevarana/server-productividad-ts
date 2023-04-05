@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave } from "../models";
 import { Op } from "sequelize";
+
 
 
 
@@ -23,25 +24,26 @@ export const getOperativos = async (req: Request, res: Response) => {
             include: [
                 {
                     model: Usuarios,
-                    as: 'propietario_op',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
+                    as: 'responsables_op',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email'],
                     through: {
                         attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
-                        
-                    },
-                    
+                        as: 'scoreCard'
+                    }
                 },
                 {
                     model: Usuarios,
-                    as: 'responsables_op',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
-                    through: {
-                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
-                    }
+                    as: 'propietario_op',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email'],
                 },
+                {
+                    model: ResultadosClave,
+                    as: 'resultados_clave',
+                    attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
+                }
             ]
         });
-
+      
 
         res.json({ operativos });
     
@@ -73,21 +75,22 @@ export const getProyectos = async (req: Request, res: Response) => {
             include: [
                 {
                     model: Usuarios,
-                    as: 'propietario_op',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
-                    through: {
-                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
-                    },
-                    
-                },
-                {
-                    model: Usuarios,
                     as: 'responsables_op',
                     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
                     through: {
                         attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
                     }
                 },
+                {
+                    model: Usuarios,
+                    as: 'propietario_op',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
+                },
+                {
+                    model: ResultadosClave,
+                    as: 'resultados_clave',
+                    attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
+                }
             ]
         });
 
@@ -120,7 +123,8 @@ export const updateOperativo = async (req: Request, res: Response) => {
             indicador,
             fechaInicio,
             fechaFin,
-            tacticoId
+            tacticoId,
+            leaderId
         });
 
 
@@ -152,7 +156,8 @@ export const createOperativo = async (req: Request, res: Response) => {
             indicador,
             fechaInicio,
             fechaFin,
-            tacticoId
+            tacticoId,
+            leaderId
         });
 
         // @ts-ignore

@@ -45,7 +45,6 @@ export const ResultadosClave = database.define('resultado_clave', {
             resultadoClave.update({
                 updatedAt: Sequelize.NOW
             });
-
         }
     }
 })
