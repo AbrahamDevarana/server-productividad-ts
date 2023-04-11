@@ -1,12 +1,11 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
-import { v4 as uuidv4 } from 'uuid';
 
 export const Tacticos = database.define('tacticos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
-        defaultValue: () => uuidv4()
+        defaultValue: Sequelize.UUIDV4
     },
     nombre: {
         type: Sequelize.STRING,
@@ -20,7 +19,7 @@ export const Tacticos = database.define('tacticos', {
         type: Sequelize.TEXT,
         allowNull: true
     },
-    descripcion: { // Indicador del objetivo
+    indicador: {
         type: Sequelize.TEXT,
         allowNull: true
     },
@@ -29,23 +28,36 @@ export const Tacticos = database.define('tacticos', {
         allowNull: true,
         defaultValue: 0
     },
+    fechaInicio: {
+        type: Sequelize.DATE,
+        allowNull: false
+    },
+    fechaFin: {
+        type: Sequelize.DATE,
+        allowNull: false
+    },
+    trimestres: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+    },
+    objetivoPadre: {
+        type: Sequelize.UUID,
+        allowNull: true,  
+    },
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 1
     },
-    fechaInicio: {
-        type: Sequelize.DATE,
-        allowNull: true
-    },
-    fechaFin: {
-        type: Sequelize.DATE,
+    propietarioId: {
+        type: Sequelize.UUID,
         allowNull: true
     },
     tipoObjetivo: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 1
+        defaultValue: 1 // 1: Táctico, 2: Core
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -54,50 +66,37 @@ export const Tacticos = database.define('tacticos', {
     updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
-    },
-}, {
+    }
+},{
     paranoid: true,
     timestamps: true,
     hooks: {
         beforeUpdate: async (tactico: any) => {
             tactico.updatedAt = new Date();
         },
-        afterCreate(tactico: any) {
-            // console.log('Tactico creado');
-            // comprobar si tiene relacion con un obj_estrategico y si ese obj_estrategico tiene relacion con una perspectiva, si la tiene generar un codigo usando
-            // el codigo de la perspectiva y el codigo del obj_estrategico + el # consecutivo
-            tactico.getObjetivoEstrategico().then((obj_estrategico: any) => {
-                obj_estrategico.getPerspectiva().then((perspectiva: any) => {
-                    if (perspectiva) {
-                        console.log('perspectiva: ', perspectiva);
-                        console.log('obj_estrategico: ', obj_estrategico);
-                        // generar codigo
-                        Tacticos.findAll({
-                            where: {
-                                objetivoEstrategicoId: obj_estrategico.id
-                            }
-                        }).then((tacticos: any) => {
-                            console.log('tacticos: ', tacticos);
-                            let consecutivo = tacticos.length;
-                            let codigo = perspectiva.codigo + obj_estrategico.codigo + consecutivo;
-                            console.log('codigo: ', codigo);
-                            tactico.update({
-                                codigo: codigo
-                            });
-                        });
-                    }
-                });
-            });
+        afterCreate: async (tactico: any) => {
+
         },
+        afterUpdate: async (tactico: any) => {
+            const estrategico = await tactico.getObjetivoEstrategico();
+
+            if(tactico.codigo === null || tactico.codigo === undefined || tactico.codigo === ''){
+                if(estrategico){
+                    const codigoEstrategico = estrategico.codigo;
+                    const numObjetivos = await estrategico.countTacticos();
+                    const codigoTactico = `${codigoEstrategico}-OT${numObjetivos}`;
+                    tactico.codigo = codigoTactico;
+                }else{
+                    const numObjetivos = await Tacticos.count({ where: { ObjetivoEstrategicoId: null }});
+                    const codigoTactico = `C-${numObjetivos + 1}`;
+                    tactico.codigo = codigoTactico;
+                }
+            }
+          
+            await tactico.save();
+        }
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 });
-
-
-
-
-    
-
-

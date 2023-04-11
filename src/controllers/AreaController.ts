@@ -115,5 +115,3 @@ export const deleteArea = async (req: Request, res: Response) => {
         });
     }
 }
-
-

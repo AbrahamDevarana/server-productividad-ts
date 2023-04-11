@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
+import slugify from "slugify";
 
 export const Areas = database.define('areas', {
     id: {
@@ -18,6 +19,10 @@ export const Areas = database.define('areas', {
     },
     leaderId: {
         type: Sequelize.UUID,
+        allowNull: true
+    },
+    slug:{
+        type: Sequelize.STRING,
         allowNull: true
     },
     status: {
@@ -39,6 +44,9 @@ export const Areas = database.define('areas', {
     hooks: {
         beforeUpdate: async (area: any) => {
             area.updatedAt = new Date();
+        },
+        beforeCreate: async (area: any) => {
+            area.slug = slugify(area.nombre, { lower: true });
         }
     }
 });

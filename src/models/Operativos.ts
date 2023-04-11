@@ -2,7 +2,7 @@ import Sequelize from "sequelize";
 import database from "../config/database";
 import { v4 as uuidv4 } from 'uuid';
 
-export const Perspectivas = database.define('perspectivas', {
+export const ObjetivoOperativos = database.define('obj_operativos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -12,27 +12,29 @@ export const Perspectivas = database.define('perspectivas', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    descripcion: {
+    meta: {
         type: Sequelize.TEXT,
         allowNull: true
     },
-    color: {
-        type: Sequelize.STRING,
+    indicador: {
+        type: Sequelize.TEXT,
         allowNull: true
     },
-    icono:{
-        type: Sequelize.STRING,
-        allowNull: true
-    },
-    orden:{
-        type: Sequelize.INTEGER,
+    tacticoId: {
+        type: Sequelize.UUID,
         allowNull: true,
-        unique: 'orden'
     },
-    status: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
+    fechaInicio: {
+        type: Sequelize.DATE,
+        allowNull: false
+    },
+    propietarioId: {
+        type: Sequelize.UUID,
+        allowNull: true
+    },
+    fechaFin: {
+        type: Sequelize.DATE,
+        allowNull: false
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -46,16 +48,14 @@ export const Perspectivas = database.define('perspectivas', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        beforeUpdate: async (perspectiva: any) => {
-            perspectiva.updatedAt = new Date();
+        afterUpdate: (objOperativo, options) => {
+            objOperativo.update({
+                updatedAt: Sequelize.NOW
+            });
+
         }
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 });
-
-
-
-
-        

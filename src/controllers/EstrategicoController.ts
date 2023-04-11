@@ -1,10 +1,10 @@
-import { ObjetivoEstrategico, Perspectivas } from '../models'
-import { Request, Response } from 'express'
+import { ObjetivoEstrategico, Perspectivas, Tacticos } from '../models'
+import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
 
 
-export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
+export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
 
     const {page = 0, size = 5, nombre, fechaInicio, fechaFin, status, idPerspectiva} = req.query;    
     const {limit, offset} = getPagination(Number(page), Number(size));
@@ -21,17 +21,18 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
 
     idPerspectiva && (wherePerspectiva.id = idPerspectiva);
     
-    // id &&  si el id existe en la relacion muchos a muchos
 
     try {
         
         const result = await ObjetivoEstrategico.findAndCountAll({
             include: [{
-                model: Perspectivas,
-                as: 'perspectivas',
-                through: { attributes: [] },
-                where: wherePerspectiva,
-            }],
+                    model: Perspectivas,
+                    as: 'perspectivas',
+                    through: { attributes: [] },
+                    where: wherePerspectiva,
+                },
+                'responsables'
+        ],
             where,
         });
 
@@ -49,12 +50,17 @@ export const getObjetivosEstrategicos = async (req: Request, res: Response) => {
     }
 }
 
-export const getObjetivoEstrategico = async (req: Request, res: Response) => {
+export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas'] });
-        if (objetivoEstrategico) {
-
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'responsables', 'propietario',
+            {
+                model: Tacticos,
+                as: 'tacticos',
+                include: ['propietario', 'responsables', 'areas']
+            }] });
+        if (objetivoEstrategico) {            
+       
             res.json({
                 objetivoEstrategico
             });
@@ -71,15 +77,16 @@ export const getObjetivoEstrategico = async (req: Request, res: Response) => {
     }
 }
 
-export const createObjetivoEstrategico = async (req: Request, res: Response) => {
-    const { nombre, clave, descripcion, fechaInicio, fechaFin, perspectivaId } = req.body;
+export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, perspectivaId, responsables = [], propietarioId } = req.body;
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, clave, descripcion, fechaInicio, fechaFin });
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, indicador, propietarioId });
         await objetivoEstrategico.setPerspectivas(perspectivaId);
-
-
-        await objetivoEstrategico.reload();
+        await objetivoEstrategico.setResponsables(responsables);
+        await objetivoEstrategico.reload({
+            include: ['perspectivas', 'tacticos', 'responsables', 'propietario']
+        });
      
         res.json({
             objetivoEstrategico,
@@ -94,14 +101,39 @@ export const createObjetivoEstrategico = async (req: Request, res: Response) => 
     }
 }
 
-export const updateObjetivoEstrategico = async (req: Request, res: Response) => {
+export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, clave, descripcion, fechaInicio, fechaFin } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
-            await objetivoEstrategico.update({ nombre, clave, descripcion, fechaInicio, fechaFin });
+            await objetivoEstrategico.update({ 
+                nombre,
+                codigo, 
+                descripcion, 
+                fechaInicio, 
+                fechaFin, 
+                progreso, 
+                indicador,
+                status,
+                propietarioId
+            });
+
+            
+            if (perspectivaId) {
+                await objetivoEstrategico.setPerspectivas(perspectivaId);
+            }
+
+            if (responsables.length > 0) {
+                await objetivoEstrategico.setResponsables(responsables);
+            }
+     
+
+            await objetivoEstrategico.reload({
+                include: ['perspectivas', 'tacticos', 'responsables', 'propietario']
+            });
+
             res.json({
                 objetivoEstrategico
             });
@@ -118,7 +150,7 @@ export const updateObjetivoEstrategico = async (req: Request, res: Response) => 
     }
 }
 
-export const deleteObjetivoEstrategico = async (req: Request, res: Response) => {
+export const deleteObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
@@ -140,7 +172,7 @@ export const deleteObjetivoEstrategico = async (req: Request, res: Response) => 
     }
 }
 
-export const getObjetivosEstrategicoByPerspectiva = async (req: Request, res: Response) => {
+export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findAll({ 
