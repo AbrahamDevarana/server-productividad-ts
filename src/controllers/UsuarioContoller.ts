@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
+import formidable, { Files, Fields } from 'formidable';
+import { uploadFiles } from "../helpers/uploadFIles";
 
 export const getUsuarios = async (req: Request, res: Response) => {
    
@@ -171,3 +173,53 @@ export const deleteUsuario = async (req: Request, res: Response) => {
     }
 }   
 
+export const uploadPhoto = async (req: Request, res: Response) => {
+
+
+    
+    const form = formidable ({ multiples: true });
+    const {id } = req.params;
+
+    form.parse(req, async (err: Error, fields: Fields, files: Files) => {
+
+        if (err) {
+            console.error(err);
+            res.status(500).send(err);
+            return;
+        }
+       
+      
+        const galeria = Object.values(files)
+
+        try {
+            const usuario = await Usuarios.findByPk(id);
+
+            if (!usuario) {
+                return res.status(404).json({
+                    msg: 'No existe un usuario con el id ' + id
+                });
+            }
+
+            const result = await uploadFiles(galeria, 'profile-picture' );
+
+            if(result.length > 0){
+                await usuario.update({ foto: result[0].url });
+            }
+             
+            res.json({
+                ok: true,
+                status: 200,
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                msg: 'Hable con el administrador'
+            });
+        }
+    })
+
+    
+        
+
+}

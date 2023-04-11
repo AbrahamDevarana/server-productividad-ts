@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { getUsuario, getUsuarios, createUsuario, updateUsuario, deleteUsuario } from '../../controllers/UsuarioContoller';
+import { getUsuario, getUsuarios, createUsuario, updateUsuario, deleteUsuario, uploadPhoto } from '../../controllers/UsuarioContoller';
 import { validarCampos } from '../../middleware/validateFields';
 const router = Router();
 
@@ -22,6 +22,8 @@ router.put('/:id', [
     validarCampos
 ], updateUsuario);
 router.delete('/:id', deleteUsuario);
+
+router.post('/upload/:id', uploadPhoto);
 
 
 export default router;
