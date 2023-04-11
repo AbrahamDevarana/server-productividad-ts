@@ -24,9 +24,6 @@ const uploadFiles = async (files: any, folder: string): Promise<any[]> => {
     return new Promise( async (resolve, reject) => {
         await Promise.all(files.map(async (file: any) => {
 
-            
-                console.log(file.type);
-                
 
                 let bufferedFile: any = file.filepath
             
@@ -66,7 +63,31 @@ const uploadFiles = async (files: any, folder: string): Promise<any[]> => {
     });
 }
 
+
+const deleteFile = async (files: any[]): Promise<boolean> => {
+
+    return new Promise( async (resolve, reject) => {
+        await Promise.all(files.map(async (item) => {
+            const deleteParams = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: item
+            }
+            const data = await s3Client.send(new DeleteObjectCommand(deleteParams))
+            if(data) {
+                console.log('deleted');
+            }else{
+                reject('error')
+            }
+        })).catch( (err) => {
+            console.log(err);
+            reject(err)
+        })
+        resolve(true);
+    })
+}
+
 export {
-    uploadFiles
+    uploadFiles,
+    deleteFile
 };
 

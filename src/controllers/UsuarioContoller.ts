@@ -5,7 +5,7 @@ import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
-import { uploadFiles } from "../helpers/uploadFIles";
+import { deleteFile, uploadFiles } from "../helpers/fileManagment";
 
 export const getUsuarios = async (req: Request, res: Response) => {
    
@@ -221,5 +221,46 @@ export const uploadPhoto = async (req: Request, res: Response) => {
 
     
         
+
+}
+
+export const deletePhoto = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+
+    try {
+        const usuario = await Usuarios.findByPk(id);
+
+        if (!usuario) {
+            return res.status(404).json({
+                msg: 'No existe un usuario con el id ' + id
+            });
+        }
+
+        const photoDelete = usuario.foto;
+        
+        const result = await usuario.update({ foto: null });
+
+        if(result){
+            const responseDelete = await deleteFile([photoDelete]);
+
+            if(!responseDelete){
+                return res.status(500).json({
+                    msg: 'No se pudo eliminar la imagen'
+                });
+            }
+        }
+        
+        res.json({
+            ok: true,
+            status: 200,
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
 
 }
