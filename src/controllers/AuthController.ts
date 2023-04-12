@@ -54,11 +54,14 @@ const sessionValidate = async (req: Request, res: Response) => {
                   res.status(401).json({ msg: 'Token no valido' });
                 } else {
                     if (decoded) {
-                        const usuario = await Usuarios.findOne({ where: { id: decoded.id } });
+                        const usuario = await Usuarios.findOne({ 
+                            where: { id: decoded.id },
+                            attributes: ['id','nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'iniciales']
+                        });
                         if (!usuario) {
                             res.status(401).json({ message: 'No has iniciado sesión', ok: false })
                         }else{
-                            res.status(200).json({ message: 'Has iniciado sesión correctamente', ok: true, accessToken: token})
+                            res.status(200).json({ message: 'Has iniciado sesión correctamente', ok: true, accessToken: token, usuario})
                         }
                     }else{
                         res.status(401).json({ message: 'No has iniciado sesión', ok: false })

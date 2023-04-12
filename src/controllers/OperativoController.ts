@@ -5,14 +5,28 @@ import { Op } from "sequelize";
 
 
 
-export const getOperativos = async (req: Request, res: Response) => {
+
+export const getOperativos = async (req:any, res: Response) => {
 
     const { tacticoId } = req.params;
     const {} = req.body;
-
+    
     let where: any = {}
+    
 
     tacticoId && (where.tacticoId = tacticoId);
+    
+
+
+    // meter al where
+
+    if (true){
+        where[Op.or] = [
+            { propietarioId: req.user.id },
+            { '$responsables_op.id$': req.user.id }
+        ]
+
+    }
 
     try {
         const operativos = await ObjetivoOperativos.findAll({
@@ -25,23 +39,24 @@ export const getOperativos = async (req: Request, res: Response) => {
                 {
                     model: Usuarios,
                     as: 'responsables_op',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
                     through: {
                         attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
                         as: 'scoreCard'
-                    }
+                    },
                 },
                 {
                     model: Usuarios,
                     as: 'propietario_op',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
                 },
                 {
                     model: ResultadosClave,
                     as: 'resultados_clave',
                     attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
                 }
-            ]
+            ],
+            logging: console.log
         });
       
 
@@ -146,10 +161,14 @@ export const updateOperativo = async (req: Request, res: Response) => {
 }
 
 export const createOperativo = async (req: Request, res: Response) => {
-    const { nombre, meta, indicador, fechaInicio, fechaFin, participantes = [] , leaderId = '', tacticoId } = req.body;
 
+    
+    const { nombre, meta, indicador, fechaInicio, fechaFin, responsables_op = [] , propietarioId = '', tacticoId } = req.body;
+
+    const participantesIds = responsables_op.map((responsable: any) => responsable.id);
 
     try {
+
         const operativo = await ObjetivoOperativos.create({
             nombre,
             meta,
@@ -157,13 +176,16 @@ export const createOperativo = async (req: Request, res: Response) => {
             fechaInicio,
             fechaFin,
             tacticoId,
-            leaderId
+            propietarioId,
         });
 
+        
         // @ts-ignore
-        await operativo.setResponsables_op(participantes);
-        // @ts-ignore
-        await operativo.setPropietario_op(leaderId);
+        await operativo.setResponsables_op(participantesIds);
+        await operativo.reload( { include: 
+        ['responsables_op', 'propietario_op', 'resultados_clave']
+     } );
+       
 
         res.json(operativo);
     

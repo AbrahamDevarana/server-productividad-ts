@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Usuarios } from '../models';
 import { Request, Response, NextFunction } from 'express';
 
+
 export default async (req: Request, res: Response, next: NextFunction) => {    
     const token = req.header('accessToken')
     if (!token) {
@@ -20,6 +21,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         return res.status(401).json({ message: 'No has iniciado sesión' })
                     }else{
                         req.body.id = decoded.id;
+                        req.user = usuario.dataValues;
                         next();
                     }
                 }else{

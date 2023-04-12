@@ -29,7 +29,13 @@ const uploadFiles = async (files: any, folder: string): Promise<any[]> => {
             
                 if(file.mimetype.includes('image')){
                     const tinified = tinify.fromFile(file.filepath);
-                    bufferedFile = await tinified.toBuffer();
+                    // crop
+                    const croppedAndTinified = tinified.resize({
+                        method: "scale",
+                        width: 500,
+                    });
+
+                    bufferedFile = await croppedAndTinified.toBuffer();
                 }else{
                     bufferedFile = fs.readFileSync(file.filepath);
                 }
