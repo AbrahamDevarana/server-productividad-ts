@@ -65,7 +65,7 @@ export const createDepartamento = async (req: Request, res: Response) => {
 
 
         departamento.reload({
-            include: ['area', 'usuarios']
+            include: ['area', 'usuarios', 'leader']
         });        
 
         res.json({
@@ -86,7 +86,7 @@ export const updateDepartamento = async (req: Request, res: Response) => {
 
     try {
         const departamento = await Departamentos.findByPk(id, {
-            include: ['area', 'leader']
+            include: ['area', 'leader', 'usuarios']
         });
 
         if (departamento) {

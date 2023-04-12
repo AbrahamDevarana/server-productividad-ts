@@ -28,12 +28,15 @@ export const getResultadosClave = async (req: Request, res: Response) => {
 }
 
 export const createResultadosClave = async (req: Request, res: Response) => {
-    const { nombre, descripcion, propietarioId, operativoId, status } = req.body;
+    const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin } = req.body;
 
     try {
         const resultadoClave = await ResultadosClave.create({
             nombre,
-            descripcion,
+            progreso,
+            tipoProgreso,
+            fechaInicio,
+            fechaFin,
             propietarioId,
             operativoId,
             status

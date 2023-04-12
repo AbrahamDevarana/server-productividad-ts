@@ -122,10 +122,10 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 });
             }
 
-            const formatFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD HH:mm:ss') : null;
-            const formatFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD HH:mm:ss') : null;
+            // const formatFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD HH:mm:ss') : null;
+            // const formatFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD HH:mm:ss') : null;
             
-            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento:formatFechaNacimiento, fechaIngreso:formatFechaIngreso });            
+            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento, fechaIngreso });            
 
             if(direccion){
 

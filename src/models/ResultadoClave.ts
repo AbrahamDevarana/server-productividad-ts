@@ -17,8 +17,9 @@ export const ResultadosClave = database.define('resultado_clave', {
         defaultValue: 0
     },
     tipoProgreso:{
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: true,
+        defaultValue: 'porcentaje'
     },
     fechaInicio: {
         type: Sequelize.DATE,
@@ -29,6 +30,10 @@ export const ResultadosClave = database.define('resultado_clave', {
         allowNull: true
     },
     operativoId: {
+        type: Sequelize.UUID,
+        allowNull: false
+    },
+    propietarioId: {
         type: Sequelize.UUID,
         allowNull: false
     },

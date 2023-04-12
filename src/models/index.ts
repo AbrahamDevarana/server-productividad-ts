@@ -48,6 +48,7 @@ Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' })
 // Resultados Clave
 ResultadosClave.belongsTo(ObjetivoOperativos, { as: 'operativo', foreignKey: 'operativoId' });
 ObjetivoOperativos.hasMany(ResultadosClave, { as: 'resultados_clave', foreignKey: 'operativoId' });
+ResultadosClave.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 
 
 // Perspectivas - Objetivo Estratégico
