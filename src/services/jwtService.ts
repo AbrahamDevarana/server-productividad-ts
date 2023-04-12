@@ -11,7 +11,7 @@ export const createAccessToken = (usuario: any) => {
         apellidoPaterno:usuario.lastName,
         apellidoMaterno:usuario.apellidoMaterno,
         email:usuario.email,
-        picture:usuario.picture,
+        foto: usuario.foto,
         expiresIn: moment().add(7, 'days').unix(),
     }
     return jwt.sign(payload, JWT_SECRET);

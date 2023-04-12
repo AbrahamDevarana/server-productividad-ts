@@ -1,11 +1,9 @@
 import { createAccessToken, createRefreshToken, decodeToken, willExpireToken } from '../services/jwtService';
-import moment from 'moment';
 import jwt from 'jsonwebtoken';
 import { Usuarios } from '../models';
 import { Request, Response } from "express";
 
 const getAccessToken = async (req: Request, res: Response) => {
-    
     if (req.user) {
         const accessToken = createAccessToken(req.user);
         const refreshToken = createRefreshToken(req.user);
