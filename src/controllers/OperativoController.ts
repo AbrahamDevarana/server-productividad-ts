@@ -221,3 +221,48 @@ export const deleteOperativo = async (req: Request, res: Response) => {
         });
     }
 }
+
+
+export const getObjetivo = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const objetivo = await ObjetivoOperativos.findByPk(id, {
+            include: [
+                {
+                    model: Usuarios,
+                    as: 'responsables_op',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
+                    through: {
+                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
+                        as: 'scoreCard'
+                    },
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario_op',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
+                },
+                {
+                    model: ResultadosClave,
+                    as: 'resultados_clave',
+                    attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
+                }
+            ]
+        });
+        if (!objetivo) {
+            return res.status(404).json({
+                msg: `No existe un operativo con el id ${id}`
+            });
+        }
+
+        res.json(objetivo);
+    
+    } catch (error) {
+        console.log(error);
+        
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}

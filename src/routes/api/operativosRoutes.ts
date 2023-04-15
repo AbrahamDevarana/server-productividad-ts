@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { getOperativos, createOperativo, updateOperativo, getProyectos } from '../../controllers/OperativoController'
+import { getOperativos, createOperativo, updateOperativo, getProyectos, getObjetivo } from '../../controllers/OperativoController'
 
 const router = Router();
 
@@ -9,6 +9,8 @@ const router = Router();
 
 router.get('/operativos', getOperativos);
 router.get('/proyectos', getProyectos);
+
+router.get('/:id', getObjetivo);
 
 
 

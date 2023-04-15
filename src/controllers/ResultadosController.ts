@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { ResultadosClave } from "../models";
-import { Op } from "sequelize";
-
 
 export const getResultadosClave = async (req: Request, res: Response) => {
     const {  } = req.params;
@@ -26,6 +24,27 @@ export const getResultadosClave = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getResultadoClave = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const resultado = await ResultadosClave.findByPk(id);
+        
+        if (!resultado) {
+            return res.status(404).json({
+                msg: 'No existe un resultado clave con el id ' + id
+            });
+        }
+
+        res.json({ resultado });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: 'Hable con el administrador' });
+    }
+}
+
 
 export const createResultadosClave = async (req: Request, res: Response) => {
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin } = req.body;
@@ -55,20 +74,20 @@ export const createResultadosClave = async (req: Request, res: Response) => {
 
 export const updateResultadosClave = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, descripcion, propietarioId, operativoId, status } = req.body;
+    const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin} = req.body;
 
     try {
-        const resultadoClave = await ResultadosClave.findByPk(id);
+        const resultado = await ResultadosClave.findByPk(id);
 
-        if (!resultadoClave) {
+        if (!resultado) {
             return res.status(404).json({
                 msg: 'No existe un resultado clave con el id ' + id
             });
         }
 
-        await resultadoClave.update({ nombre, descripcion, propietarioId, operativoId, status });
+        await resultado.update({ nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin  });
 
-        res.json({ resultadoClave });
+        res.json({ resultado });
     }
     catch (error) {
         console.log(error);
