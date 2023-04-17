@@ -20,7 +20,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                         {
                             model: Usuarios,
                             as: 'responsables',
-                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                         },
                         {
                             model: Tacticos,
@@ -29,7 +29,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                         {
                             model: Usuarios,
                             as: 'propietario',
-                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales'],
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                         }
                     ],
                     attributes: {

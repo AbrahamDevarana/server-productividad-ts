@@ -37,7 +37,7 @@ export const getTacticos = async (req: Request, res: Response) => {
             {
                 model: Usuarios,
                 as: 'propietario',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email'],
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
             }
         ]
         });
@@ -205,7 +205,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
         {
             model: Usuarios,
             as: 'responsables',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email'],
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
             through: {
                 attributes: []
             },
@@ -219,7 +219,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
         {
             model: Usuarios,
             as: 'propietario',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email'],
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
         }
     ]
 
@@ -282,7 +282,7 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
                 {
                     model: Usuarios,
                     as: 'propietario',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'iniciales'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'iniciales', 'foto'],
                 }
             ]
         });
