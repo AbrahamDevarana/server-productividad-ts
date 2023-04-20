@@ -57,7 +57,7 @@ export const getTacticos = async (req: Request, res: Response) => {
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'objetivo_tact', 'propietario'] });
+        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'propietario', 'estrategico'] });
         if (tactico) {
 
             res.json({
@@ -77,13 +77,15 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [], propietarioId } = req.body;
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, responsables = [], areas = [], estrategicoId, propietarioId } = req.body;
 
     try {
-
         const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);
+        
+
+        
         let arrayTactico = []
-        for (let i = 0; i < trimestres; i++) {
+        for (let i = 0; i < trimestres+1; i++) {
             const fechaInicioTrimestre = dayjs(fechaInicio).add(i*3, 'month').format('YYYY-MM-DD') + ' 00:01:00';
             const fechaFinTrimestre = i < trimestres - 1 ? dayjs(fechaInicio).add((i+1)*3, 'month').subtract(1, 'day').format('YYYY-MM-DD') : fechaFin;
             
@@ -94,25 +96,22 @@ export const createTactico = async (req: Request, res: Response) => {
                 meta, 
                 indicador, 
                 fechaInicio: fechaInicioTrimestre,
-                fechaFin: fechaFinTrimestre, 
-                tipoObjetivo, 
-                status, 
+                fechaFin: fechaFinTrimestre,
                 propietarioId, 
+                estrategicoId,
                 trimestres: i+1,
             });
-            arrayTactico.push(tactico);
             
             await tactico.setResponsables(responsables);
-            await tactico.setObjetivo_tact(objetivoEstrategico);
             await tactico.setAreas(areas);
-            await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact', 'propietario'] });
-
+            await tactico.reload({ include: ['responsables', 'areas', 'propietario'] });
+            
+            arrayTactico.push(tactico);
                 
             if ( i > 0 ) {
                 await Tacticos.update({ objetivoPadre: arrayTactico[0].id }, { where: { id: arrayTactico[i].id } });
             }
         }
-
 
         res.json({
             tactico: arrayTactico[0]
@@ -193,6 +192,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             fechaInicio: { [Op.between]: [startDate.toDate(), endDate.toDate()] }
         }
     }    
+    
 
     const includes = [
         {
@@ -211,15 +211,13 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             },
         },
         {
-            model: ObjetivoEstrategico,
-            as: 'objetivo_tact',
-            attributes: ['nombre'],
-            through: { attributes: [] },
-        },
-        {
             model: Usuarios,
             as: 'propietario',
             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+        },
+        {
+            model: ObjetivoEstrategico,
+            as: 'estrategico',
         }
     ]
 
@@ -229,7 +227,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             include: includes,
             where: {
                 ...where,
-                tipoObjetivo: 1
+                [Op.not]: { estrategicoId: null }
             }
         });
 
@@ -237,9 +235,8 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             include: includes,
             where: {
                 ...where,
-                tipoObjetivo: 2
+                estrategicoId: null
             },
-            logging: console.log
         });
 
 
@@ -265,8 +262,7 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
             include: [
                 {
                     model: ObjetivoEstrategico,
-                    as: 'objetivo_tact',
-                    through: { attributes: [] },
+                    as: 'estrategico',
                     where: { id: estrategiaId }
                 },
                 {

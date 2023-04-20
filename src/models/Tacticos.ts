@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 
-export const Tacticos = database.define('tacticos', {
+export const Tacticos = database.define('obj_tacticos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -23,7 +23,7 @@ export const Tacticos = database.define('tacticos', {
         type: Sequelize.TEXT,
         allowNull: true
     },
-    progreso: {
+    progreso: { // avance
         type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: 0
@@ -36,12 +36,25 @@ export const Tacticos = database.define('tacticos', {
         type: Sequelize.DATE,
         allowNull: false
     },
+    propietarioId: {
+        type: Sequelize.UUID,
+        allowNull: true
+    },
+    estrategicoId: {
+        type: Sequelize.UUID,
+        allowNull: true
+    },
+    tipoProgreso: {
+        type: Sequelize.INTEGER,
+        defaultValue: 1
+    },
+
     trimestres: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 1
     },
-    objetivoPadre: {
+    objetivoPadre: { // Objetivo Táctico Dividido por Trimestres 
         type: Sequelize.UUID,
         allowNull: true,  
     },
@@ -49,15 +62,6 @@ export const Tacticos = database.define('tacticos', {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 1
-    },
-    propietarioId: {
-        type: Sequelize.UUID,
-        allowNull: true
-    },
-    tipoObjetivo: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 1 // 1: Táctico, 2: Core
     },
     createdAt: {
         type: Sequelize.DATE,

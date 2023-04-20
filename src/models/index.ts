@@ -39,11 +39,19 @@ Departamentos.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
 Departamentos.hasMany(Usuarios, { as: 'usuarios', foreignKey: 'departamentoId' });
 Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 
+// Perspectivas
+Perspectivas.hasMany(ObjetivoEstrategico, { as: 'objetivos_estrategicos', foreignKey: 'perspectivaId' });
+
 // Objetivo Estrategico
 ObjetivoEstrategico.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+ObjetivoEstrategico.hasMany(Tacticos, { as: 'tacticos', foreignKey: 'estrategicoId' });
+ObjetivoEstrategico.belongsTo(Perspectivas, { as: 'perspectivas', foreignKey: 'perspectivaId' });
 
 // Tacticos
 Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+Tacticos.belongsTo(ObjetivoEstrategico, { as: 'estrategico', foreignKey: 'estrategicoId' });
+
+// Objetivo Operativo
 
 // Resultados Clave
 ResultadosClave.belongsTo(ObjetivoOperativos, { as: 'operativo', foreignKey: 'operativoId' });
@@ -51,10 +59,12 @@ ObjetivoOperativos.hasMany(ResultadosClave, { as: 'resultados_clave', foreignKey
 ResultadosClave.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 
 
+
+
+
+
 // Perspectivas - Objetivo Estratégico
-ObjetivoEstrategico.belongsToMany(Perspectivas, { as: 'perspectivas', through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
-// Objetivo Estratégico - Tacticos
-ObjetivoEstrategico.belongsToMany(Tacticos, { as: 'tacticos', through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
+
 // Objetivo Estratégico - Usuarios
 ObjetivoEstrategico.belongsToMany(Usuarios, { as: 'responsables', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
 
@@ -67,7 +77,7 @@ ObjetivoOperativos.belongsTo(Tacticos, { as: 'tactico_operativo', foreignKey: 't
 Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr',  through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'perspectivaId' });
 
 // Tacticos - Objetivo Estratégico
-Tacticos.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_tact',  through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
+
 // Tacticos - Usuarios
 Tacticos.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
@@ -95,6 +105,12 @@ Acciones.belongsTo(ResultadosClave, { as: 'accion_resultado', foreignKey: 'resul
 
 
 
+//TODO: Remover
+
+//* ObjetivoEstrategico.belongsToMany(Perspectivas, { as: 'perspectivas', through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
+//* ObjetivoEstrategico.belongsToMany(Tacticos, { as: 'tacticos', through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
+//* Tacticos.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_tact',  through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
+
 
 export {
     Usuarios,
@@ -109,8 +125,8 @@ export {
     Acciones,
 
     // Pivot tables
+    // PivotEstrTact,
     PivotPerspEstr,
-    PivotEstrTact,
     PivotRespTact,
     PivotAreaTactico,
     PivotEstrResp,

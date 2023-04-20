@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ResultadosClave } from "../models";
-
+ 
 export const getResultadosClave = async (req: Request, res: Response) => {
     const {  } = req.params;
 
@@ -44,7 +44,6 @@ export const getResultadoClave = async (req: Request, res: Response) => {
         res.status(500).json({ msg: 'Hable con el administrador' });
     }
 }
-
 
 export const createResultadosClave = async (req: Request, res: Response) => {
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin } = req.body;

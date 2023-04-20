@@ -1,10 +1,11 @@
-import { ObjetivoEstrategico, Perspectivas, Tacticos } from '../models'
+import { ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
 
 
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
+    
 
     const {page = 0, size = 5, nombre, fechaInicio, fechaFin, status, idPerspectiva} = req.query;    
     const {limit, offset} = getPagination(Number(page), Number(size));
@@ -28,7 +29,6 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
             include: [{
                     model: Perspectivas,
                     as: 'perspectivas',
-                    through: { attributes: [] },
                     where: wherePerspectiva,
                 },
                 'responsables'
@@ -53,12 +53,31 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
 export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { include: ['perspectivas', 'responsables', 'propietario',
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { 
+        include: [
             {
                 model: Tacticos,
                 as: 'tacticos',
                 include: ['propietario', 'responsables', 'areas']
-            }] });
+            },
+            {
+                model: Usuarios,
+                as: 'responsables',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                through: { attributes: [] }
+            },
+            {
+                model: Usuarios,
+                as: 'propietario',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+            },
+            {
+                model: Perspectivas,
+                as: 'perspectivas',
+                attributes: ['id', 'nombre', 'icono', 'color', 'status'],
+            }
+
+        ]});
         if (objetivoEstrategico) {            
        
             res.json({

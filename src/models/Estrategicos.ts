@@ -41,6 +41,10 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         type: Sequelize.DATE,
         allowNull: true
     },
+    perspectivaId: {
+        type: Sequelize.UUID,
+        allowNull: true
+    },
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,
