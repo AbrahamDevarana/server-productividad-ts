@@ -6,6 +6,9 @@ import { Perspectivas } from './Perspectivas';
 import { ObjetivoEstrategico } from './Estrategicos';
 import { Tacticos } from './Tacticos';
 import { ObjetivoOperativos } from './Operativos';
+import { Acciones } from './Acciones';
+import { ResultadosClave } from './ResultadoClave';
+import { Proyectos } from './Proyectos';
 
 
 
@@ -16,8 +19,6 @@ import { PivotRespTact } from './pivot/PivotResponsablesTactico';
 import { PivotAreaTactico } from './pivot/PivotAreaTactico';
 import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 import { PivotOpUsuario } from './pivot/PivotOperativoUsuario';
-import { ResultadosClave } from './ResultadoClave';
-import { Acciones } from './Acciones';
 
 
 
@@ -105,14 +106,6 @@ Acciones.belongsTo(ResultadosClave, { as: 'accion_resultado', foreignKey: 'resul
 
 
 
-
-//TODO: Remover
-
-//* ObjetivoEstrategico.belongsToMany(Perspectivas, { as: 'perspectivas', through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
-//* ObjetivoEstrategico.belongsToMany(Tacticos, { as: 'tacticos', through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
-//* Tacticos.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_tact',  through: PivotEstrTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
-
-
 export {
     Usuarios,
     Areas,
@@ -124,9 +117,9 @@ export {
     ObjetivoOperativos,
     ResultadosClave,
     Acciones,
+    Proyectos,
 
-    // Pivot tables
-    // PivotEstrTact,
+    
     PivotPerspEstr,
     PivotRespTact,
     PivotAreaTactico,

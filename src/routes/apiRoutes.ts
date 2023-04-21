@@ -9,6 +9,7 @@ import tacticoRoutes from './api/tacticoRoutes'
 import operativoRoutes from './api/operativosRoutes'
 import accionesRoutes from './api/accionesRoutes'
 import resultadosRoutes from './api/resultadosRoutes'
+import proyectosRoutes from './api/proyectosRoute'
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use('/tacticos', tacticoRoutes)
 router.use('/operativos', operativoRoutes)
 router.use('/acciones', accionesRoutes)
 router.use('/resultados', resultadosRoutes)
+router.use('/proyectos', proyectosRoutes)
 
 
 
