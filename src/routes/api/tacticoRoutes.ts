@@ -10,14 +10,12 @@ router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('fechaInicio', 'La fecha de inicio es obligatoria').not().isEmpty(),
     check('fechaFin', 'La fecha de fin es obligatoria').not().isEmpty(),
-    check('tipoObjetivo', 'El tipo de objetivo es obligatorio').not().isEmpty(),
     validarCampos
 ], createTactico);
 router.put('/:id', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('fechaInicio', 'La fecha de inicio es obligatoria').not().isEmpty(),
     check('fechaFin', 'La fecha de fin es obligatoria').not().isEmpty(),
-    check('tipoObjetivo', 'El tipo de objetivo es obligatorio').not().isEmpty(),
     validarCampos
 ], updateTactico);
 

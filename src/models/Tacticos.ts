@@ -82,22 +82,7 @@ export const Tacticos = database.define('obj_tacticos', {
 
         },
         afterUpdate: async (tactico: any) => {
-            const estrategico = await tactico.getObjetivoEstrategico();
-
-            if(tactico.codigo === null || tactico.codigo === undefined || tactico.codigo === ''){
-                if(estrategico){
-                    const codigoEstrategico = estrategico.codigo;
-                    const numObjetivos = await estrategico.countTacticos();
-                    const codigoTactico = `${codigoEstrategico}-OT${numObjetivos}`;
-                    tactico.codigo = codigoTactico;
-                }else{
-                    const numObjetivos = await Tacticos.count({ where: { ObjetivoEstrategicoId: null }});
-                    const codigoTactico = `C-${numObjetivos + 1}`;
-                    tactico.codigo = codigoTactico;
-                }
-            }
-          
-            await tactico.save();
+           
         }
     },
     defaultScope: {

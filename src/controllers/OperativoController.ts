@@ -3,9 +3,6 @@ import { ObjetivoOperativos, Usuarios, ResultadosClave } from "../models";
 import { Op } from "sequelize";
 
 
-
-
-
 export const getOperativos = async (req:any, res: Response) => {
 
     const { tacticoId } = req.params;
@@ -13,11 +10,8 @@ export const getOperativos = async (req:any, res: Response) => {
     
     let where: any = {}
     
-
     tacticoId && (where.tacticoId = tacticoId);
     
-
-
     // meter al where
 
     if (true){
@@ -122,12 +116,9 @@ export const getProyectos = async (req: Request, res: Response) => {
 
 export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
+
     const { nombre, meta, indicador, fechaInicio, fechaFin, responsables_op = [] , propietarioId = '', tacticoId, status } = req.body;
-
     const participantesIds = responsables_op.map((responsable: any) => responsable.id);
-
-    console.log(req.body);
-    
 
     try {
         const operativo = await ObjetivoOperativos.findByPk(id);
@@ -168,10 +159,8 @@ export const updateOperativo = async (req: Request, res: Response) => {
 }
 
 export const createOperativo = async (req: Request, res: Response) => {
-
     
     const { nombre, meta, indicador, fechaInicio, fechaFin, responsables_op = [] , propietarioId = '', tacticoId } = req.body;
-
     const participantesIds = responsables_op.map((responsable: any) => responsable.id);
 
     try {

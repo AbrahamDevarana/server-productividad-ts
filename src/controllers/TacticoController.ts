@@ -77,13 +77,11 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, responsables = [], areas = [], estrategicoId, propietarioId } = req.body;
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, responsablesArray = [], areasArray = [], estrategicoId = null, propietarioId } = req.body;
 
     try {
-        const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);
-        
+        const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);        
 
-        
         let arrayTactico = []
         for (let i = 0; i < trimestres+1; i++) {
             const fechaInicioTrimestre = dayjs(fechaInicio).add(i*3, 'month').format('YYYY-MM-DD') + ' 00:01:00';
@@ -98,13 +96,13 @@ export const createTactico = async (req: Request, res: Response) => {
                 fechaInicio: fechaInicioTrimestre,
                 fechaFin: fechaFinTrimestre,
                 propietarioId, 
-                estrategicoId,
+                estrategicoId: estrategicoId ? estrategicoId : null,
                 trimestres: i+1,
             });
             
-            await tactico.setResponsables(responsables);
-            await tactico.setAreas(areas);
-            await tactico.reload({ include: ['responsables', 'areas', 'propietario'] });
+            await tactico.setResponsables(responsablesArray);
+            await tactico.setAreas(areasArray);
+            await tactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
             
             arrayTactico.push(tactico);
                 
@@ -114,7 +112,7 @@ export const createTactico = async (req: Request, res: Response) => {
         }
 
         res.json({
-            tactico: arrayTactico[0]
+            objetivo: arrayTactico[0]
         });
         
     } catch (error) {
@@ -127,20 +125,29 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, responsables = [], areas = [], objetivoEstrategico = [], propietarioId} = req.body;
+    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin,  status, responsablesArray = [], areasArray = [], propietarioId, estrategicoId} = req.body;
+    
 
     try {
-        const tactico = await Tacticos.findByPk(id);
-        if (tactico) {
-            await tactico.update({ nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoObjetivo, status, propietarioId });
-            await tactico.setResponsables(responsables);
-            await tactico.setObjetivo_tact(objetivoEstrategico); 
-            await tactico.setAreas(areas);
+        const objetivo = await Tacticos.findByPk(id);
+        if (objetivo) {
+            await objetivo.update({ 
+                nombre, 
+                codigo, 
+                meta, 
+                indicador, 
+                fechaInicio, 
+                fechaFin, 
+                estrategicoId: estrategicoId ? estrategicoId : null, 
+                status, 
+                propietarioId });
+            await objetivo.setResponsables(responsablesArray);
+            await objetivo.setAreas(areasArray);
 
-            await tactico.reload({ include: ['responsables', 'areas', 'objetivo_tact', 'propietario'] });
+            await objetivo.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
 
             res.json({
-                tactico
+                objetivo
             });
         } else {
             res.status(404).json({

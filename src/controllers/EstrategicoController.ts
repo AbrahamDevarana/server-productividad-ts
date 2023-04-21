@@ -18,11 +18,8 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
     fechaFin && (where.fechaFin = { [Op.lte]: fechaFin });
 
     status && (where.status = status);
-
-
     idPerspectiva && (wherePerspectiva.id = idPerspectiva);
     
-
     try {
         
         const result = await ObjetivoEstrategico.findAndCountAll({
@@ -123,7 +120,7 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
-   
+       
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
@@ -145,7 +142,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 await objetivoEstrategico.setPerspectivas(perspectivaId);
             }
 
-            if (responsables.length > 0) {
+            if (responsables.length > 0) {               
                 await objetivoEstrategico.setResponsables(responsables);
             }
      
