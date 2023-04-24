@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Sequelize } from "sequelize";
-import { Proyectos } from "../models";
+import { Acciones, Proyectos, Hitos, Usuarios } from "../models";
 
 
 export const getProyectos = async (req: Request, res: Response) => {
@@ -12,9 +12,6 @@ export const getProyectos = async (req: Request, res: Response) => {
         const proyectos = await Proyectos.findAll({
             where,
         });       
-
-        console.log(proyectos);
-        
 
         res.json({ proyectos });
 
@@ -34,8 +31,24 @@ export const getProyecto = async (req: Request, res: Response) => {
     
             const proyecto = await Proyectos.findOne({
                 where,
+                include: [{
+                    model: Hitos,
+                    as: 'proyectos_hitos',
+                    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+                    include: [{
+                        as: 'hitos_acciones',
+                        model: Acciones,
+                        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+                        through: { attributes: [] },
+                        include: [{
+                            as: 'propietario',
+                            model: Usuarios,
+                            attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+                        }]
+                    }]
+                }],
             });       
-    
+
             res.json({ proyecto });
     
         } catch (error) {
@@ -45,7 +58,6 @@ export const getProyecto = async (req: Request, res: Response) => {
             });
         }
 }
-
 
 export const createProyecto = async (req: Request, res: Response) => {
         
@@ -60,7 +72,7 @@ export const createProyecto = async (req: Request, res: Response) => {
             imagen,
             fechaInicio,
             fechaFin,
-            status,
+            status,            
         });       
 
         res.json({ proyecto });
@@ -72,5 +84,42 @@ export const createProyecto = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const updateProyecto = async (req: Request, res: Response) => {
+            
+        const { id } = req.params;
+        const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status } = req.body;
+        const where: any = { id };
+        try {
+    
+            const proyecto = await Proyectos.findOne({
+                where,
+            });       
+    
+            if (!proyecto) {
+                return res.status(404).json({
+                    msg: `No existe un proyecto con el id ${id}`
+                });
+            }
+    
+            await proyecto.update({
+                titulo,
+                descripcion,
+                icono,
+                imagen,
+                fechaInicio,
+                fechaFin,
+                status,
+            });
+    
+            res.json({ proyecto });
+    
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                msg: 'Hable con el administrador'
+            });
+        }
+    }
 
 

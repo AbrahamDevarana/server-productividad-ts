@@ -1,20 +1,23 @@
 import Sequelize from "sequelize";
 import database from "../../config/database";
 
-
-export const PivotEstrTact = database.define('pivot_estr_tact', {
-    objEstrategicoId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-    },
-    tacticoId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-    },
-    order: {
+export const PivotAcciones = database.define('pivot_acciones', {
+    id: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    accionId: {
+        type: Sequelize.UUID,
         allowNull: false,
-        defaultValue: 0
+    },
+    accionableId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+    },
+    accionable: {
+        type: Sequelize.STRING,
+        allowNull: false,
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -26,9 +29,5 @@ export const PivotEstrTact = database.define('pivot_estr_tact', {
     },
 }, {
     timestamps: true,
-    hooks: {
-        beforeUpdate: async (pivotEstrTact: any) => {
-            pivotEstrTact.updatedAt = new Date();
-        }
-    }
 });
+

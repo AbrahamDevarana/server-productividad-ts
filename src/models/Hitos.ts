@@ -1,28 +1,37 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 
-export const Acciones = database.define('acciones', {
+
+export const Hitos = database.define('hitos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4
     },
-    nombre: {
+    titulo: {
         type: Sequelize.STRING,
         allowNull: false
     },
     descripcion: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
+        allowNull: true
+    },
+    fechaInicio: {
+        type: Sequelize.DATE,
+        allowNull: true
+    },
+    fechaFin: {
+        type: Sequelize.DATE,
+        allowNull: true
+    },
+    proyectoId: {
+        type: Sequelize.UUID,
         allowNull: false
     },
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 1
-    },
-    propietarioId: {
-        type: Sequelize.UUID,
-        allowNull: false
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -36,9 +45,10 @@ export const Acciones = database.define('acciones', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        beforeUpdate: async (accion: any) => {
-            accion.updatedAt = new Date();
+        beforeUpdate: async (hito: any) => {
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
-
