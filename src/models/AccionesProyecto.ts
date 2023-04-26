@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 
-export const Acciones = database.define('acciones_proyecto', {
+export const AccionesProyecto = database.define('acciones_proyecto', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -23,6 +23,18 @@ export const Acciones = database.define('acciones_proyecto', {
     propietarioId: {
         type: Sequelize.UUID,
         allowNull: false
+    },
+    hitoId: {
+        type: Sequelize.UUID,
+        allowNull: false
+    },
+    fechaInicio: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    fechaFin: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
     },
     createdAt: {
         type: Sequelize.DATE,
