@@ -10,7 +10,7 @@ import { deleteFile, uploadFiles } from "../helpers/fileManagment";
 export const getUsuarios = async (req: Request, res: Response) => {
    
 
-    const { nombre, apellidoPaterno, apellidoMaterno, email, page = 0, size = 10 } = req.query;
+    const { nombre, apellidoPaterno, apellidoMaterno, email, page = 0, size = 10, search } = req.query;
     
     const { limit, offset } = getPagination(Number(page), Number(size));
 
@@ -20,13 +20,21 @@ export const getUsuarios = async (req: Request, res: Response) => {
     apellidoPaterno && (where.apellidoPaterno = { [Op.like]: `%${apellidoPaterno}%` });
     apellidoMaterno && (where.apellidoMaterno = { [Op.like]: `%${apellidoMaterno}%` });
     email && (where.email = { [Op.like]: `%${email}%` });
+    search && (where[Op.or] = [
+        { nombre: { [Op.like]: `%${search}%` } },
+        { apellidoPaterno: { [Op.like]: `%${search}%` } },
+        { apellidoMaterno: { [Op.like]: `%${search}%` } },
+    ]);
+
+    console.log(where);
+    
 
     try {
         const result = await Usuarios.findAndCountAll({
             where,
             include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
-            limit,
-            offset            
+            // limit,
+            // offset            
         })
 
         const usuarios = getPagingData(result, Number(page), Number(size))
@@ -44,6 +52,7 @@ export const getUsuarios = async (req: Request, res: Response) => {
 export const getUsuario = async (req: Request, res: Response) => {
     
         const { id } = req.params;
+       
     
         try {
             const usuario = await Usuarios.findByPk(id,

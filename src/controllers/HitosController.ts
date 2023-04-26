@@ -2,6 +2,7 @@
 import { Request, Response } from "express";
 import { Sequelize } from "sequelize";
 import { Hitos } from "../models";
+import { HitosProps } from "../interfaces";
 
 export const getHitos = async (req: Request, res: Response) => {
 
@@ -58,15 +59,19 @@ export const createHito = async (req: Request, res: Response) => {
 
 }
 
+
+
+
 export const updateHito = async (req: Request, res: Response) => {
     
         const { id } = req.params;
-        const { nombre, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body;
+        const { titulo, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body as HitosProps;
+       
+
         const where: any = { id };
-        try {
-    
+        try {                      
             const hito = await Hitos.update({
-                nombre,
+                titulo,
                 descripcion,
                 fechaInicio,
                 fechaFin,
@@ -83,8 +88,7 @@ export const updateHito = async (req: Request, res: Response) => {
             res.status(500).json({
                 msg: 'Hable con el administrador'
             });
-        }
-    
+        }    
 }
 
 
