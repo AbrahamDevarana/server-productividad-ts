@@ -26,8 +26,6 @@ export const getUsuarios = async (req: Request, res: Response) => {
         { apellidoMaterno: { [Op.like]: `%${search}%` } },
     ]);
 
-    console.log(where);
-    
 
     try {
         const result = await Usuarios.findAndCountAll({
