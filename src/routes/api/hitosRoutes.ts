@@ -8,13 +8,13 @@ const router = Router();
 router.get('/', getHitos);
 
 router.post('/', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+    check('titulo', 'El titulo es obligatorio').not().isEmpty(),
     ],
     createHito
 );
 
 router.put('/:id', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+    check('titulo', 'El titulo es obligatorio').not().isEmpty(),
     ],
     updateHito
 );

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
 
-import { createProyecto, getProyecto, getProyectos } from '../../controllers/ProyectosController'
+import { createProyecto, getProyecto, getProyectos, updateProyecto, } from '../../controllers/ProyectosController'
 
 const router = Router();
 
@@ -16,5 +16,14 @@ router.post('/',
         validarCampos
     ],
 createProyecto);
+
+router.put('/:id',
+    [
+        check('titulo', 'El titulo es obligatorio').not().isEmpty(),
+        validarCampos
+    ],
+updateProyecto);
+
+
 
 export default router;

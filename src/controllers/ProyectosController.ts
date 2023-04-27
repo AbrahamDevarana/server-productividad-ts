@@ -110,6 +110,9 @@ export const updateProyecto = async (req: Request, res: Response) => {
                 fechaFin,
                 status,
             });
+
+            console.log(proyecto);
+            
     
             res.json({ proyecto });
     

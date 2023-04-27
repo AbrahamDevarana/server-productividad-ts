@@ -35,12 +35,12 @@ export const getHitos = async (req: Request, res: Response) => {
 
 export const createHito = async (req: Request, res: Response) => {
 
-    const { nombre, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body;
+    const { titulo, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body;
     const where: any = {};
     try {
 
         const hito = await Hitos.create({
-            nombre,
+            titulo,
             descripcion,
             fechaInicio,
             fechaFin,
