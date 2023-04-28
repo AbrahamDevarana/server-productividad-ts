@@ -88,6 +88,9 @@ export const updateProyecto = async (req: Request, res: Response) => {
             
         const { id } = req.params;
         const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status } = req.body;
+
+        console.log(req.body);
+        
         const where: any = { id };
         try {
     
@@ -111,9 +114,10 @@ export const updateProyecto = async (req: Request, res: Response) => {
                 status,
             });
 
+            await proyecto.reload('proyectos_hitos');
+            
             console.log(proyecto);
             
-    
             res.json({ proyecto });
     
         } catch (error) {
