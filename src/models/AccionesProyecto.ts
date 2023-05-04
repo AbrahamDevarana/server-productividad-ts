@@ -51,6 +51,10 @@ export const AccionesProyecto = database.define('acciones_proyecto', {
         beforeUpdate: async (accion: any) => {
             accion.updatedAt = new Date();
         }
-    }
+    },
+
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 

@@ -116,7 +116,7 @@ export {
     ObjetivoOperativos,
     ResultadosClave,
     Acciones,
-    AccionesProyecto as AccionesP,
+    AccionesProyecto,
     Proyectos,
     Hitos,
 

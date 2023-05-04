@@ -11,6 +11,7 @@ import accionesRoutes from './api/accionesRoutes'
 import resultadosRoutes from './api/resultadosRoutes'
 import proyectosRoutes from './api/proyectosRoute'
 import hitosRoutes from './api/hitosRoutes'
+import accionesProyectoRoutes from './api/accionesProyectoRoutes'
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.use('/estrategicos', estrategicoRoutes)
 router.use('/tacticos', tacticoRoutes)
 router.use('/operativos', operativoRoutes)
 router.use('/acciones', accionesRoutes)
+router.use('/accionesProyecto', accionesProyectoRoutes)
 router.use('/resultados', resultadosRoutes)
 router.use('/proyectos', proyectosRoutes)   
 router.use('/hitos', hitosRoutes)

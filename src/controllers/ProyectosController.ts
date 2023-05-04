@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Sequelize } from "sequelize";
-import { Proyectos, Hitos, Usuarios, AccionesP } from "../models";
+import { Proyectos, Hitos, Usuarios, AccionesProyecto } from "../models";
 
 
 export const getProyectos = async (req: Request, res: Response) => {
@@ -37,7 +37,7 @@ export const getProyecto = async (req: Request, res: Response) => {
                     attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
                     include: [{
                         as: 'hitos_acciones',
-                        model: AccionesP,
+                        model: AccionesProyecto,
                         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
                         include: [{
                             as: 'propietario',
