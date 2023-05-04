@@ -13,8 +13,11 @@ import proyectosRoutes from './api/proyectosRoute'
 import hitosRoutes from './api/hitosRoutes'
 import accionesProyectoRoutes from './api/accionesProyectoRoutes'
 
+import uploadRoutes from "./api/uploadRoutes";
+
 const router = Router();
 
+router.use('/upload', uploadRoutes)
 
 router.use('/usuarios', usuarioRoutes)
 router.use('/areas', areaRoutes )
@@ -28,6 +31,9 @@ router.use('/accionesProyecto', accionesProyectoRoutes)
 router.use('/resultados', resultadosRoutes)
 router.use('/proyectos', proyectosRoutes)   
 router.use('/hitos', hitosRoutes)
+
+
+
 
 
 

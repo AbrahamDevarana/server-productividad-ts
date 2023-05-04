@@ -17,9 +17,10 @@ const s3Client = new S3Client ({
 });
 
 
-const uploadFiles = async (files: any, folder: string): Promise<any[]> => {
+const uploadFiles = async (files: any, folder: string, cropW:number = 500, cropH?:number ): Promise<any[]> => {
 
     let galeria: any = [];
+
    
     return new Promise( async (resolve, reject) => {
         await Promise.all(files.map(async (file: any) => {
@@ -32,7 +33,8 @@ const uploadFiles = async (files: any, folder: string): Promise<any[]> => {
                     // crop
                     const croppedAndTinified = tinified.resize({
                         method: "scale",
-                        width: 500,
+                        width: cropW,
+                        height: cropH
                     });
 
                     bufferedFile = await croppedAndTinified.toBuffer();

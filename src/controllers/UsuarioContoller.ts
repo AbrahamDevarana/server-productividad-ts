@@ -207,7 +207,7 @@ export const uploadPhoto = async (req: Request, res: Response) => {
                 });
             }
 
-            const result = await uploadFiles(galeria, 'profile-picture' );
+            const result = await uploadFiles(galeria, 'profile-picture', 500, 150 );
 
             if(result.length > 0){
                 await usuario.update({ foto: result[0].url });
