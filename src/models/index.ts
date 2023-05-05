@@ -7,7 +7,7 @@ import { ObjetivoEstrategico } from './Estrategicos';
 import { Tacticos } from './Tacticos';
 import { ObjetivoOperativos } from './Operativos';
 import { Acciones } from './Acciones';
-import { AccionesProyecto } from './AccionesProyecto';
+import { Tareas } from './Tareas';
 import { ResultadosClave } from './ResultadoClave';
 import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
@@ -21,6 +21,7 @@ import { PivotAreaTactico } from './pivot/PivotAreaTactico';
 import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 import { PivotOpUsuario } from './pivot/PivotOperativoUsuario';
 import { PivotAcciones } from './pivot/PivotAcciones';
+import { PivotTareasResponsables } from './pivot/PivotTareasResponsables';
 
 
 
@@ -68,7 +69,7 @@ Proyectos.hasMany(Hitos, { as: 'proyectos_hitos', foreignKey: 'proyectoId' });
 
 // Hitos
 Hitos.belongsTo(Proyectos, { as: 'proyectos_hitos', foreignKey: 'proyectoId' });
-Hitos.hasMany(AccionesProyecto, { as: 'hitos_acciones', foreignKey: 'hitoId' });
+Hitos.hasMany(Tareas, { as: 'tareas', foreignKey: 'hitoId' });
 
 
 //* ----------------- Pivot tables -----------------
@@ -100,9 +101,12 @@ Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: Pivo
 ObjetivoOperativos.belongsToMany(Usuarios, { as: 'responsables_op', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'responsableId'});
 
 
-// Acciones
-AccionesProyecto.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-AccionesProyecto.belongsTo(Hitos, { as: 'hitos_acciones', foreignKey: 'hitoId' });
+// Tareas 
+Tareas.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+Tareas.belongsTo(Hitos, { as: 'tareas', foreignKey: 'hitoId' });
+
+Tareas.belongsToMany(Usuarios, { as: 'participantes', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId' });
+Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 
 export {
@@ -116,11 +120,11 @@ export {
     ObjetivoOperativos,
     ResultadosClave,
     Acciones,
-    AccionesProyecto,
+    Tareas,
     Proyectos,
     Hitos,
 
-    
+    PivotTareasResponsables,
     PivotPerspEstr,
     PivotRespTact,
     PivotAreaTactico,

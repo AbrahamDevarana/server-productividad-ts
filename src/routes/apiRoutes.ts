@@ -11,7 +11,7 @@ import accionesRoutes from './api/accionesRoutes'
 import resultadosRoutes from './api/resultadosRoutes'
 import proyectosRoutes from './api/proyectosRoute'
 import hitosRoutes from './api/hitosRoutes'
-import accionesProyectoRoutes from './api/accionesProyectoRoutes'
+import tareasRoutes from './api/tareasRoutes'
 
 import uploadRoutes from "./api/uploadRoutes";
 
@@ -27,7 +27,7 @@ router.use('/estrategicos', estrategicoRoutes)
 router.use('/tacticos', tacticoRoutes)
 router.use('/operativos', operativoRoutes)
 router.use('/acciones', accionesRoutes)
-router.use('/accionesProyecto', accionesProyectoRoutes)
+router.use('/tareas', tareasRoutes)
 router.use('/resultados', resultadosRoutes)
 router.use('/proyectos', proyectosRoutes)   
 router.use('/hitos', hitosRoutes)

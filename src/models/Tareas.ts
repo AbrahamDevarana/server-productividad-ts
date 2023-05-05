@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 
-export const AccionesProyecto = database.define('acciones_proyecto', {
+export const Tareas = database.define('tareas', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,

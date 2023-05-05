@@ -14,6 +14,7 @@ export interface Accion {
     fechaInicio:   string;
     fechaFin:      string;
     propietario:   Propietario;
+    participantesId: string[];
 }
 
 export interface Propietario {

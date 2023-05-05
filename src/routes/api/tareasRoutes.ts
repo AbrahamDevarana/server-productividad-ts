@@ -4,10 +4,10 @@ import { validarCampos } from '../../middleware/validateFields';
 const router = Router();
 
 
-import { getAccionProyecto } from '../../controllers/AccionesProyectosController';
+import { getTarea, updateTarea } from '../../controllers/TareasController';
 
-router.get('/:id', getAccionProyecto);
-
+router.get('/:id', getTarea);
+router.put('/:id', updateTarea);
 
 
 
