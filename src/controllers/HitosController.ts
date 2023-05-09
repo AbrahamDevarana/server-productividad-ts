@@ -1,13 +1,13 @@
 
 import { Request, Response } from "express";
 import { Sequelize } from "sequelize";
-import { Hitos, UsuarioHitosOrden, Usuarios } from "../models";
+import { Hitos, Tareas, UsuarioHitosOrden, Usuarios } from "../models";
 import { HitosProps, UsuarioInterface } from "../interfaces";
 
 export const getHitos = async (req: Request, res: Response) => {
 
-    const { proyectoId } = req.params;
     const { id } = req.user as UsuarioInterface;
+    const { proyectoId } = req.params;
     const where: any = {};
 
     if (proyectoId) {
@@ -18,9 +18,20 @@ export const getHitos = async (req: Request, res: Response) => {
     try {
     
         const hitos = await Hitos.findAll({
-            where,  
-            logging: console.log,
-        });       
+        where,
+        include: [{
+            model: Usuarios,
+            attributes: ['id'],
+            through: {
+                attributes: ['orden'],
+            },
+            as: 'ordenHito',
+            where: { id },
+        }, {
+            model: Tareas,
+            as: 'tareas',
+        }],
+        });
 
         res.json({ hitos });
 
@@ -48,9 +59,6 @@ export const createHito = async (req: Request, res: Response) => {
     }
 
 }
-
-
-
 
 export const updateHito = async (req: Request, res: Response) => {
     
@@ -80,7 +88,6 @@ export const updateHito = async (req: Request, res: Response) => {
             });
         }    
 }
-
 
 export const deleteHito = async (req: Request, res: Response) => {
         

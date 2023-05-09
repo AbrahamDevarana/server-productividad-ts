@@ -13,11 +13,10 @@ export const Tareas = database.define('tareas', {
     },
     descripcion: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     status: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         defaultValue: 1
     },
     propietarioId: {
@@ -30,7 +29,7 @@ export const Tareas = database.define('tareas', {
     },
     fechaInicio: {
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
+        defaultValue: Sequelize.NOW,
     },
     fechaFin: {
         type: Sequelize.DATE,

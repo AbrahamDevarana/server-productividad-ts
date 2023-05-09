@@ -97,8 +97,8 @@ export const Hitos = database.define('hitos', {
         //     }
         // },
         afterCreate: async (hito: any) => {
-            console.log('afterCreate', Proyectos.prototype);
-            
+            // console.log('afterCreate', Proyectos.prototype);
+            // console.log('afterCreate', Usuarios.prototype);
             const proyecto = await hito.getHitosProyecto();
             // Obtener la lista de usuarios que participan en el proyecto
             const usuarios = await proyecto.getUsuariosProyecto();                    
@@ -108,8 +108,9 @@ export const Hitos = database.define('hitos', {
             // Establecer el orden del nuevo hito como el último
             const nuevoOrden = hitosCount + 1;
             // Actualizar el orden del nuevo hito para cada usuario en el proyecto
+
+
             for (const usuario of usuarios) {
-                
                 await usuario.addOrdenHito(hito, { through: { orden: nuevoOrden } });
             }
 

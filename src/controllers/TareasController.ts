@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Tareas, Hitos, Proyectos, Usuarios } from "../models";
 import { Op } from "sequelize";
-import { TareaInterface } from "../interfaces";
+import { TareaInterface, UsuarioInterface } from "../interfaces";
 
 
 export const getTarea = async (req: Request, res: Response) => {
@@ -44,29 +44,16 @@ export const getTarea = async (req: Request, res: Response) => {
 
 export const createTarea = async (req: Request, res: Response) => {
 
-    const { nombre, descripcion, propietarioId, participantesId, fechaFin, fechaInicio, hitoId, propietario, status } = req.body as TareaInterface;
-
-    console.log(req.body);
-    
-
+    const { nombre, hitoId } = req.body as TareaInterface;
+    const { id } = req.user as UsuarioInterface;
 
     try {
         const tarea = await Tareas.create({
             nombre,
-            descripcion,
-            propietarioId,
-            fechaFin,
-            fechaInicio,
             hitoId,
-            propietario,
-            status
+            propietarioId: id
         });
-
-        await tarea.setParticipantes(participantesId);
-
-        await tarea.reload('propietario', 'participantes');
-
-        res.json({ accion: tarea });
+        res.json({ tarea });
 
     }
     catch (error) {

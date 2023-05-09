@@ -76,6 +76,7 @@ Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyect
 // Hitos
 Hitos.belongsTo(Proyectos, { as: 'hitosProyecto', foreignKey: 'proyectoId', onDelete: 'CASCADE' });
 Hitos.hasMany(Tareas, { as: 'tareas', foreignKey: 'hitoId' });
+
 Hitos.belongsToMany(Usuarios, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'hitoId' })
 Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
 
