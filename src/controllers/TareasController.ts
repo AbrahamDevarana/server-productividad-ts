@@ -46,6 +46,10 @@ export const createTarea = async (req: Request, res: Response) => {
 
     const { nombre, descripcion, propietarioId, participantesId, fechaFin, fechaInicio, hitoId, propietario, status } = req.body as TareaInterface;
 
+    console.log(req.body);
+    
+
+
     try {
         const tarea = await Tareas.create({
             nombre,

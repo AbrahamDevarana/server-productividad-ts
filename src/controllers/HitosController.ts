@@ -1,16 +1,14 @@
 
 import { Request, Response } from "express";
 import { Sequelize } from "sequelize";
-import { Hitos } from "../models";
-import { HitosProps } from "../interfaces";
+import { Hitos, UsuarioHitosOrden, Usuarios } from "../models";
+import { HitosProps, UsuarioInterface } from "../interfaces";
 
 export const getHitos = async (req: Request, res: Response) => {
 
-    const { proyectoId } = req.query;
+    const { proyectoId } = req.params;
+    const { id } = req.user as UsuarioInterface;
     const where: any = {};
-
-
-    // proyectoId
 
     if (proyectoId) {
         where.proyectoId = proyectoId;
@@ -18,9 +16,10 @@ export const getHitos = async (req: Request, res: Response) => {
 
 
     try {
-
+    
         const hitos = await Hitos.findAll({
-            where,
+            where,  
+            logging: console.log,
         });       
 
         res.json({ hitos });
@@ -35,19 +34,10 @@ export const getHitos = async (req: Request, res: Response) => {
 
 export const createHito = async (req: Request, res: Response) => {
 
-    const { titulo, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body;
-    const where: any = {};
+    const { proyectoId } = req.body as HitosProps;
+
     try {
-
-        const hito = await Hitos.create({
-            titulo,
-            descripcion,
-            fechaInicio,
-            fechaFin,
-            status,
-            proyectoId
-        });
-
+        const hito = await Hitos.create({proyectoId});
         res.json({ hito });
 
     } catch (error) {

@@ -32,6 +32,10 @@ export const Proyectos = database.define('proyectos', {
         type: Sequelize.DATE,
         allowNull: true
     },
+    propietarioId: {
+        type: Sequelize.UUID,
+        allowNull: false
+    },
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,

@@ -1,17 +1,35 @@
 import { Request, Response } from "express";
-import { Sequelize } from "sequelize";
-import { Proyectos, Hitos, Usuarios, Tareas } from "../models";
+import { Sequelize, Op } from "sequelize";
+import { Proyectos, Hitos, Usuarios, Tareas, PivotProyectoUsuarios, UsuarioHitosOrden } from "../models";
+import { UsuarioInterface } from "../interfaces";
 
 
 export const getProyectos = async (req: Request, res: Response) => {
     
     const {} = req.body;
+    const { id } = req.user as UsuarioInterface
     const where: any = {};
+
+
+    where[Op.or] = [
+        { propietarioId: id },
+        { '$usuariosProyecto.id$': id }
+    ];
+
+
     try {
 
         const proyectos = await Proyectos.findAll({
             where,
-        });       
+            include: [{
+                model: Usuarios,
+                as: 'usuariosProyecto',
+                through: {
+                    attributes: []
+                },
+                attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+            }],
+        });               
 
         res.json({ proyectos });
 
@@ -27,24 +45,15 @@ export const getProyecto = async (req: Request, res: Response) => {
         
         const { id } = req.params;
         const where: any = { id };
+    
         try {
     
             const proyecto = await Proyectos.findOne({
                 where,
-                include: [{
-                    model: Hitos,
-                    as: 'proyectos_hitos',
-                    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
-                    include: [{
-                        as: 'tareas',
-                        model: Tareas,
-                        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
-                        include: [{
-                            as: 'propietario',
-                            model: Usuarios,
-                            attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
-                        }]
-                    }]
+                include: [{   
+                    model: Usuarios,
+                    as: 'usuariosProyecto',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                 }],
             });       
 
@@ -114,7 +123,7 @@ export const updateProyecto = async (req: Request, res: Response) => {
                 status,
             });
 
-            await proyecto.reload('proyectos_hitos');
+            await proyecto.reload('proyectosHito');
             
             console.log(proyecto);
             
