@@ -71,6 +71,8 @@ export const createProyecto = async (req: Request, res: Response) => {
         
     const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status } = req.body;
     const where: any = {};
+
+    const { id } = req.user as UsuarioInterface
     try {
 
         const proyecto = await Proyectos.create({
@@ -80,7 +82,8 @@ export const createProyecto = async (req: Request, res: Response) => {
             imagen,
             fechaInicio,
             fechaFin,
-            status,            
+            status,         
+            propietarioId: id,   
         });       
 
         res.json({ proyecto });
