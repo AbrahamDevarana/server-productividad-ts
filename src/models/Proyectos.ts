@@ -37,9 +37,8 @@ export const Proyectos = database.define('proyectos', {
         allowNull: false
     },
     status: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 1
+        type: Sequelize.STRING(36),
+        defaultValue: 'SIN_INICIAR'
     },
     createdAt: {
         type: Sequelize.DATE,

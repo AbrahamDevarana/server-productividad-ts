@@ -16,8 +16,8 @@ export const Tareas = database.define('tareas', {
         allowNull: true
     },
     status: {
-        type: Sequelize.INTEGER,
-        defaultValue: 1
+        type: Sequelize.STRING(36),
+        defaultValue: 'SIN_INICIAR'
     },
     propietarioId: {
         type: Sequelize.UUID,

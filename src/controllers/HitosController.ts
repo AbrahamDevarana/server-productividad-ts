@@ -1,6 +1,5 @@
 
 import { Request, Response } from "express";
-import { Sequelize } from "sequelize";
 import { Hitos, Tareas, UsuarioHitosOrden, Usuarios } from "../models";
 import { HitosProps, UsuarioInterface } from "../interfaces";
 
@@ -49,6 +48,8 @@ export const createHito = async (req: Request, res: Response) => {
 
     try {
         const hito = await Hitos.create({proyectoId});
+
+        await hito.reload(['tareas', 'ordenHito']);
         res.json({ hito });
 
     } catch (error) {

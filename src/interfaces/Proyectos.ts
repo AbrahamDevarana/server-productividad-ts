@@ -7,6 +7,7 @@ export interface ProyectosProps {
     imagen: string;
     fechaInicio: Date;
     fechaFin: Date;
-    status: number;
+    status: string;
     propietarioId: string;
+    participantes: string[];
 }

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Sequelize, Op } from "sequelize";
 import { Proyectos, Hitos, Usuarios, Tareas, PivotProyectoUsuarios, UsuarioHitosOrden } from "../models";
-import { UsuarioInterface } from "../interfaces";
+import { ProyectosProps, UsuarioInterface } from "../interfaces";
 
 
 export const getProyectos = async (req: Request, res: Response) => {
@@ -69,22 +69,26 @@ export const getProyecto = async (req: Request, res: Response) => {
 
 export const createProyecto = async (req: Request, res: Response) => {
         
-    const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status } = req.body;
-    const where: any = {};
-
+    const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status, participantes} = req.body as ProyectosProps;
     const { id } = req.user as UsuarioInterface
-    try {
 
+    console.log(participantes);
+    
+    try {
         const proyecto = await Proyectos.create({
             titulo,
             descripcion,
-            icono,
-            imagen,
             fechaInicio,
             fechaFin,
-            status,         
+            status,
             propietarioId: id,   
-        });       
+
+            icono,
+            imagen,
+        });               
+
+        await proyecto.addUsuariosProyecto(participantes);
+        await proyecto.reload('usuariosProyecto');
 
         res.json({ proyecto });
 
