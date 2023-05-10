@@ -6,7 +6,9 @@ import { HitosProps, UsuarioInterface } from "../interfaces";
 export const getHitos = async (req: Request, res: Response) => {
 
     const { id } = req.user as UsuarioInterface;
-    const { proyectoId } = req.params;
+    const { proyectoId } = req.query;
+    console.log(proyectoId);
+    
     const where: any = {};
 
     if (proyectoId) {
@@ -19,17 +21,18 @@ export const getHitos = async (req: Request, res: Response) => {
         const hitos = await Hitos.findAll({
         where,
         include: [{
-            model: Usuarios,
-            attributes: ['id'],
-            through: {
-                attributes: ['orden'],
-            },
-            as: 'ordenHito',
-            where: { id },
-        }, {
-            model: Tareas,
-            as: 'tareas',
-        }],
+                model: Usuarios,
+                attributes: ['id'],
+                through: {
+                    attributes: ['orden'],
+                },
+                as: 'ordenHito',
+                where: { id },
+            }, {
+                model: Tareas,
+                as: 'tareas',
+            }],
+            logging: console.log
         });
 
         res.json({ hitos });
