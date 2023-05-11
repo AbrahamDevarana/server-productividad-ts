@@ -10,5 +10,5 @@ export interface TareaInterface {
     fechaFin:      string;
     propietarioId: string;
     propietario:   UsuarioInterface;
-    participantesId: string[];
+    participantes: string[];
 }

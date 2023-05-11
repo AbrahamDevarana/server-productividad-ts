@@ -19,7 +19,7 @@ export const getTarea = async (req: Request, res: Response) => {
                         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                     },
                     {
-                        as: 'participantes',
+                        as: 'usuariosTarea',
                         model: Usuarios,
                         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                         through: {
@@ -41,7 +41,6 @@ export const getTarea = async (req: Request, res: Response) => {
     }
 }
 
-
 export const createTarea = async (req: Request, res: Response) => {
 
     const { nombre, hitoId } = req.body as TareaInterface;
@@ -54,7 +53,23 @@ export const createTarea = async (req: Request, res: Response) => {
             propietarioId: id
         });
 
-        console.log(tarea);
+        await tarea.reload({
+            include: [
+                {
+                    as: 'propietario',
+                    model: Usuarios,
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                },
+                {
+                    as: 'usuariosTarea',
+                    model: Usuarios,
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    through: {
+                        attributes: []
+                    }
+                }
+            ]
+        })
 
         res.json({ tarea });
 
@@ -72,7 +87,11 @@ export const createTarea = async (req: Request, res: Response) => {
 export const updateTarea = async (req: Request, res: Response) => {
 
     const { id } = req.params;
-    const { nombre, descripcion, propietarioId, participantesId, fechaFin, fechaInicio, hitoId, propietario , status } = req.body as TareaInterface;
+
+    console.log(req.body);
+    
+
+    const { nombre, descripcion, propietarioId, participantes, fechaFin, fechaInicio, hitoId, propietario , status } = req.body as TareaInterface;
 
     try {
         const tarea = await Tareas.findByPk(id);
@@ -94,11 +113,11 @@ export const updateTarea = async (req: Request, res: Response) => {
             status
         });
 
-        await tarea.setParticipantes(participantesId);
+        await tarea.setUsuariosTarea(participantes);
 
-        await tarea.reload('propietario', 'participantes');
+        await tarea.reload('propietario', 'usuariosTarea');
 
-        res.json({ accion: tarea });
+        res.json({ tarea });
 
     }
     catch (error) {

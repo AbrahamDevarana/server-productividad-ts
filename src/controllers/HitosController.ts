@@ -31,6 +31,19 @@ export const getHitos = async (req: Request, res: Response) => {
             }, {
                 model: Tareas,
                 as: 'tareas',
+                include: [{
+                    model: Usuarios,
+                    attributes : ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    as: 'usuariosTarea',
+                    through: {
+                        attributes: []
+                    },
+                },
+                {
+                    model: Usuarios,
+                    attributes : ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    as: 'propietario',
+                }]
             }],
             logging: console.log
         });
