@@ -53,6 +53,9 @@ export const createTarea = async (req: Request, res: Response) => {
             hitoId,
             propietarioId: id
         });
+
+        console.log(tarea);
+
         res.json({ tarea });
 
     }

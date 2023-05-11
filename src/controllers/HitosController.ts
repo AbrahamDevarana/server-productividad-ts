@@ -72,17 +72,18 @@ export const updateHito = async (req: Request, res: Response) => {
 
         const where: any = { id };
         try {                      
-            const hito = await Hitos.update({
+
+            const hito = await Hitos.findByPk(id);
+
+            hito.update({
                 titulo,
                 descripcion,
                 fechaInicio,
                 fechaFin,
                 status,
-                proyectoId
-            }, {
-                where
+                proyectoId,
             });
-    
+
             res.json({ hito });
     
         } catch (error) {

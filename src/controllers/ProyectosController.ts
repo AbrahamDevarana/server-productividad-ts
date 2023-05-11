@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Sequelize, Op } from "sequelize";
-import { Proyectos, Hitos, Usuarios, Tareas, PivotProyectoUsuarios, UsuarioHitosOrden } from "../models";
+import { Op } from "sequelize";
+import { Proyectos, Usuarios} from "../models";
 import { ProyectosProps, UsuarioInterface } from "../interfaces";
 
 
@@ -103,10 +103,7 @@ export const createProyecto = async (req: Request, res: Response) => {
 export const updateProyecto = async (req: Request, res: Response) => {
             
         const { id } = req.params;
-        const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status } = req.body;
-
-        console.log(req.body);
-        
+        const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status, participantes } = req.body as ProyectosProps        
         const where: any = { id };
         try {
     
@@ -130,10 +127,9 @@ export const updateProyecto = async (req: Request, res: Response) => {
                 status,
             });
 
-            await proyecto.reload('proyectosHito');
-            
-            console.log(proyecto);
-            
+            await proyecto.setUsuariosProyecto(participantes);
+
+            await proyecto.reload('proyectosHito', 'usuariosProyecto');
             res.json({ proyecto });
     
         } catch (error) {
