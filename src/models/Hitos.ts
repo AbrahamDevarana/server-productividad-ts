@@ -33,7 +33,7 @@ export const Hitos = database.define('hitos', {
         allowNull: false
     },
     status: {
-        type: Sequelize.STRING(36),
+        type: Sequelize.STRING(12),
         defaultValue: 'SIN_INICIAR'
     },
     createdAt: {

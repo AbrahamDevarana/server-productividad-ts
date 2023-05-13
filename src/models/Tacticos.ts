@@ -59,9 +59,9 @@ export const Tacticos = database.define('obj_tacticos', {
         allowNull: true,  
     },
     status: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(12),
         allowNull: false,
-        defaultValue: 1
+        defaultValue: 'SIN_INICIAR'
     },
     createdAt: {
         type: Sequelize.DATE,

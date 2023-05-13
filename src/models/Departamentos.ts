@@ -22,7 +22,7 @@ export const Departamentos = database.define('departamentos', {
     status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: true
+        defaultValue: 1
     },
     slug:{
         type: Sequelize.STRING,

@@ -38,9 +38,9 @@ export const ResultadosClave = database.define('resultado_clave', {
         allowNull: false
     },
     status: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(12),
         allowNull: false,
-        defaultValue: 1
+        defaultValue: 'SIN_INICIAR'
     },   
 },{
     paranoid: true,

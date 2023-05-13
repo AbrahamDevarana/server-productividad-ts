@@ -32,7 +32,7 @@ export const Perspectivas = database.define('perspectivas', {
     status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: true
+        defaultValue: 1
     },
     createdAt: {
         type: Sequelize.DATE,
