@@ -24,6 +24,7 @@ import { PivotAcciones } from './pivot/PivotAcciones';
 import { PivotTareasResponsables } from './pivot/PivotTareasResponsables';
 import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
 import { PivotProyectoUsuarios } from './pivot/PivotProyectoUsuarios';
+import { Comentarios } from './Comentarios';
 
 
 
@@ -120,6 +121,26 @@ Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasRespon
 Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 
+
+
+/// Polimorficas
+
+Tareas.hasMany(Comentarios, {
+    foreignKey: 'comentableId',
+    constraints: false,
+    scope: {
+        comentableType: 'tarea'
+    }
+})
+
+Usuarios.hasMany(Comentarios, {
+    foreignKey: 'comentableId',
+    constraints: false,
+    scope: {
+        comentableType: 'autor'
+    }
+})
+
 export {
     Usuarios,
     Areas,
@@ -134,6 +155,7 @@ export {
     Tareas,
     Proyectos,
     Hitos,
+    Comentarios,
 
     PivotTareasResponsables,
     PivotPerspEstr,

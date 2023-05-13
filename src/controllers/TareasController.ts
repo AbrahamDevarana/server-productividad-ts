@@ -88,9 +88,6 @@ export const updateTarea = async (req: Request, res: Response) => {
 
     const { id } = req.params;
 
-    console.log(req.body);
-    
-
     const { nombre, descripcion, propietarioId, participantes, fechaFin, fechaInicio, hitoId, propietario , status } = req.body as TareaInterface;
 
     try {
@@ -115,7 +112,23 @@ export const updateTarea = async (req: Request, res: Response) => {
 
         await tarea.setUsuariosTarea(participantes);
 
-        await tarea.reload('propietario', 'usuariosTarea');
+        await tarea.reload({
+            include: [
+                {
+                    as: 'propietario',
+                    model: Usuarios,
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                },
+                {
+                    as: 'usuariosTarea',
+                    model: Usuarios,
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    through: {
+                        attributes: []
+                    }
+                }
+            ]
+        });
 
         res.json({ tarea });
 
