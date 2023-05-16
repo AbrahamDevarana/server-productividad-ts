@@ -39,6 +39,9 @@ export const Acciones = database.define('acciones', {
         beforeUpdate: async (accion: any) => {
             accion.updatedAt = new Date();
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 

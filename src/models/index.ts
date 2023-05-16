@@ -20,7 +20,6 @@ import { PivotRespTact } from './pivot/PivotResponsablesTactico';
 import { PivotAreaTactico } from './pivot/PivotAreaTactico';
 import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 import { PivotOpUsuario } from './pivot/PivotOperativoUsuario';
-import { PivotAcciones } from './pivot/PivotAcciones';
 import { PivotTareasResponsables } from './pivot/PivotTareasResponsables';
 import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
 import { PivotProyectoUsuarios } from './pivot/PivotProyectoUsuarios';
@@ -34,6 +33,9 @@ Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
 Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
+Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyectos', foreignKey: 'usuarioId' });
+Usuarios.hasMany(ObjetivoOperativos, { as: 'objetivosOperativos', foreignKey: 'propietarioId' });
+Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -59,9 +61,9 @@ Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' })
 Tacticos.belongsTo(ObjetivoEstrategico, { as: 'estrategico', foreignKey: 'estrategicoId' });
 
 // Objetivo Operativo
-ObjetivoOperativos.belongsTo(Usuarios, { as: 'propietario_op', foreignKey: 'propietarioId' });
+ObjetivoOperativos.belongsTo(Usuarios, { as: 'operativoPropietario', foreignKey: 'propietarioId' });
 ObjetivoOperativos.belongsTo(Tacticos, { as: 'tactico_operativo', foreignKey: 'tacticoId', onDelete: 'SET NULL' });
-ObjetivoOperativos.hasMany(ResultadosClave, { as: 'resultados_clave', foreignKey: 'operativoId' });
+ObjetivoOperativos.hasMany(ResultadosClave, { as: 'resultadosClave', foreignKey: 'operativoId' });
 
 // Resultados Clave
 ResultadosClave.belongsTo(ObjetivoOperativos, { as: 'operativo', foreignKey: 'operativoId' });
@@ -70,16 +72,14 @@ ResultadosClave.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietari
 // Proyectos
 Proyectos.hasMany(Hitos, { as: 'proyectosHito', foreignKey: 'proyectoId', onDelete: 'CASCADE' });
 Proyectos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-
 Proyectos.belongsToMany(Usuarios, { through: PivotProyectoUsuarios, as: 'usuariosProyecto', foreignKey: 'proyectoId' });
-Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyectosUsuario', foreignKey: 'usuarioId' });
+
 
 // Hitos
 Hitos.belongsTo(Proyectos, { as: 'hitosProyecto', foreignKey: 'proyectoId', onDelete: 'CASCADE' });
 Hitos.hasMany(Tareas, { as: 'tareas', foreignKey: 'hitoId' });
-
 Hitos.belongsToMany(Usuarios, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'hitoId' })
-Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
+
 
 
 // Tareas 
@@ -114,7 +114,7 @@ Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDel
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Objetivo Operativo
-ObjetivoOperativos.belongsToMany(Usuarios, { as: 'responsables_op', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'responsableId'});
+ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'responsableId'});
 
 
 Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId' });

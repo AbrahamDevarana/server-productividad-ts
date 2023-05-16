@@ -48,6 +48,9 @@ export const Areas = database.define('areas', {
         beforeCreate: async (area: any) => {
             area.slug = slugify(area.nombre, { lower: true });
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 

@@ -1,16 +1,16 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { getOperativos, createOperativo, updateOperativo, getProyectos, getObjetivo } from '../../controllers/OperativoController'
+import { getOperativos, createOperativo, updateOperativo, getObjetivo as getOperativo } from '../../controllers/OperativoController'
 
 const router = Router();
 
 // API url: /operativos
 
-router.get('/operativos', getOperativos);
-router.get('/proyectos', getProyectos);
+router.get('/', getOperativos);
 
-router.get('/:id', getObjetivo);
+
+router.get('/:id', getOperativo);
 
 
 

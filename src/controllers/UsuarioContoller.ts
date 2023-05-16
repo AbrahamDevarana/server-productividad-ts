@@ -1,11 +1,12 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFiles } from "../helpers/fileManagment";
+import { UsuarioInterface } from "../interfaces";
 
 export const getUsuarios = async (req: Request, res: Response) => {
    
@@ -71,6 +72,41 @@ export const getUsuario = async (req: Request, res: Response) => {
                 msg: 'Hable con el administrador'
             });
         }
+}
+
+export const getPerfil = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { id: idUsuario } = req.user as UsuarioInterface;
+
+    try {
+        const usuario = await Usuarios.findByPk(id,
+            { include: [
+                { model: Departamentos, as: 'departamento', include: ['area']}, 
+                { model: Direccion, as: 'direccion' },
+                { 
+                    model: ObjetivoOperativos, as: 'objetivosOperativos', 
+                    include: [
+                        { model: ResultadosClave, as:'resultadosClave', where: { propietarioId: idUsuario } },
+                    ] 
+                },
+                { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
+                
+            ]});
+        if (usuario) {
+            res.json({ usuario });
+        } else {
+            res.status(404).json({
+                msg: `No existe ese usuario`
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
 }
 
 export const createUsuario = async (req: Request, res: Response) => {

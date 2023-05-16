@@ -46,7 +46,10 @@ export const Departamentos = database.define('departamentos', {
         beforeCreate: async (departamento: any) => {
             departamento.slug = slugify(departamento.nombre, { lower: true });
         },
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 });
 
 

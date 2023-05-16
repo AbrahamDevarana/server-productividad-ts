@@ -51,5 +51,8 @@ export const ResultadosClave = database.define('resultado_clave', {
                 updatedAt: Sequelize.NOW
             });
         }
-    }
+    },
+    defaultScope: {
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+    },
 })
