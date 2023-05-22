@@ -10,19 +10,9 @@ const router = Router();
 
 router.get('/', getProyectos);
 router.get('/:id', getProyecto);
-router.post('/', 
-    [
-        check('titulo', 'El titulo es obligatorio').not().isEmpty(),
-        validarCampos
-    ],
-createProyecto);
+router.post('/', createProyecto);
 
-router.put('/:id',
-    [
-        check('titulo', 'El titulo es obligatorio').not().isEmpty(),
-        validarCampos
-    ],
-updateProyecto);
+router.put('/:id', updateProyecto);
 
 
 

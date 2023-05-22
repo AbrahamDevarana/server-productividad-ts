@@ -1,5 +1,5 @@
 import tinify from 'tinify';
-import { S3Client } from '@aws-sdk/client-s3';
+import { PutObjectCommandOutput, S3Client } from '@aws-sdk/client-s3';
 import fs from 'fs';
 const { PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3')
 tinify.key = process.env.TINY_IMG_API_KEY || '';
@@ -17,85 +17,138 @@ const s3Client = new S3Client ({
 });
 
 
-const uploadFiles = async (files: any, folder: string, cropW:number = 500, cropH?:number ): Promise<any[]> => {
 
-    let galeria: any = [];
-
-   
-    return new Promise( async (resolve, reject) => {
-        await Promise.all(files.map(async (file: any) => {
-
-
-                let bufferedFile: any = file.filepath
-            
-                if(file.mimetype.includes('image')){
-                    const tinified = tinify.fromFile(file.filepath);
-                    // crop
-                    const croppedAndTinified = tinified.resize({
-                        method: "scale",
-                        width: cropW,
-                        height: cropH
-                    });
-
-                    bufferedFile = await croppedAndTinified.toBuffer();
-                }else{
-                    bufferedFile = fs.readFileSync(file.filepath);
-                }
-
-                const folderDest = `${process.env.AWS_STORAGE_FOLDER}/${folder}`;
-
-                const params = {
-                    Bucket: process.env.AWS_BUCKET_NAME || '',
-                    Key: `${folderDest}/${Date.now()}-${file.originalFilename}`,
-                    Body: bufferedFile,
-                    ACL: 'public-read',
-                    ContentType: file.mimetype,
-                };
-
-                const data = await s3Client.send(new PutObjectCommand(params));
-                
-                if(data.$metadata.httpStatusCode === 200){
-                    galeria.push({
-                        name: file.originalFilename,
-                        url: params.Key
-                    });
-                }else{
-                    reject('Error al subir el archivo');
-                }
-            
-        })).catch(err => {
-            reject(err);
-        });
-
-        resolve(galeria);
-    });
+interface SingleFileProps {
+    files: any;
+    folder: string;
+    cropW?: number;
+    cropH?: number;
+    crop?: boolean;
 }
+
+const uploadFiles = async (files: any, folder: string, cropW: number = 500, cropH?: number): Promise<any[]> => {
+    const galeria: any[] = [];
+  
+    await Promise.all(
+      files.map(async (file: any) => {
+        let bufferedFile: any = file.filepath;
+  
+        if (file.mimetype.includes('image')) {
+          const tinified = tinify.fromFile(file.filepath);
+          // crop
+          const croppedAndTinified = tinified.resize({
+            method: 'scale',
+            width: cropW,
+            height: cropH,
+          });
+  
+          bufferedFile = await croppedAndTinified.toBuffer();
+        } else {
+          bufferedFile = await fs.promises.readFile(file.filepath);
+        }
+  
+        const folderDest = `${process.env.AWS_STORAGE_FOLDER}/${folder}`;
+
+        const fileName = `${Date.now()}-${file.originalFilename}`;
+  
+        const params = {
+          Bucket: process.env.AWS_BUCKET_NAME || '',
+          Key: `${folderDest}/${fileName}`,
+          Body: bufferedFile,
+          ACL: 'public-read',
+          ContentType: file.mimetype,
+        };
+  
+        const data = await s3Client.send(new PutObjectCommand(params));
+  
+        if (data.$metadata.httpStatusCode === 200) {
+          galeria.push({
+            name: file.originalFilename,
+            url: fileName
+          });
+        } else {
+          throw new Error('Error al subir el archivo');
+        }
+      })
+    );
+  
+    return galeria;
+};
+
+
 
 
 const deleteFile = async (files: any[]): Promise<boolean> => {
-
-    return new Promise( async (resolve, reject) => {
+    try {
         await Promise.all(files.map(async (item) => {
             const deleteParams = {
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Key: item
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: item
+            };
+            await s3Client.send(new DeleteObjectCommand(deleteParams));
+            console.log('deleted');
+        }));
+        return true;
+    } catch (err) {
+        console.log('error al eliminar');
+        console.error(err);
+      throw err;
+    }
+};
+
+const uploadFile = async ({ files, folder, cropW = 500, cropH, crop = false }: SingleFileProps): Promise<{ name: string; url: string }[]> => {
+    const galeria: { name: string; url: string }[] = [];
+
+    const elements = Array.isArray(files) ? files : [files];  
+
+    await Promise.all(
+        elements.map(async (file: any) => { 
+            let bufferedFile: any = file.filepath;
+            if (file.mimetype.includes('image')) {
+                const tinified = tinify.fromFile(file.filepath);
+                // crop
+                if(crop) {
+                    const croppedAndTinified = tinified.resize({
+                        method: 'scale',
+                        width: cropW,
+                        height: cropH,
+                    });
+                    bufferedFile = await croppedAndTinified.toBuffer();
+                }else{
+                    bufferedFile = await tinified.toBuffer();
+                }
             }
-            const data = await s3Client.send(new DeleteObjectCommand(deleteParams))
-            if(data) {
-                console.log('deleted');
-            }else{
-                reject('error')
+            else {
+                bufferedFile = await fs.promises.readFile(file.filepath);
             }
-        })).catch( (err) => {
-            console.log(err);
-            reject(err)
+            const folderDest = `${process.env.AWS_STORAGE_FOLDER}/${folder}`;
+            const fileName = `${Date.now()}-${file.originalFilename}`;
+            const params = {
+                Bucket: process.env.AWS_BUCKET_NAME || '',
+                Key: `${folderDest}/${fileName}`,
+                Body: bufferedFile,
+                ACL: 'public-read',
+                ContentType: file.mimetype,
+            }
+
+            const data: PutObjectCommandOutput = await s3Client.send(new PutObjectCommand(params));
+            if (data.$metadata.httpStatusCode === 200) {
+                galeria.push({
+                    name: file.originalFilename,
+                    url: folder + '/' + fileName
+                });
+            }
+            else {
+                throw new Error('Error al subir el archivo');
+            }
         })
-        resolve(true);
-    })
-}
+    );
+    return galeria;
+};
 
 export {
     uploadFiles,
+    uploadFile,
     deleteFile
 };
 

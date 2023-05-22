@@ -2,7 +2,11 @@ import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { Proyectos, Usuarios} from "../models";
 import { ProyectosProps, UsuarioInterface } from "../interfaces";
+import formidable, { Fields, Files } from "formidable";
+import { uploadFiles, uploadFile, deleteFile } from "../helpers/fileManagment";
 
+
+const userSingleAttr = ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'];
 
 export const getProyectos = async (req: Request, res: Response) => {
     
@@ -27,7 +31,7 @@ export const getProyectos = async (req: Request, res: Response) => {
                 through: {
                     attributes: []
                 },
-                attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+                attributes: userSingleAttr,
             }],
         });               
 
@@ -53,7 +57,7 @@ export const getProyecto = async (req: Request, res: Response) => {
                 include: [{   
                     model: Usuarios,
                     as: 'usuariosProyecto',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes: userSingleAttr,
                 }],
             });       
 
@@ -69,75 +73,139 @@ export const getProyecto = async (req: Request, res: Response) => {
 
 export const createProyecto = async (req: Request, res: Response) => {
         
-    const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status, participantes} = req.body as ProyectosProps;
-    const { id } = req.user as UsuarioInterface
+    const form = formidable({ multiples: true });
 
-    console.log(participantes);
-    
-    try {
-        const proyecto = await Proyectos.create({
-            titulo,
-            descripcion,
-            fechaInicio,
-            fechaFin,
-            status,
-            propietarioId: id,   
+    form.parse(req, async (err:Error, fields, files) => {
+       
 
-            icono,
-            imagen,
-        });               
+        if (err) {
+            console.error(err);
+            res.status(500).send(err);
+        }
+        const { titulo, descripcion, icono, fechaInicio, fechaFin, status } = fields
+        const { id } = req.user as UsuarioInterface
 
-        await proyecto.addUsuariosProyecto(participantes);
-        await proyecto.reload('usuariosProyecto');
+        const participantes = fields.participantes.toString().split(',');
 
-        res.json({ proyecto });
+        
+            
+        const [galeria] = Object.values(files) as any
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
+
+        try {
+            const proyecto = await Proyectos.create({
+                titulo,
+                descripcion,
+                icono,
+                fechaInicio,
+                fechaFin,
+                status,
+                propietarioId: id
+            });
+
+            if (files) {
+                const [imagen] = await uploadFile({files:galeria, folder: 'proyectos'})                
+                proyecto.imagen = imagen.url;   
+                await proyecto.save();
+            }
+
+            await proyecto.addUsuariosProyecto(participantes);
+            await proyecto.reload({
+                include: [{
+                    model: Usuarios,
+                    as: 'usuariosProyecto',
+                    attributes: userSingleAttr,
+                }],
+            });
+
+
+            res.json({ proyecto });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                msg: 'Hable con el administrador'
+            });
+        }       
+
+
+
+    });
 }
 
 export const updateProyecto = async (req: Request, res: Response) => {
             
+    const form = formidable({ multiples: true });
+
+    form.parse(req, async (err:Error, fields, files) => {
+       
+
+        if (err) {
+            console.error(err);
+            res.status(500).send(err);
+        }
+
+        const { titulo, descripcion, icono, fechaInicio, fechaFin, status } = fields
+        
         const { id } = req.params;
-        const { titulo, descripcion, icono, imagen, fechaInicio, fechaFin, status, participantes } = req.body as ProyectosProps        
-        const where: any = { id };
+
+        const participantes = fields.participantes.toString().split(',');
+            
+        const [galeria] = Object.values(files) as any
+
+        
         try {
-    
-            const proyecto = await Proyectos.findOne({
-                where,
-            });       
-    
-            if (!proyecto) {
-                return res.status(404).json({
-                    msg: `No existe un proyecto con el id ${id}`
+            
+            const proyecto = await Proyectos.findByPk(id)
+
+            if (proyecto) {
+                proyecto.titulo = titulo;
+                proyecto.descripcion = descripcion;
+                proyecto.icono = icono;
+                proyecto.fechaInicio = fechaInicio;
+                proyecto.fechaFin = fechaFin;
+                proyecto.status = status;
+
+                    if (files && galeria) {
+                    
+                        const [imagen] = await uploadFile({files:galeria, folder: 'proyectos'})
+                        // Eliminar imagen anterior
+                        if (proyecto.imagen && proyecto.imagen !== imagen.url) {
+                            const oldImage = proyecto.imagen;
+                            await deleteFile([oldImage])
+                        }
+
+                        proyecto.imagen = imagen.url;
+                    }
+
+                await proyecto.save();               
+                await proyecto.setUsuariosProyecto(participantes);
+                await proyecto.reload({
+                    include: [{
+                        model: Usuarios,
+                        as: 'usuariosProyecto',
+                        attributes: userSingleAttr,
+                    }],
+                });
+
+                res.json({ proyecto });
+            }else{
+                res.status(400).json({
+                    msg: 'No existe el proyecto'
                 });
             }
-    
-            await proyecto.update({
-                titulo,
-                descripcion,
-                icono,
-                imagen,
-                fechaInicio,
-                fechaFin,
-                status,
-            });
 
-            await proyecto.setUsuariosProyecto(participantes);
 
-            await proyecto.reload('proyectosHito', 'usuariosProyecto');
-            res.json({ proyecto });
-    
         } catch (error) {
             console.log(error);
             res.status(500).json({
                 msg: 'Hable con el administrador'
             });
         }
+});
+            
+
+
     }
 
 
