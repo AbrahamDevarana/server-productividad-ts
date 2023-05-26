@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { Proyectos, Usuarios} from "../models";
-import { ProyectosProps, UsuarioInterface } from "../interfaces";
-import formidable, { Fields, Files } from "formidable";
-import { uploadFiles, uploadFile, deleteFile } from "../helpers/fileManagment";
-
+import { UsuarioInterface } from "../interfaces";
+import formidable from "formidable";
+import { uploadFile, deleteFile } from "../helpers/fileManagment";
+import { io } from "../services/socketService";
 
 const userSingleAttr = ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'];
 
@@ -85,12 +85,9 @@ export const createProyecto = async (req: Request, res: Response) => {
         const { titulo, descripcion, icono, fechaInicio, fechaFin, status } = fields
         const { id } = req.user as UsuarioInterface
 
-        const participantes = fields.participantes.toString().split(',');
-
-        
+        const participantes = fields.participantes.toString().split(',');      
             
         const [galeria] = Object.values(files) as any
-
 
         try {
             const proyecto = await Proyectos.create({
@@ -103,7 +100,7 @@ export const createProyecto = async (req: Request, res: Response) => {
                 propietarioId: id
             });
 
-            if (files) {
+            if (galeria) {
                 const [imagen] = await uploadFile({files:galeria, folder: 'proyectos'})                
                 proyecto.imagen = imagen.url;   
                 await proyecto.save();
@@ -119,6 +116,7 @@ export const createProyecto = async (req: Request, res: Response) => {
             });
 
 
+            io.to(participantes).emit('proyecto:created', proyecto);
             res.json({ proyecto });
 
         } catch (error) {
@@ -188,6 +186,8 @@ export const updateProyecto = async (req: Request, res: Response) => {
                     }],
                 });
 
+                io.to(participantes).emit('proyecto:updated', proyecto);
+
                 res.json({ proyecto });
             }else{
                 res.status(400).json({
@@ -206,6 +206,6 @@ export const updateProyecto = async (req: Request, res: Response) => {
             
 
 
-    }
+}
 
 

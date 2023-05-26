@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 
-    const io = new Server()
+const io = new Server()
 
 const socketService = (server: any) => {
     io.attach(server, {
@@ -44,6 +44,6 @@ const socketService = (server: any) => {
     });
 }
 
-export default socketService;
+export { io, socketService };
 
     

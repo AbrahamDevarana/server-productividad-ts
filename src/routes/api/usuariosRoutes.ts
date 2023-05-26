@@ -4,7 +4,6 @@ import { getUsuario, getUsuarios, createUsuario, updateUsuario, deleteUsuario, u
 import { validarCampos } from '../../middleware/validateFields';
 const router = Router();
 
-
 router.get('/', getUsuarios);
 router.get('/:id', getUsuario);
 router.get('/perfil/:id', getPerfil);

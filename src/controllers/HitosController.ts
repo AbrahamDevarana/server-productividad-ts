@@ -2,13 +2,15 @@
 import { Request, Response } from "express";
 import { Hitos, Tareas, UsuarioHitosOrden, Usuarios } from "../models";
 import { HitosProps, UsuarioInterface } from "../interfaces";
+import { io } from "../services/socketService";
+
+
+const userSingleAttr = ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'];
 
 export const getHitos = async (req: Request, res: Response) => {
 
     const { id } = req.user as UsuarioInterface;
-    const { proyectoId } = req.query;
-    console.log(proyectoId);
-    
+    const { proyectoId } = req.query;    
     const where: any = {};
 
     if (proyectoId) {
@@ -33,7 +35,7 @@ export const getHitos = async (req: Request, res: Response) => {
                 as: 'tareas',
                 include: [{
                     model: Usuarios,
-                    attributes : ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes : userSingleAttr,
                     as: 'usuariosTarea',
                     through: {
                         attributes: []
@@ -41,12 +43,12 @@ export const getHitos = async (req: Request, res: Response) => {
                 },
                 {
                     model: Usuarios,
-                    attributes : ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes : userSingleAttr,
                     as: 'propietario',
                 }]
-            }],
-            logging: console.log
+            }]
         });
+        
 
         res.json({ hitos });
 
@@ -65,7 +67,34 @@ export const createHito = async (req: Request, res: Response) => {
     try {
         const hito = await Hitos.create({proyectoId});
 
-        await hito.reload(['tareas', 'ordenHito']);
+        await hito.reload({
+            include: [{
+                model: Usuarios,
+                attributes: ['id'],
+                through: {
+                    attributes: ['orden'],
+                },
+                as: 'ordenHito',
+            }, {
+                model: Tareas,
+                as: 'tareas',
+                include: [{
+                    model: Usuarios,
+                    attributes: userSingleAttr,
+                    as: 'usuariosTarea',
+                    through: {
+                        attributes: []
+                    },
+                },
+                {
+                    model: Usuarios,
+                    attributes: userSingleAttr,
+                    as: 'propietario',
+                }]
+            }]
+        });
+
+        // Obtener array de UsuariosTarea
         res.json({ hito });
 
     } catch (error) {
@@ -88,7 +117,7 @@ export const updateHito = async (req: Request, res: Response) => {
 
             const hito = await Hitos.findByPk(id);
 
-            hito.update({
+            await hito.update({
                 titulo,
                 descripcion,
                 fechaInicio,
@@ -96,6 +125,37 @@ export const updateHito = async (req: Request, res: Response) => {
                 status,
                 proyectoId,
             });
+
+            await hito.reload({
+                include: [{
+                    model: Usuarios,
+                    attributes: ['id'],
+                    through: {
+                        attributes: ['orden'],
+                    },
+                    as: 'ordenHito',
+                }, {
+                    model: Tareas,
+                    as: 'tareas',
+                    include: [{
+                        model: Usuarios,
+                        attributes: userSingleAttr,
+                        as: 'usuariosTarea',
+                        through: {
+                            attributes: []
+                        },
+                    },
+                    {
+                        model: Usuarios,
+                        attributes: userSingleAttr,
+                        as: 'propietario',
+                    }]
+                }]
+            });
+
+            const [usuarioObject] = hito.tareas.map((tarea: any) => tarea.usuariosTarea)
+            const usuariosTarea = usuarioObject.map((usuario: any) => usuario.id);
+            io.to(usuariosTarea).emit('hitos:updated', hito);
 
             res.json({ hito });
     
