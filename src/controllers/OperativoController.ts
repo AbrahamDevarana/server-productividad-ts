@@ -186,12 +186,12 @@ export const getObjetivo = async (req: Request, res: Response) => {
                 },
                 {
                     model: Usuarios,
-                    as: 'propietario_op',
+                    as: 'operativoPropietario',
                     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
                 },
                 {
                     model: ResultadosClave,
-                    as: 'resultados_clave',
+                    as: 'resultadosClave',
                     attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
                 }
             ]
@@ -202,7 +202,7 @@ export const getObjetivo = async (req: Request, res: Response) => {
             });
         }
 
-        res.json(operativo);
+        res.json({operativo});
     
     } catch (error) {
         console.log(error);

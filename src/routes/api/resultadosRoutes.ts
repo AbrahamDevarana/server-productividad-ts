@@ -9,14 +9,10 @@ const router = Router();
 router.get('/', getResultadosClave);
 router.get('/:id', getResultadoClave);
 router.post('/', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('propietarioId', 'El propietario es obligatorio').not().isEmpty(),
     check('operativoId', 'El operativo es obligatorio').not().isEmpty(),
     validarCampos
 ], createResultadosClave);
 router.put('/:id', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('propietarioId', 'El propietario es obligatorio').not().isEmpty(),
     check('operativoId', 'El operativo es obligatorio').not().isEmpty(),
     validarCampos
 ], updateResultadosClave);

@@ -9,7 +9,8 @@ export const ResultadosClave = database.define('resultado_clave', {
     },
     nombre: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 'Nuevo Resultado Clave'
     },
     progreso: {
         type: Sequelize.FLOAT,
@@ -23,11 +24,9 @@ export const ResultadosClave = database.define('resultado_clave', {
     },
     fechaInicio: {
         type: Sequelize.DATE,
-        allowNull: true
     },
     fechaFin: {
         type: Sequelize.DATE,
-        allowNull: true
     },
     operativoId: {
         type: Sequelize.UUID,

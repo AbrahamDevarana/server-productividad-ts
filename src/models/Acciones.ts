@@ -20,6 +20,10 @@ export const Acciones = database.define('acciones', {
         allowNull: false,
         defaultValue: 1
     },
+    resultadoClaveId: {
+        type: Sequelize.UUID,
+        allowNull: false
+    },
     propietarioId: {
         type: Sequelize.UUID,
         allowNull: false

@@ -1,17 +1,27 @@
 import { Request, Response } from "express";
-import { ResultadosClave } from "../models";
+import { Acciones, ResultadosClave } from "../models";
+import { UsuarioInterface } from "../interfaces";
  
 export const getResultadosClave = async (req: Request, res: Response) => {
-    const {  } = req.params;
+    const { operativoId } = req.params;
+    let where: any = {}
 
-    let where = {}
+    if(operativoId){
+        where.operativoId = operativoId;
+    }
 
     try {
         const resultadosClave = await ResultadosClave.findAll({
-            where: {
-                ...where,
-            },
+            where: where,
             order: [['createdAt', 'ASC']],
+            include: [
+                {
+                    model: Acciones,
+                    as: 'acciones',
+                    attributes: ['id', 'nombre', 'descripcion', 'status', 'resultadoClaveId', 'propietarioId'],
+                }
+            ]
+
         });
 
         res.json({ resultadosClave });
@@ -46,18 +56,14 @@ export const getResultadoClave = async (req: Request, res: Response) => {
 }
 
 export const createResultadosClave = async (req: Request, res: Response) => {
-    const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin } = req.body;
+    const { operativoId } = req.body;
+
+    const { id: propietarioId } = req.user as UsuarioInterface
 
     try {
         const resultadoClave = await ResultadosClave.create({
-            nombre,
-            progreso,
-            tipoProgreso,
-            fechaInicio,
-            fechaFin,
             propietarioId,
             operativoId,
-            status
         });
 
         res.json({ resultadoClave });
