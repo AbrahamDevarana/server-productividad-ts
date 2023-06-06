@@ -13,12 +13,11 @@ export const Acciones = database.define('acciones', {
     },
     descripcion: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     status: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 1
+        defaultValue: 0
     },
     resultadoClaveId: {
         type: Sequelize.UUID,

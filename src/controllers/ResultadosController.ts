@@ -1,6 +1,15 @@
 import { Request, Response } from "express";
 import { Acciones, ResultadosClave } from "../models";
 import { UsuarioInterface } from "../interfaces";
+
+
+const includeProps = [
+    {
+        model: Acciones,
+        as: 'acciones',
+        attributes: ['id', 'nombre', 'descripcion', 'status', 'resultadoClaveId', 'propietarioId'],
+    }
+]
  
 export const getResultadosClave = async (req: Request, res: Response) => {
     const { operativoId } = req.params;
@@ -14,13 +23,7 @@ export const getResultadosClave = async (req: Request, res: Response) => {
         const resultadosClave = await ResultadosClave.findAll({
             where: where,
             order: [['createdAt', 'ASC']],
-            include: [
-                {
-                    model: Acciones,
-                    as: 'acciones',
-                    attributes: ['id', 'nombre', 'descripcion', 'status', 'resultadoClaveId', 'propietarioId'],
-                }
-            ]
+            include: includeProps
 
         });
 
@@ -39,7 +42,9 @@ export const getResultadoClave = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const resultado = await ResultadosClave.findByPk(id);
+        const resultado = await ResultadosClave.findByPk(id,{
+            include: includeProps
+        });
         
         if (!resultado) {
             return res.status(404).json({
@@ -66,6 +71,10 @@ export const createResultadosClave = async (req: Request, res: Response) => {
             operativoId,
         });
 
+        await resultadoClave.reload({
+            include: includeProps
+        })
+
         res.json({ resultadoClave });
     }
     catch (error) {
@@ -91,6 +100,10 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
         }
 
         await resultado.update({ nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin  });
+
+        await resultado.reload({
+            include: includeProps
+        })
 
         res.json({ resultado });
     }

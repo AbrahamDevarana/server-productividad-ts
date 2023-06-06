@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Acciones } from "../models";
 import { Op } from "sequelize";
+import { UsuarioInterface } from "../interfaces";
 
 
 export const getAcciones = async (req: Request, res: Response) => {
@@ -28,15 +29,16 @@ export const getAcciones = async (req: Request, res: Response) => {
 }
 
 export const createAcciones = async (req: Request, res: Response) => {
-    const { nombre, descripcion, propietarioId, resultadoClaveId } = req.body;
+    const { nombre, resultadoClaveId } = req.body;
+
+    const { id: propietarioId} = req.user as UsuarioInterface
 
     try {
         const accion = await Acciones.create({
             nombre,
-            descripcion,
-            propietarioId,
+            resultadoClaveId,
+            propietarioId: propietarioId,
         });
-
 
         res.json({ accion });
     }
