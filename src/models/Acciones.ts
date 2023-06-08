@@ -1,7 +1,23 @@
-import Sequelize from "sequelize";
+import Sequelize, { Model } from "sequelize";
 import database from "../config/database";
+import { ResultadosClave } from "./ResultadoClave";
 
-export const Acciones = database.define('acciones', {
+
+export interface AccionAttributes {
+    id?: string;
+    nombre: string;
+    descripcion?: string;
+    status?: number;
+    resultadoClaveId: string;
+    propietarioId: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface AccionInstance extends Model<AccionAttributes>, AccionAttributes {}
+
+
+export const Acciones = database.define<AccionInstance>('acciones', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -39,8 +55,36 @@ export const Acciones = database.define('acciones', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        beforeUpdate: async (accion: any) => {
-            accion.updatedAt = new Date();
+        afterUpdate: async (accion: AccionInstance, options) => {
+           
+            const resultadoClave = await ResultadosClave.findOne({
+                where: {
+                    id: accion.resultadoClaveId
+                }
+            });
+            
+            const acciones = await Acciones.findAll({
+                where: {
+                    resultadoClaveId: accion.resultadoClaveId
+                }
+            });
+
+
+            if(resultadoClave){
+                if(resultadoClave.tipoProgreso === 'progreso'){
+                    console.log('Progreso');
+                    
+                    let progreso = 0;
+                    acciones.forEach(accion => {
+                        if(accion.status === 1){
+                            progreso += 1;
+                        }
+                    });
+                    await resultadoClave.update({
+                        progreso: progreso/acciones.length
+                    });
+                }     
+            }
         }
     },
     defaultScope: {

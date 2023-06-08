@@ -1,7 +1,23 @@
-import Sequelize  from "sequelize";
+import Sequelize, { Model }  from "sequelize";
 import database from "../config/database";
 
-export const ResultadosClave = database.define('resultado_clave', {
+export interface ResultadoClaveAttributes {
+    id?: string;
+    nombre: string;
+    progreso?: number;
+    tipoProgreso?: string;
+    fechaInicio?: Date;
+    fechaFin?: Date;
+    operativoId: string;
+    propietarioId: string;
+    status?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ResultadoClaveInstance extends Model<ResultadoClaveAttributes>, ResultadoClaveAttributes {}
+
+export const ResultadosClave = database.define<ResultadoClaveInstance>('resultado_clave', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -45,10 +61,8 @@ export const ResultadosClave = database.define('resultado_clave', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: (resultadoClave, options) => {
-            resultadoClave.update({
-                updatedAt: Sequelize.NOW
-            });
+        afterUpdate: (resultadoClave: ResultadoClaveInstance, options) => {
+            
         }
     },
     defaultScope: {

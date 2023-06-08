@@ -12,7 +12,9 @@ const includeProps = [
 ]
  
 export const getResultadosClave = async (req: Request, res: Response) => {
-    const { operativoId } = req.params;
+    const { operativoId } = req.query;    
+    
+    
     let where: any = {}
 
     if(operativoId){
@@ -69,6 +71,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
         const resultadoClave = await ResultadosClave.create({
             propietarioId,
             operativoId,
+            nombre: 'Nuevo resultado clave',
         });
 
         await resultadoClave.reload({

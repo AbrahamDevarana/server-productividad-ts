@@ -69,7 +69,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, status } = req.body;
-    const participantesIds = operativosResponsable.map((responsable: any) => responsable.id);
+
+    console.log(operativosResponsable);
+    
 
     try {
         const operativo = await ObjetivoOperativos.findByPk(id);
@@ -92,13 +94,13 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 
         // @ts-ignore
-        await operativo.setOperativosResponsable(participantesIds);
+        await operativo.setOperativosResponsable(operativosResponsable);
         await operativo.reload( { include: 
-            ['operativosResponsable', 'propietario_op', 'resultados_clave']
+            ['operativosResponsable', 'operativoPropietario', 'resultadosClave']
         } );
 
 
-        res.json(operativo);
+        res.json({operativo});
     
     } catch (error) {
         console.log(error);
@@ -130,11 +132,11 @@ export const createOperativo = async (req: Request, res: Response) => {
         // @ts-ignore
         await operativo.setOperativosResponsable(participantesIds);
         await operativo.reload( { include: 
-            ['operativosResponsable', 'propietario_op', 'resultados_clave']
+            ['operativosResponsable', 'operativoPropietario', 'resultadosClave']
         } );
        
 
-        res.json(operativo);
+        res.json({operativo});
     
     } catch (error) {
         console.log(error);

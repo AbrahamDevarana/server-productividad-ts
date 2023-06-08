@@ -87,12 +87,13 @@ export const getPerfil = async (req: Request, res: Response) => {
                 { 
                     model: ObjetivoOperativos, as: 'objetivosOperativos', 
                     include: [
-                        { model: ResultadosClave, as:'resultadosClave', where: { propietarioId: idUsuario } },
+                        { model: ResultadosClave, as:'resultadosClave' },
                     ] 
                 },
                 { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
                 
             ]});
+
         if (usuario) {
             res.json({ usuario });
         } else {
