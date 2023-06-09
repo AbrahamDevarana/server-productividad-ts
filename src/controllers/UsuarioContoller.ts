@@ -110,6 +110,47 @@ export const getPerfil = async (req: Request, res: Response) => {
     }
 }
 
+export const updatePerfil = async (req: Request, res: Response) => {
+        
+    const { id } = req.params;
+    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil } = req.body;
+
+    try {
+        const usuario = await Usuarios.findByPk(id)
+
+        if (!usuario) {
+            return res.status(404).json({
+                msg: 'No existe un usuario con el id ' + id
+            });
+        }
+
+        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil });            
+
+        await usuario.reload({
+            include: [
+                { model: Departamentos, as: 'departamento', include: ['area']}, 
+                { model: Direccion, as: 'direccion' },
+                { 
+                    model: ObjetivoOperativos, as: 'objetivosOperativos', 
+                    include: [
+                        { model: ResultadosClave, as:'resultadosClave' },
+                    ] 
+                },
+                { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
+                
+            ]
+        });
+
+        res.json({usuario});
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
 export const createUsuario = async (req: Request, res: Response) => {
         
     const { nombre, apellidoPaterno, apellidoMaterno, email, telefono } = req.body;    
@@ -149,11 +190,8 @@ export const createUsuario = async (req: Request, res: Response) => {
 export const updateUsuario = async (req: Request, res: Response) => {
         
         const { id } = req.params;
-        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, 
-            departamentoId = null, puesto = null, leaderId = null,
-            fechaNacimiento = null, fechaIngreso = null, direccion = {}
-        } = req.body;
-
+        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil } = req.body;
+        
         try {
             const usuario = await Usuarios.findByPk(id,
                 {
@@ -166,21 +204,47 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 });
             }
 
-            // const formatFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD HH:mm:ss') : null;
-            // const formatFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD HH:mm:ss') : null;
+            const formatedFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD') : null;
+            const formatedFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD') : null;
+
             
-            await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId, puesto, leaderId, fechaNacimiento, fechaIngreso });            
+
+            await usuario.update({ 
+                nombre: nombre ? nombre : usuario.nombre,
+                apellidoPaterno: apellidoPaterno ? apellidoPaterno : usuario.apellidoPaterno, 
+                apellidoMaterno: apellidoMaterno ? apellidoMaterno : usuario.apellidoMaterno,
+                email: email ? email : usuario.email,
+                telefono: telefono ? telefono : usuario.telefono,
+                departamentoId: departamentoId ? departamentoId : usuario.departamentoId,
+                puesto: puesto ? puesto : usuario.puesto,
+                leaderId: leaderId ? leaderId : usuario.leaderId,
+                fechaNacimiento: formatedFechaNacimiento ? formatedFechaNacimiento : usuario.fechaNacimiento,
+                fechaIngreso: formatedFechaIngreso ? formatedFechaIngreso : usuario.fechaIngreso,
+                descripcionPerfil: descripcionPerfil ? descripcionPerfil : usuario.descripcionPerfil,
+            });            
 
             if(direccion){
 
                 const { codigoPostal = null, colonia = null, calle = null, numeroExterior = null, numeroInterior = null, estado = null, ciudad = null } = direccion;  
 
                 if (usuario.direccion) {
-                    await usuario.direccion.update({ codigoPostal, colonia, calle, numeroExterior, numeroInterior, estado, ciudad });
+                    await usuario.direccion.update({ 
+                        codigoPostal, 
+                        colonia, 
+                        calle, 
+                        numeroExterior, 
+                        numeroInterior, 
+                        estado, 
+                        ciudad 
+                    });
                 } else {
                     await usuario.createDireccion({ codigoPostal, colonia, calle, numeroExterior, numeroInterior, estado, ciudad });
                 }
             }
+
+            await usuario.reload({
+                include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
+            });
 
             res.json({usuario});
     
