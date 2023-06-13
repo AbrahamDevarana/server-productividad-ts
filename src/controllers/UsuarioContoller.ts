@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, Social } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -91,6 +91,7 @@ export const getPerfil = async (req: Request, res: Response) => {
                     ] 
                 },
                 { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
+                { model: Social, as: 'social'}
                 
             ]});
 
@@ -113,7 +114,7 @@ export const getPerfil = async (req: Request, res: Response) => {
 export const updatePerfil = async (req: Request, res: Response) => {
         
     const { id } = req.params;
-    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil } = req.body;
+    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades } = req.body;
 
     try {
         const usuario = await Usuarios.findByPk(id)
@@ -124,7 +125,7 @@ export const updatePerfil = async (req: Request, res: Response) => {
             });
         }
 
-        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil });            
+        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades });            
 
         await usuario.reload({
             include: [

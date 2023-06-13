@@ -56,6 +56,9 @@ export const Usuarios = database.define('usuarios', {
     descripcionPerfil: {
         type: Sequelize.TEXT,
     },
+    responsabilidades: {
+        type: Sequelize.TEXT,
+    },
     status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

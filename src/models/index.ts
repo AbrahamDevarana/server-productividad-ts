@@ -24,6 +24,7 @@ import { PivotTareasResponsables } from './pivot/PivotTareasResponsables';
 import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
 import { PivotProyectoUsuarios } from './pivot/PivotProyectoUsuarios';
 import { Comentarios } from './Comentarios';
+import { Social } from './Social';
 
 
 
@@ -36,6 +37,7 @@ Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDe
 Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyectos', foreignKey: 'usuarioId' });
 Usuarios.hasMany(ObjetivoOperativos, { as: 'objetivosOperativos', foreignKey: 'propietarioId' });
 Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
+Usuarios.hasMany(Social, { as: 'social', foreignKey: 'usuarioId' });
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -156,6 +158,7 @@ export {
     Tareas,
     Proyectos,
     Hitos,
+    Social,
     Comentarios,
 
     PivotTareasResponsables,
