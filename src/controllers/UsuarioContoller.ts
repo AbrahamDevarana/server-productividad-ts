@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, Social } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, Social, GaleriaUsuarios, ConfiguracionUsuario } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -7,6 +7,23 @@ import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFiles } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
+
+
+const perfilInclude = [
+    { model: Departamentos, as: 'departamento', include: ['area']}, 
+    { model: Direccion, as: 'direccion' },
+    { 
+        model: ObjetivoOperativos, as: 'objetivosOperativos', 
+        include: [
+            { model: ResultadosClave, as:'resultadosClave' },
+        ] 
+    },
+    { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
+    { model: Social, as: 'social'},
+    { model: GaleriaUsuarios, as: 'galeria'},
+    { model: ConfiguracionUsuario, as: 'configuracion'}
+    
+]
 
 export const getUsuarios = async (req: Request, res: Response) => {
    
@@ -76,24 +93,13 @@ export const getUsuario = async (req: Request, res: Response) => {
 
 export const getPerfil = async (req: Request, res: Response) => {
 
-    const { id } = req.params;
-    const { id: idUsuario } = req.user as UsuarioInterface;
+    const { slug } = req.params;
 
     try {
-        const usuario = await Usuarios.findByPk(id,
-            { include: [
-                { model: Departamentos, as: 'departamento', include: ['area']}, 
-                { model: Direccion, as: 'direccion' },
-                { 
-                    model: ObjetivoOperativos, as: 'objetivosOperativos', 
-                    include: [
-                        { model: ResultadosClave, as:'resultadosClave' },
-                    ] 
-                },
-                { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
-                { model: Social, as: 'social'}
-                
-            ]});
+        const usuario = await Usuarios.findOne({
+            where: { [Op.or]: [{ slug }, { id: slug }] },
+            include: perfilInclude
+        });
 
         if (usuario) {
             res.json({ usuario });
@@ -128,18 +134,7 @@ export const updatePerfil = async (req: Request, res: Response) => {
         await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades });            
 
         await usuario.reload({
-            include: [
-                { model: Departamentos, as: 'departamento', include: ['area']}, 
-                { model: Direccion, as: 'direccion' },
-                { 
-                    model: ObjetivoOperativos, as: 'objetivosOperativos', 
-                    include: [
-                        { model: ResultadosClave, as:'resultadosClave' },
-                    ] 
-                },
-                { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
-                
-            ]
+            include: perfilInclude
         });
 
         res.json({usuario});

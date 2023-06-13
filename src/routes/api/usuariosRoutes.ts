@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', getUsuarios);
 router.get('/:id', getUsuario);
-router.get('/perfil/:id', getPerfil);
+router.get('/perfil/:slug', getPerfil);
 
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),

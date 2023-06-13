@@ -3,6 +3,7 @@ import database from "../config/database";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import { UsuarioInterface } from "../interfaces";
+import slugify from "slugify";
 
 export const Usuarios = database.define('usuarios', {
     id: {
@@ -31,6 +32,9 @@ export const Usuarios = database.define('usuarios', {
     email: {
         type: Sequelize.STRING,
         allowNull: false,
+    },
+    slug: {
+        type: Sequelize.STRING,
     },
     password: {
         type: Sequelize.TEXT,
@@ -97,6 +101,13 @@ export const Usuarios = database.define('usuarios', {
 
             usuario.createdAt = new Date();
             usuario.updatedAt = new Date();
+
+            const slugName = slugify(`${usuario.nombre} ${usuario.apellidoPaterno}`, {
+                lower: true,
+                remove: /[*+~.()'"!:@]/g
+            });
+
+            usuario.slug = slugName + '-' + uuidv4().slice(0, 3);
         },
         beforeSave: async (usuario: any) => {
             if(usuario.leaderId) {
