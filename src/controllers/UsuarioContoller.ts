@@ -28,9 +28,10 @@ const perfilInclude = [
 export const getUsuarios = async (req: Request, res: Response) => {
    
 
-    const { nombre, apellidoPaterno, apellidoMaterno, email, page = 0, size = 10, search } = req.query;
+    const { nombre, apellidoPaterno, apellidoMaterno, email, page, size, search } = req.query;
     
     const { limit, offset } = getPagination(Number(page), Number(size));
+    
 
     const where: any = {};  
 
@@ -49,12 +50,11 @@ export const getUsuarios = async (req: Request, res: Response) => {
         const result = await Usuarios.findAndCountAll({
             where,
             include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
-            // limit,
-            // offset            
+            limit: size ? limit: undefined,
+            offset: size ? offset: undefined,
         })
 
         const usuarios = getPagingData(result, Number(page), Number(size))
-        
         res.json({ usuarios });
 
     } catch (error) {
@@ -64,6 +64,7 @@ export const getUsuarios = async (req: Request, res: Response) => {
         });
     }
 };
+
 
 export const getUsuario = async (req: Request, res: Response) => {
     

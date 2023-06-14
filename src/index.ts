@@ -56,7 +56,7 @@ dbConfig.sync({
 
 }).catch((err) => {
     const errorinfo = `${new Date(Date.now()).toLocaleString()} - ${err} \n`
-    console.log(errorinfo);
+    console.log(err);
     fs.appendFile('src/logs/error.log', errorinfo, function (err) {
         if (err) throw err;
         process.exit(1);
