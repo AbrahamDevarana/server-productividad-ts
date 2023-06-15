@@ -96,27 +96,17 @@ const deleteFile = async (files: any[]): Promise<boolean> => {
     }
 };
 
-const uploadFile = async ({ files, folder, cropW = 500, cropH, crop = false }: SingleFileProps): Promise<{ name: string; url: string }[]> => {
+const uploadFile = async ({ files, folder}: SingleFileProps): Promise<{ name: string; url: string }[]> => {
     const galeria: { name: string; url: string }[] = [];
 
     const elements = Array.isArray(files) ? files : [files];  
 
     await Promise.all(
-        elements.map(async (file: any) => { 
+        elements.map( async (file: any) => { 
             let bufferedFile: any = file.filepath;
             if (file.mimetype.includes('image')) {
                 const tinified = tinify.fromFile(file.filepath);
-                // crop
-                if(crop) {
-                    const croppedAndTinified = tinified.resize({
-                        method: 'scale',
-                        width: cropW,
-                        height: cropH,
-                    });
-                    bufferedFile = await croppedAndTinified.toBuffer();
-                }else{
-                    bufferedFile = await tinified.toBuffer();
-                }
+				bufferedFile = await tinified.toBuffer();
             }
             else {
                 bufferedFile = await fs.promises.readFile(file.filepath);
