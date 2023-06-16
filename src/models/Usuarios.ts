@@ -89,6 +89,10 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
     },
+    social: {
+        type: Sequelize.JSON,
+        allowNull: true
+    }
 }, {
     paranoid: true,
     timestamps: true,

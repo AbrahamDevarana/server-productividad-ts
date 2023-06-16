@@ -26,57 +26,6 @@ interface SingleFileProps {
     crop?: boolean;
 }
 
-const uploadFiles = async (files: any, folder: string, cropW: number = 500, cropH?: number): Promise<any[]> => {
-    const galeria: any[] = [];
-  
-    await Promise.all(
-      files.map(async (file: any) => {
-        let bufferedFile: any = file.filepath;
-  
-        if (file.mimetype.includes('image')) {
-          const tinified = tinify.fromFile(file.filepath);
-          // crop
-          // const croppedAndTinified = tinified.resize({
-          //   method: 'scale',
-          //   width: cropW,
-          //   height: cropH,
-          // });
-  
-          bufferedFile = await tinified.toBuffer();
-        } else {
-          bufferedFile = await fs.promises.readFile(file.filepath);
-        }
-  
-        const folderDest = `${process.env.AWS_STORAGE_FOLDER}/${folder}`;
-
-        const fileName = `${Date.now()}-${file.originalFilename}`;
-  
-        const params = {
-          Bucket: process.env.AWS_BUCKET_NAME || '',
-          Key: `${folderDest}/${fileName}`,
-          Body: bufferedFile,
-          ACL: 'public-read',
-          ContentType: file.mimetype,
-        };
-  
-        const data = await s3Client.send(new PutObjectCommand(params));
-  
-        if (data.$metadata.httpStatusCode === 200) {
-          galeria.push({
-            name: file.originalFilename,
-            url: fileName
-          });
-        } else {
-          throw new Error('Error al subir el archivo');
-        }
-      })
-    );
-  
-    return galeria;
-};
-
-
-
 
 const deleteFile = async (files: any[]): Promise<boolean> => {
     try {
@@ -106,7 +55,7 @@ const uploadFile = async ({ files, folder}: SingleFileProps): Promise<{ name: st
             let bufferedFile: any = file.filepath;
             if (file.mimetype.includes('image')) {
                 const tinified = tinify.fromFile(file.filepath);
-				bufferedFile = await tinified.toBuffer();
+				        bufferedFile = await tinified.toBuffer();
             }
             else {
                 bufferedFile = await fs.promises.readFile(file.filepath);
@@ -137,7 +86,6 @@ const uploadFile = async ({ files, folder}: SingleFileProps): Promise<{ name: st
 };
 
 export {
-    uploadFiles,
     uploadFile,
     deleteFile
 };

@@ -1,12 +1,11 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, Social, GaleriaUsuarios, ConfiguracionUsuario } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
-import { deleteFile, uploadFiles } from "../helpers/fileManagment";
-import { UsuarioInterface } from "../interfaces";
+import { deleteFile, uploadFile } from "../helpers/fileManagment";
 
 
 const perfilInclude = [
@@ -19,7 +18,6 @@ const perfilInclude = [
         ] 
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
-    { model: Social, as: 'social'},
     { model: GaleriaUsuarios, as: 'galeria'},
     { model: ConfiguracionUsuario, as: 'configuracion'}
     
@@ -63,8 +61,7 @@ export const getUsuarios = async (req: Request, res: Response) => {
             msg: 'Hable con el administrador'
         });
     }
-};
-
+}
 
 export const getUsuario = async (req: Request, res: Response) => {
     
@@ -121,7 +118,8 @@ export const getPerfil = async (req: Request, res: Response) => {
 export const updatePerfil = async (req: Request, res: Response) => {
         
     const { id } = req.params;
-    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades } = req.body;
+    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades, social } = req.body;
+
 
     try {
         const usuario = await Usuarios.findByPk(id)
@@ -132,11 +130,12 @@ export const updatePerfil = async (req: Request, res: Response) => {
             });
         }
 
-        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades });            
+        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades, social });            
 
         await usuario.reload({
             include: perfilInclude
         });
+
 
         res.json({usuario});
 
@@ -276,17 +275,16 @@ export const deleteUsuario = async (req: Request, res: Response) => {
             msg: 'Hable con el administrador'
         });
     }
-}   
+}
 
 export const uploadPhoto = async (req: Request, res: Response) => {
 
-
-    
     const form = formidable ({ multiples: true });
-    const {id } = req.params;
-
+    const {id } = req.params;    
+    
     form.parse(req, async (err: Error, fields: Fields, files: Files) => {
 
+    
         if (err) {
             console.error(err);
             res.status(500).send(err);
@@ -305,16 +303,17 @@ export const uploadPhoto = async (req: Request, res: Response) => {
                 });
             }
 
-            const result = await uploadFiles(galeria, 'profile-picture', 500, 150 );
+            const result = await uploadFile({ files: galeria, folder: 'profile-picture' });
 
             if(result.length > 0){
                 await usuario.update({ foto: result[0].url });
             }
              
-            res.json({
-                ok: true,
-                status: 200,
+            await usuario.reload({
+                include: perfilInclude
             });
+
+            res.json({usuario});
 
         } catch (error) {
             console.log(error);

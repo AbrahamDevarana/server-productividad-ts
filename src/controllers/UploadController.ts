@@ -1,5 +1,5 @@
 import formidable, { Files, Fields } from 'formidable';
-import { deleteFile, uploadFiles } from "../helpers/fileManagment";
+import { deleteFile, uploadFile } from "../helpers/fileManagment";
 
 import { Proyectos } from '../models'
 
@@ -27,7 +27,10 @@ export const uploadProyectoBanner = async (req: any, res: any) => {
 
         try {
                 
-            const result = await uploadFiles(galeria, 'proyectos' );
+            const result = await uploadFile({
+                files: galeria,
+                folder: 'proyectos'
+            } );
 
             if(result){
                 await proyecto.update({
