@@ -65,7 +65,7 @@ dbConfig.sync({
 
 process.on('uncaughtException', (err) => {
     const errorinfo = `${new Date(Date.now()).toLocaleString()} - ${err} \n`
-    console.log(errorinfo);
+    console.log(err);
     fs.appendFile('src/logs/error.log', errorinfo, function (err) {
         if (err) throw err;
         process.exit(1);
@@ -74,7 +74,7 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (err) => {
     const errorinfo = `${new Date(Date.now()).toLocaleString()} - ${err} \n`
-    console.log(errorinfo);
+    console.log(err);
     fs.appendFile('src/logs/error.log', errorinfo, function (err) {
         if (err) throw err;
         process.exit(1);

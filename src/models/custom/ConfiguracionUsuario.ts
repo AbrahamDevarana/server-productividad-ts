@@ -1,12 +1,24 @@
 import Sequelize from "sequelize";
 import database from "../../config/database";
 
-const ConfiguracionUsuario = database.define('configuracion_usuario', {
-    id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+
+export interface ConfiguracionUsuarioAttributes {
+    usuarioId: string;
+    notificacionesWeb: boolean;
+    notificacionesEmail: boolean;
+    notificacionesEmailDiario: boolean;
+    notificacionesEmailSemanal: boolean;
+    notificacionesEmailMensual: boolean;
+    notificacionesEmailTrimestral: boolean;
+    portadaPerfil: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ConfiguracionUsuarioInstance extends Sequelize.Model<ConfiguracionUsuarioAttributes>, ConfiguracionUsuarioAttributes {}
+
+
+const ConfiguracionUsuario = database.define<ConfiguracionUsuarioInstance>('configuracion_usuario', {
     usuarioId: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -43,8 +55,8 @@ const ConfiguracionUsuario = database.define('configuracion_usuario', {
         defaultValue: true
     },
     portadaPerfil: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
+        type: Sequelize.TEXT,
+        allowNull: true,
     },
 }, {
     paranoid: true,

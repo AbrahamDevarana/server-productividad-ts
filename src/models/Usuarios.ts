@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import { UsuarioInterface } from "../interfaces";
 import slugify from "slugify";
+import ConfiguracionUsuario from "./custom/ConfiguracionUsuario";
 
 export const Usuarios = database.define('usuarios', {
     id: {
@@ -112,6 +113,8 @@ export const Usuarios = database.define('usuarios', {
             });
 
             usuario.slug = slugName + '-' + uuidv4().slice(0, 3);
+
+            
         },
         beforeSave: async (usuario: any) => {
             if(usuario.leaderId) {
@@ -133,6 +136,18 @@ export const Usuarios = database.define('usuarios', {
 
             usuario.slug = slugName + '-' + uuidv4().slice(0, 3);
         },
+        afterCreate: async (usuario: any) => {
+            await ConfiguracionUsuario.create({
+                usuarioId: usuario.id,
+                notificacionesWeb: false,
+                notificacionesEmail: false,
+                notificacionesEmailDiario: false,
+                notificacionesEmailSemanal: false,
+                notificacionesEmailMensual: false,
+                notificacionesEmailTrimestral: false,
+                portadaPerfil: '',
+            });
+        }
     },
     defaultScope: {
         attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt' , 'googleId'] }

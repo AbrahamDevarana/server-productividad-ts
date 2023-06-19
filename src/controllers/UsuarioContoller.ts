@@ -6,6 +6,7 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
+import { UsuarioInterface } from "../interfaces";
 
 
 const perfilInclude = [
@@ -368,3 +369,63 @@ export const deletePhoto = async (req: Request, res: Response) => {
     }
 
 }
+
+
+export const uploadConfiguracion = async (req: Request, res: Response) => {
+    
+    const { id } = req.user as UsuarioInterface;
+    const { notificacionesWeb, 
+            notificacionesEmail, 
+            notificacionesEmailDiario, 
+            notificacionesEmailSemanal, 
+            notificacionesEmailMensual, 
+            notificacionesEmailTrimestral,
+            portadaPerfil
+        } = req.body
+    
+
+    try {
+    
+        const usuario = await ConfiguracionUsuario.findOrCreate({ 
+            where: { usuarioId: id },
+            defaults: {
+                usuarioId: id,
+                notificacionesWeb,
+                notificacionesEmail,
+                notificacionesEmailDiario,
+                notificacionesEmailSemanal,
+                notificacionesEmailMensual,
+                notificacionesEmailTrimestral,
+                portadaPerfil
+            }
+        });
+
+        if(!usuario[1]){
+            await usuario[0].update({ 
+                notificacionesWeb: notificacionesWeb ? notificacionesWeb : usuario[0].notificacionesWeb,
+                notificacionesEmail : notificacionesEmail ? notificacionesEmail : usuario[0].notificacionesEmail,
+                notificacionesEmailDiario : notificacionesEmailDiario ? notificacionesEmailDiario : usuario[0].notificacionesEmailDiario,
+                notificacionesEmailSemanal : notificacionesEmailSemanal ? notificacionesEmailSemanal : usuario[0].notificacionesEmailSemanal,
+                notificacionesEmailMensual : notificacionesEmailMensual ? notificacionesEmailMensual : usuario[0].notificacionesEmailMensual,
+                notificacionesEmailTrimestral : notificacionesEmailTrimestral ? notificacionesEmailTrimestral : usuario[0].notificacionesEmailTrimestral,
+                portadaPerfil : portadaPerfil ? portadaPerfil : usuario[0].portadaPerfil
+            });
+        }
+
+        await usuario[0].reload({
+            include: perfilInclude
+        });
+
+        res.json({ usuario: usuario[0] });
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });   
+    }
+}
+
+
+
