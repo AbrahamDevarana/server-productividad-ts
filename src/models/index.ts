@@ -59,6 +59,12 @@ Perspectivas.hasMany(ObjetivoEstrategico, { as: 'objetivos_estrategicos', foreig
 ObjetivoEstrategico.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 ObjetivoEstrategico.hasMany(Tacticos, { as: 'tacticos', foreignKey: 'estrategicoId' });
 ObjetivoEstrategico.belongsTo(Perspectivas, { as: 'perspectivas', foreignKey: 'perspectivaId' });
+ObjetivoEstrategico.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
+    scope: {
+        comentableType: 'operativo',
+    }
+});
+
 
 // Tacticos
 Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
@@ -91,6 +97,9 @@ Hitos.belongsToMany(Usuarios, { through: UsuarioHitosOrden, as: 'ordenHito', for
 Tareas.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 Tareas.belongsTo(Hitos, { as: 'tareas', foreignKey: 'hitoId' });
 
+
+Comentarios.belongsTo(Usuarios, { as: 'autor', foreignKey: 'usuarioId' });
+Comentarios.belongsTo(ObjetivoEstrategico, { as: 'objetivo_estrategico', foreignKey: 'comentableId', constraints: false, scope: { comentableType: 'estrategico' } });
 
 
 //* ----------------- Pivot tables -----------------

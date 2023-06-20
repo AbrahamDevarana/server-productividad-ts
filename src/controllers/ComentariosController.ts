@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { Op } from "sequelize";
 import { Comentarios, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import { ComentarioProps } from "../interfaces/Comentario";

@@ -1,4 +1,4 @@
-import { ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Comentarios, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
@@ -72,9 +72,21 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
                 model: Perspectivas,
                 as: 'perspectivas',
                 attributes: ['id', 'nombre', 'icono', 'color', 'status'],
+            },
+            {
+                model: Comentarios,
+                as: 'comentarios',
+                attributes: ['id', 'mensaje', 'createdAt'],
+                include: [
+                    {
+                        as: 'autor',
+                        model: Usuarios,
+                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    }
+                ]
             }
-
         ]});
+        
         if (objetivoEstrategico) {            
        
             res.json({

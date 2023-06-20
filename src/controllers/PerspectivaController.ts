@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos } from "../models";
+import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios } from "../models";
 import { Sequelize } from "sequelize";
 
 
@@ -30,7 +30,20 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                             model: Usuarios,
                             as: 'propietario',
                             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                        },
+                        {
+                            model: Comentarios,
+                            as: 'comentarios',
+                            attributes: ['id', 'mensaje', 'createdAt'],
+                            include: [
+                                {
+                                    as: 'autor',
+                                    model: Usuarios,
+                                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                                }
+                            ]
                         }
+
                     ],
                     // attributes: {
                     //     include: [
