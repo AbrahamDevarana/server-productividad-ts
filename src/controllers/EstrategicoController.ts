@@ -4,6 +4,43 @@ import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
 
 
+const includeProps = [
+    {
+        model: Tacticos,
+        as: 'tacticos',
+        include: ['propietario', 'responsables', 'areas']
+    },
+    {
+        model: Usuarios,
+        as: 'responsables',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+        through: { attributes: [] }
+    },
+    {
+        model: Usuarios,
+        as: 'propietario',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+    },
+    {
+        model: Perspectivas,
+        as: 'perspectivas',
+        attributes: ['id', 'nombre', 'icono', 'color', 'status'],
+    },
+    {
+        model: Comentarios,
+        as: 'comentarios',
+        attributes: ['id', 'mensaje', 'createdAt'],
+        include: [
+            {
+                as: 'autor',
+                model: Usuarios,
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+            }
+        ]
+    }
+]
+
+
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
     
 
@@ -51,42 +88,9 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
     const { id } = req.params;    
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { 
-        include: [
-            {
-                model: Tacticos,
-                as: 'tacticos',
-                include: ['propietario', 'responsables', 'areas']
-            },
-            {
-                model: Usuarios,
-                as: 'responsables',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
-                through: { attributes: [] }
-            },
-            {
-                model: Usuarios,
-                as: 'propietario',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
-            },
-            {
-                model: Perspectivas,
-                as: 'perspectivas',
-                attributes: ['id', 'nombre', 'icono', 'color', 'status'],
-            },
-            {
-                model: Comentarios,
-                as: 'comentarios',
-                attributes: ['id', 'mensaje', 'createdAt'],
-                include: [
-                    {
-                        as: 'autor',
-                        model: Usuarios,
-                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
-                    }
-                ]
-            }
-        ]});
-        
+        include: includeProps 
+    });
+
         if (objetivoEstrategico) {            
        
             res.json({
@@ -113,7 +117,7 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
         await objetivoEstrategico.setPerspectivas(perspectivaId);
         await objetivoEstrategico.setResponsables(responsables);
         await objetivoEstrategico.reload({
-            include: ['perspectivas', 'tacticos', 'responsables', 'propietario']
+            include: includeProps
         });
      
         res.json({
@@ -160,7 +164,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
      
 
             await objetivoEstrategico.reload({
-                include: ['perspectivas', 'tacticos', 'responsables', 'propietario']
+                include: includeProps
             });
 
             res.json({

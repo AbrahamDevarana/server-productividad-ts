@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios } from "../models";
-import { Sequelize } from "sequelize";
-
 
 export const getPerspectivas = async (req: Request, res: Response) => {
 
