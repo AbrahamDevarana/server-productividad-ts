@@ -57,11 +57,11 @@ export const getTacticos = async (req: Request, res: Response) => {
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const tactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'propietario', 'estrategico'] });
-        if (tactico) {
+        const objetivoTactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+        if (objetivoTactico) {
 
             res.json({
-                tactico
+                objetivoTactico
             });
         } else {
             res.status(404).json({
@@ -88,7 +88,7 @@ export const createTactico = async (req: Request, res: Response) => {
             const fechaFinTrimestre = i < trimestres - 1 ? dayjs(fechaInicio).add((i+1)*3, 'month').subtract(1, 'day').format('YYYY-MM-DD') : fechaFin;
             
 
-            const tactico = await Tacticos.create({ 
+            const objetivoTactico = await Tacticos.create({ 
                 nombre, 
                 codigo, 
                 meta, 
@@ -100,11 +100,11 @@ export const createTactico = async (req: Request, res: Response) => {
                 trimestres: i+1,
             });
             
-            await tactico.setResponsables(responsablesArray);
-            await tactico.setAreas(areasArray);
-            await tactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+            await objetivoTactico.setResponsables(responsablesArray);
+            await objetivoTactico.setAreas(areasArray);
+            await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
             
-            arrayTactico.push(tactico);
+            arrayTactico.push(objetivoTactico);
                 
             if ( i > 0 ) {
                 await Tacticos.update({ objetivoPadre: arrayTactico[0].id }, { where: { id: arrayTactico[i].id } });
@@ -112,7 +112,7 @@ export const createTactico = async (req: Request, res: Response) => {
         }
 
         res.json({
-            objetivo: arrayTactico[0]
+            objetivoTactico: arrayTactico[0]
         });
         
     } catch (error) {
@@ -129,9 +129,9 @@ export const updateTactico = async (req: Request, res: Response) => {
     
 
     try {
-        const objetivo = await Tacticos.findByPk(id);
-        if (objetivo) {
-            await objetivo.update({ 
+        const objetivoTactico = await Tacticos.findByPk(id);
+        if (objetivoTactico) {
+            await objetivoTactico.update({ 
                 nombre, 
                 codigo, 
                 meta, 
@@ -141,13 +141,13 @@ export const updateTactico = async (req: Request, res: Response) => {
                 estrategicoId: estrategicoId ? estrategicoId : null, 
                 status, 
                 propietarioId });
-            await objetivo.setResponsables(responsablesArray);
-            await objetivo.setAreas(areasArray);
+            await objetivoTactico.setResponsables(responsablesArray);
+            await objetivoTactico.setAreas(areasArray);
 
-            await objetivo.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+            await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
 
             res.json({
-                objetivo
+                objetivoTactico
             });
         } else {
             res.status(404).json({
@@ -165,11 +165,11 @@ export const updateTactico = async (req: Request, res: Response) => {
 export const deleteTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-        const tactico = await Tacticos.findByPk(id);
-        if (tactico) {
-            await tactico.destroy();
+        const objetivoTactico = await Tacticos.findByPk(id);
+        if (objetivoTactico) {
+            await objetivoTactico.destroy();
             res.json({
-                tactico
+                objetivoTactico
             });
         } else {
             res.status(404).json({
@@ -183,7 +183,6 @@ export const deleteTactico = async (req: Request, res: Response) => {
         });
     }
 }
-
 
 export const getTacticosByArea = async (req: Request, res: Response) => {
     const { slug } = req.params;
@@ -249,10 +248,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
 
         
             
-        res.json({ 
-            tacticos,
-            tacticos_core
-        });
+        res.json({ objetivosTacticos: { tacticos, tacticos_core } });
     } catch (error) {
         console.log(error);
         res.status(500).json({
