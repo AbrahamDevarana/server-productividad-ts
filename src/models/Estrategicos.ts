@@ -10,44 +10,37 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
     },
     nombre: {
         type: Sequelize.STRING,
-        allowNull: false
+        defaultValue: 'Nuevo Objetivo Estrategico'
     },
     codigo: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     descripcion: {
         type: Sequelize.TEXT,
-        allowNull: true
     },
     indicador: {
         type: Sequelize.TEXT,
-        allowNull: true
     },
     progreso: {
         type: Sequelize.INTEGER,
-        allowNull: true,
         defaultValue: 0
     },
     propietarioId: {
         type: Sequelize.UUID,
-        allowNull: true
+        allowNull: false
     },
     fechaInicio: {
         type: Sequelize.DATE,
-        allowNull: true
     },
     fechaFin: {
         type: Sequelize.DATE,
-        allowNull: true
     },
     perspectivaId: {
         type: Sequelize.UUID,
-        allowNull: true
+        allowNull: false
     },
     status: {
         type: Sequelize.STRING(12),
-        allowNull: false,
         defaultValue: 'SIN_INICIAR'
     },
     createdAt: {

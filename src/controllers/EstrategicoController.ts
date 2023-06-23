@@ -110,12 +110,11 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
 }
 
 export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, perspectivaId, responsables = [], propietarioId } = req.body;
+    const { perspectivaId, propietarioId } = req.body;
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({ nombre, codigo, descripcion, fechaInicio, fechaFin, indicador, propietarioId });
+        const objetivoEstrategico = await ObjetivoEstrategico.create({propietarioId });
         await objetivoEstrategico.setPerspectivas(perspectivaId);
-        await objetivoEstrategico.setResponsables(responsables);
         await objetivoEstrategico.reload({
             include: includeProps
         });
