@@ -11,6 +11,7 @@ import { Tareas } from './Tareas';
 import { ResultadosClave } from './ResultadoClave';
 import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
+import { Roles } from './Roles';
 
 
 
@@ -26,6 +27,7 @@ import { PivotProyectoUsuarios } from './pivot/PivotProyectoUsuarios';
 import { Comentarios } from './Comentarios';
 import GaleriaUsuarios from './custom/GaleriaUsuarios';
 import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
+import { Permisos } from './Permisos';
 
 
 
@@ -40,6 +42,7 @@ Usuarios.hasMany(ObjetivoOperativos, { as: 'objetivosOperativos', foreignKey: 'p
 Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
 Usuarios.hasMany(GaleriaUsuarios, { as: 'galeria', foreignKey: 'usuarioId' });
 Usuarios.hasOne(ConfiguracionUsuario, { as: 'configuracion', foreignKey: 'usuarioId' });
+Usuarios.belongsTo(Roles, { as: 'rol', foreignKey: 'rolId' });
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -155,6 +158,11 @@ Usuarios.hasMany(Comentarios, {
     }
 })
 
+Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos', foreignKey: 'rolId' });
+Permisos.belongsToMany(Roles, { through: 'pivot_permisos_roles', as: 'roles', foreignKey: 'permisoId' });
+
+
+
 export {
     Usuarios,
     Areas,
@@ -170,6 +178,8 @@ export {
     Proyectos,
     Hitos,
     Comentarios,
+    Roles,
+    Permisos,
 
     PivotTareasResponsables,
     PivotPerspEstr,

@@ -22,7 +22,6 @@ export const Usuarios = database.define('usuarios', {
     },
     apellidoMaterno: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     iniciales: {
         type: Sequelize.STRING,
@@ -81,6 +80,11 @@ export const Usuarios = database.define('usuarios', {
     direccionId: {
         type: Sequelize.INTEGER,
         allowNull: true
+    },
+    rolId :{
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 2
     },
     createdAt: {
         type: Sequelize.DATE,

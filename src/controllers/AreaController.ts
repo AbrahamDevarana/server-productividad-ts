@@ -2,6 +2,23 @@ import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { Areas } from "../models/Areas";
 import { getPagination, getPagingData } from "../helpers/pagination";
+import { Departamentos, Usuarios } from "../models";
+
+
+const areaInclude = [
+    {
+        model: Areas,
+        as: 'subAreas',
+    },
+    {
+        model: Departamentos,
+        as: 'departamentos',
+    },
+    {
+        model: Usuarios,
+        as: 'leader',
+    }
+]
 
 export const getAreas = async (req: Request, res: Response) => {
         const { page = 0, size = 10, nombre } = req.query;
@@ -12,13 +29,14 @@ export const getAreas = async (req: Request, res: Response) => {
         try {
             const result = await Areas.findAndCountAll({ 
                 where,
-                include: ['subAreas', 'departamentos', 'leader'],
+                include: areaInclude,
                 limit,
                 offset
             });
 
             const areas = getPagingData (result, Number(page), Number(size));
-            res.json({ areas });            
+            res.json({ areas });
+            
         } catch (error) {
             console.log(error);
             res.status(500).json({
@@ -32,12 +50,9 @@ export const getArea = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const area = await Areas.findByPk(id,
-            { 
-                include: ['subAreas', 'departamentos', 'leader']
-            }
-        );
+        const area = await Areas.findByPk(id);
         if (area) {
+            await area.reload({ include: areaInclude })
             res.json({ area });
         } else {
             res.status(404).json({
@@ -59,7 +74,7 @@ export const createArea = async (req: Request, res: Response) => {
     try {
         const area = await Areas.create({ nombre, parentId, leaderId});
 
-        area.reload({ include: ['subAreas', 'departamentos', 'leader'] });
+        area.reload({ include: areaInclude });
         res.json({ area });
         
     } catch (error) {
@@ -76,10 +91,10 @@ export const updateArea = async (req: Request, res: Response) => {
     const { nombre, parentId = null, leaderId = null } = req.body;    
 
     try {
-        const area = await Areas.findByPk(id, { include: ['subAreas', 'departamentos', 'leader'] });
+        const area = await Areas.findByPk(id);
         if (area) {
             await area.update({ nombre, parentId, leaderId })
-            
+            await area.reload({ include: areaInclude })
             res.json({ area });
         } else {
             res.status(404).json({

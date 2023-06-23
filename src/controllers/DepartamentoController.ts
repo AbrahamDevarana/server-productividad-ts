@@ -4,6 +4,22 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { Usuarios, Departamentos, Areas } from "../models";
 
 
+
+const departamentoInclude = [ 
+    {
+        model: Areas,
+        as: 'area',
+    },
+    {
+        model: Usuarios,
+        as: 'leader',
+    },
+    {
+        model: Usuarios,
+        as: 'usuarios',
+    }
+]
+
 export const getDepartamentos = async (req: Request, res: Response) => {
     const { nombre, areaId, page = 0, size = 10 } = req.query;
     const { limit, offset } = getPagination(Number(page), Number(size));
@@ -15,7 +31,7 @@ export const getDepartamentos = async (req: Request, res: Response) => {
 
     try {
         const result = await Departamentos.findAndCountAll({
-            include: ['area', 'leader'],
+            include: departamentoInclude,
             where,
             limit,
             offset
@@ -37,9 +53,7 @@ export const getDepartamento = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const departamento = await Departamentos.findByPk(id, {
-            include: ['area', 'leader', 'usuarios']
-        });
+        const departamento = await Departamentos.findByPk(id, { include: departamentoInclude });
 
         if (departamento) {
             res.json({ departamento });
@@ -64,9 +78,7 @@ export const createDepartamento = async (req: Request, res: Response) => {
         const departamento = await Departamentos.create({ nombre, areaId, leaderId });
 
 
-        departamento.reload({
-            include: ['area', 'usuarios', 'leader']
-        });        
+        departamento.reload({ include: departamentoInclude })
 
         res.json({
             departamento
@@ -80,17 +92,21 @@ export const createDepartamento = async (req: Request, res: Response) => {
     }
 }
 
+
 export const updateDepartamento = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, areaId, leaderId = null } = req.body;
+    const { nombre, areaId, leaderId } = req.body;
 
     try {
-        const departamento = await Departamentos.findByPk(id, {
-            include: ['area', 'leader', 'usuarios']
-        });
+        const departamento = await Departamentos.findByPk(id);
 
         if (departamento) {
-            await departamento.update({ nombre, areaId, leaderId });
+            await departamento.update({ 
+                nombre: nombre? nombre : departamento.nombre,
+                areaId: areaId? areaId : departamento.areaId,
+                leaderId: leaderId? leaderId : departamento.leaderId
+            });
+            await departamento.reload({ include: departamentoInclude })
             res.json({ departamento });
         } else {
             res.status(404).json({
