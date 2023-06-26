@@ -12,6 +12,7 @@ import resultadosRoutes from './api/resultadosRoutes'
 import proyectosRoutes from './api/proyectosRoute'
 import hitosRoutes from './api/hitosRoutes'
 import tareasRoutes from './api/tareasRoutes'
+import comentariosRoutes from './api/comentariosRoutes'
 
 import uploadRoutes from "./api/uploadRoutes";
 
@@ -31,6 +32,7 @@ router.use('/tareas', tareasRoutes)
 router.use('/resultados', resultadosRoutes)
 router.use('/proyectos', proyectosRoutes)   
 router.use('/hitos', hitosRoutes)
+router.use('/comentarios', comentariosRoutes)
 
 
 

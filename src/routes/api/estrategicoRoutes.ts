@@ -10,7 +10,6 @@ router.get('/', getObjetivosEstrategicos);
 router.get('/:id', getObjetivoEstrategico);
 
 router.post('/', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
 ], createObjetivoEstrategico);
 

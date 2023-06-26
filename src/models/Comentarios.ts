@@ -7,10 +7,10 @@ export const Comentarios = database.define('comentarios', {
         primaryKey: true,
         autoIncrement: true
     },
-    comentableId: {
+    comentableId: { // id del objetivo, iniciativa o acción
         type: Sequelize.UUID,
     },
-    comentableType: {
+    comentableType: { // 'objetivo_estrategico' | 'iniciativa_estrategica' | 'accion'
         type: Sequelize.TEXT,
     },
     autorId: {

@@ -2,6 +2,7 @@ import { Comentarios, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } fr
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
+import { UsuarioInterface } from '../interfaces';
 
 
 const includeProps = [
@@ -85,7 +86,7 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
 }
 
 export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
-    const { id } = req.params;    
+    const { id } = req.params;  
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { 
         include: includeProps 
@@ -110,14 +111,19 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
 }
 
 export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
-    const { perspectivaId, propietarioId } = req.body;
+    const { perspectivaId } = req.body;
+
+    console.log(perspectivaId);
+    
+
+    const { id: propietarioId} = req.user as UsuarioInterface
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({propietarioId });
-        await objetivoEstrategico.setPerspectivas(perspectivaId);
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId });
         await objetivoEstrategico.reload({
             include: includeProps
         });
+        
      
         res.json({
             objetivoEstrategico,
@@ -206,6 +212,8 @@ export const deleteObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
+    
+    
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findAll({ 
             include: [{

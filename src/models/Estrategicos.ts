@@ -10,7 +10,7 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
     },
     nombre: {
         type: Sequelize.STRING,
-        defaultValue: 'Nuevo Objetivo Estrategico'
+        defaultValue: 'Nuevo Objetivo Estratégico'
     },
     codigo: {
         type: Sequelize.STRING,
@@ -31,9 +31,11 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
     },
     fechaInicio: {
         type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
     },
     fechaFin: {
         type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
     },
     perspectivaId: {
         type: Sequelize.UUID,
