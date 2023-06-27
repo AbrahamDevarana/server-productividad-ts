@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, Roles, Permisos } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -20,8 +20,7 @@ const perfilInclude = [
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
     { model: GaleriaUsuarios, as: 'galeria'},
-    { model: ConfiguracionUsuario, as: 'configuracion'}
-    
+    { model: ConfiguracionUsuario, as: 'configuracion'},
 ]
 
 export const getUsuarios = async (req: Request, res: Response) => {

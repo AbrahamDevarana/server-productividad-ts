@@ -13,6 +13,7 @@ import proyectosRoutes from './api/proyectosRoute'
 import hitosRoutes from './api/hitosRoutes'
 import tareasRoutes from './api/tareasRoutes'
 import comentariosRoutes from './api/comentariosRoutes'
+import permisosRoutes from './api/permisosRoutes'
 
 import uploadRoutes from "./api/uploadRoutes";
 
@@ -33,6 +34,7 @@ router.use('/resultados', resultadosRoutes)
 router.use('/proyectos', proyectosRoutes)   
 router.use('/hitos', hitosRoutes)
 router.use('/comentarios', comentariosRoutes)
+router.use('/permisos', permisosRoutes)
 
 
 

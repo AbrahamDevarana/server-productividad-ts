@@ -1,6 +1,6 @@
 import { createAccessToken, createRefreshToken, decodeToken, willExpireToken } from '../services/jwtService';
 import jwt from 'jsonwebtoken';
-import { Usuarios } from '../models';
+import { Permisos, Roles, Usuarios } from '../models';
 import { Request, Response } from "express";
 
 const getAccessToken = async (req: Request, res: Response) => {
@@ -56,7 +56,21 @@ const sessionValidate = async (req: Request, res: Response) => {
                     if (decoded) {
                         const usuario = await Usuarios.findOne({ 
                             where: { id: decoded.id },
-                            attributes: ['id','nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'iniciales']
+                            attributes: ['id','nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'iniciales'],
+                            include: [
+                                {
+                                    model: Roles,
+                                    attributes: ['id', 'nombre'],
+                                    as: 'rol',
+                                    include: [
+                                        {
+                                            model: Permisos,
+                                            as: 'permisos',
+                                            attributes: ['id', 'nombre', 'permisos']
+                                        }   
+                                    ]
+                                }
+                            ]
                         });
                         if (!usuario) {
                             res.status(401).json({ message: 'No has iniciado sesión', ok: false })
