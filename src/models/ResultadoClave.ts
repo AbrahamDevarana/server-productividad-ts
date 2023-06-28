@@ -62,6 +62,8 @@ export const ResultadosClave = database.define<ResultadoClaveInstance>('resultad
     timestamps: true,
     hooks: {
         afterUpdate: (resultadoClave: ResultadoClaveInstance, options) => {
+
+            // buscar el PivotOpUsuario pivot asociado y actualizar su progreso
             
         }
     },

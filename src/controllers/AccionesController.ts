@@ -40,7 +40,7 @@ export const createAcciones = async (req: Request, res: Response) => {
             nombre,
             resultadoClaveId,
             propietarioId: propietarioId,
-            status: 1
+            status: 0
         } );
 
         res.json({ accion });

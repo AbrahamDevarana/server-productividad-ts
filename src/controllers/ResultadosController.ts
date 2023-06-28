@@ -44,17 +44,17 @@ export const getResultadoClave = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const resultado = await ResultadosClave.findByPk(id,{
+        const resultadoClave = await ResultadosClave.findByPk(id,{
             include: includeProps
         });
         
-        if (!resultado) {
+        if (!resultadoClave) {
             return res.status(404).json({
                 msg: 'No existe un resultado clave con el id ' + id
             });
         }
 
-        res.json({ resultado });
+        res.json({ resultadoClave });
     }
     catch (error) {
         console.log(error);
@@ -71,6 +71,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
         const resultadoClave = await ResultadosClave.create({
             propietarioId,
             operativoId,
+            tipoProgreso: "acciones",
             nombre: 'Nuevo resultado clave',
         });
 
@@ -94,21 +95,48 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin} = req.body;
 
     try {
-        const resultado = await ResultadosClave.findByPk(id);
+        const resultadoClave = await ResultadosClave.findByPk(id,
+            {include: includeProps}
+        );
 
-        if (!resultado) {
+        if (!resultadoClave) {
             return res.status(404).json({
                 msg: 'No existe un resultado clave con el id ' + id
             });
         }
+        
+        let progresoTotal = 0;
 
-        await resultado.update({ nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin  });
+        if(tipoProgreso === "acciones"){
+            //Actualizar el progreso del resultado clave con el progreso de las acciones que solo tienen 2 estados, completado o no completado
+            let acciones = await Acciones.findAll({
+                where: {
+                    resultadoClaveId: id
+                }
+            });
 
-        await resultado.reload({
+            let accionesCompletadas = 0;
+            let accionesTotales = 0;
+
+            acciones.forEach(accion => {
+                if(accion.status === 1){
+                    accionesCompletadas++;
+                }
+                accionesTotales++;
+            })
+
+            progresoTotal = accionesCompletadas/accionesTotales * 100
+        }else{
+            progresoTotal = progreso;
+        }
+
+        await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin  });
+
+        await resultadoClave.reload({
             include: includeProps
         })
 
-        res.json({ resultado });
+        res.json({ resultadoClave });
     }
     catch (error) {
         console.log(error);

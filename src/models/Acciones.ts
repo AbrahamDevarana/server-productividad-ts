@@ -57,38 +57,57 @@ export const Acciones = database.define<AccionInstance>('acciones', {
     hooks: {
         afterUpdate: async (accion: AccionInstance, options) => {
            
-            const resultadoClave = await ResultadosClave.findOne({
-                where: {
-                    id: accion.resultadoClaveId
-                }
-            });
-            
-            const acciones = await Acciones.findAll({
-                where: {
-                    resultadoClaveId: accion.resultadoClaveId
-                }
-            });
-
-
-            if(resultadoClave){
-                if(resultadoClave.tipoProgreso === 'progreso'){
-                    console.log('Progreso');
-                    
-                    let progreso = 0;
-                    acciones.forEach(accion => {
-                        if(accion.status === 1){
-                            progreso += 1;
-                        }
-                    });
-                    await resultadoClave.update({
-                        progreso: progreso/acciones.length
-                    });
-                }     
-            }
+            await updateProgreso(accion);
+        },
+        afterDestroy: async (accion: AccionInstance, options) => {
+            await updateProgreso(accion);
+        },
+        afterCreate: async (accion: AccionInstance, options) => {
+            await updateProgreso(accion);
         }
+
+
+
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 });
 
+
+
+const updateProgreso = async (accion: AccionInstance) => {
+    
+        const resultadoClave = await ResultadosClave.findOne({
+            where: {
+                id: accion.resultadoClaveId
+            }
+        });
+        
+        const acciones = await Acciones.findAll({
+            where: {
+                resultadoClaveId: accion.resultadoClaveId
+            }
+        });
+
+
+        if(resultadoClave){
+            if(resultadoClave.tipoProgreso === 'acciones'){
+               
+                let accionesCompletadas = 0;
+                let accionesTotales = 0;
+
+                acciones.forEach(accion => {
+                    if(accion.status === 1){
+                        accionesCompletadas++;
+                    }
+                    accionesTotales++;
+                })
+
+                const progresoTotal = accionesCompletadas/accionesTotales * 100
+
+                await resultadoClave.update({ progreso: progresoTotal });
+
+            }     
+        }
+    }
