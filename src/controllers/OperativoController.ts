@@ -89,7 +89,6 @@ export const updateOperativo = async (req: Request, res: Response) => {
             fechaFin,
             tacticoId,
             propietarioId,
-            status
         });
 
 

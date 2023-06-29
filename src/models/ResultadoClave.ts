@@ -1,21 +1,26 @@
-import Sequelize, { Model }  from "sequelize";
+import Sequelize, { Association, BelongsTo, Model }  from "sequelize";
 import database from "../config/database";
+import { ObjetivoOperativos, ObjetivosOperativosInstance } from "./Operativos";
+import { AccionInstance } from "./Acciones";
+import dayjs from "dayjs";
 
 export interface ResultadoClaveAttributes {
     id?: string;
     nombre: string;
-    progreso?: number;
-    tipoProgreso?: string;
-    fechaInicio?: Date;
-    fechaFin?: Date;
+    progreso: number;
+    tipoProgreso: string;
+    fechaInicio: Date;
+    fechaFin: Date;
     operativoId: string;
     propietarioId: string;
-    status?: string;
+    status: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface ResultadoClaveInstance extends Model<ResultadoClaveAttributes>, ResultadoClaveAttributes {}
+export interface ResultadoClaveInstance extends Model<ResultadoClaveAttributes>, ResultadoClaveAttributes {
+    operativo?: ObjetivosOperativosInstance;
+}
 
 export const ResultadosClave = database.define<ResultadoClaveInstance>('resultado_clave', {
     id: {
@@ -61,13 +66,46 @@ export const ResultadosClave = database.define<ResultadoClaveInstance>('resultad
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: (resultadoClave: ResultadoClaveInstance, options) => {
+        afterUpdate: async (resultadoClave: ResultadoClaveInstance, options) => {
+               await updateDate(resultadoClave)
+        },
 
-            // buscar el PivotOpUsuario pivot asociado y actualizar su progreso
-            
-        }
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 })
+
+
+const updateDate = async (resultadoClave: ResultadoClaveInstance) => {
+
+    // Obtener el operativo
+    const operativo = await ObjetivoOperativos.findOne({
+        where: {
+            id: resultadoClave.operativoId
+        }
+    });
+
+    // Obtener todos los resultados clave del operativo
+    const resultadosClave = await ResultadosClave.findAll({
+        where: {
+            operativoId: operativo!.id
+        }
+    });
+
+
+
+    if(operativo){
+        if(resultadoClave.fechaFin > operativo.fechaFin){
+            await operativo.update({ fechaFin: resultadoClave.fechaFin });
+        }
+    }
+
+    let fechaInicio = dayjs(resultadoClave.fechaInicio);
+    let ultimoDiaCuatrimestre = fechaInicio.endOf('quarter').toDate();
+
+    if( resultadosClave.every( resultado => resultado.fechaFin < ultimoDiaCuatrimestre)){
+        await operativo!.update({ fechaFin: ultimoDiaCuatrimestre });
+    }
+
+}

@@ -1,8 +1,27 @@
-import Sequelize from "sequelize";
+import Sequelize, { Model } from "sequelize";
 import database from "../config/database";
 import { v4 as uuidv4 } from 'uuid';
 
-export const ObjetivoOperativos = database.define('obj_operativos', {
+export interface ObjetivoOperativosAttributes {
+  
+    id?: string;
+    nombre: string;
+    meta?: string;
+    indicador?: string;
+    tacticoId?: string;
+    fechaInicio: Date;
+    fechaFin: Date;
+    propietarioId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ObjetivosOperativosInstance extends Model<ObjetivoOperativosAttributes>, ObjetivoOperativosAttributes {
+    operativo?: ObjetivosOperativosInstance;
+}
+
+
+export const ObjetivoOperativos = database.define<ObjetivosOperativosInstance>('obj_operativos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -48,12 +67,9 @@ export const ObjetivoOperativos = database.define('obj_operativos', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: (objOperativo, options) => {
-            objOperativo.update({
-                updatedAt: Sequelize.NOW
-            });
-
-        }
+        afterUpdate: (objetivoOperativo: ObjetivosOperativosInstance, options) => {
+         
+        }  
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }

@@ -1,15 +1,19 @@
 import Sequelize, { Model } from "sequelize";
 import database from "../config/database";
 import { ResultadosClave } from "./ResultadoClave";
+import { ObjetivoOperativos } from "./Operativos";
+import dayjs from "dayjs";
 
 
 export interface AccionAttributes {
     id?: string;
     nombre: string;
     descripcion?: string;
-    status?: number;
+    status: number;
     resultadoClaveId: string;
     propietarioId: string;
+    fechaInicio: Date;
+    fechaFin: Date;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -43,6 +47,14 @@ export const Acciones = database.define<AccionInstance>('acciones', {
         type: Sequelize.UUID,
         allowNull: false
     },
+    fechaInicio: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    fechaFin: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -56,8 +68,8 @@ export const Acciones = database.define<AccionInstance>('acciones', {
     timestamps: true,
     hooks: {
         afterUpdate: async (accion: AccionInstance, options) => {
-           
             await updateProgreso(accion);
+            await updateDate(accion);
         },
         afterDestroy: async (accion: AccionInstance, options) => {
             await updateProgreso(accion);
@@ -110,4 +122,35 @@ const updateProgreso = async (accion: AccionInstance) => {
 
             }     
         }
+}
+
+const updateDate = async (accion: AccionInstance) => {
+
+    const resultadoClave = await ResultadosClave.findOne({
+        where: {
+            id: accion.resultadoClaveId
+        }
+    })
+
+    if(resultadoClave){
+        if(accion.fechaFin > resultadoClave.fechaFin){
+            await resultadoClave.update({ fechaFin: accion.fechaFin });
+        }
+        // Obtener todos las acciones del resultado clave si la fechaFin de todas las acciones el menor al ultimo día del cuatrimestre en el que se encuentra el resultado clave, actualizar la fechaFin del resultado clave a ul ultimo día del cuatrimestre en el que se encuentra el resultado clave
+
+
+        const acciones = await Acciones.findAll({
+            where: {
+                resultadoClaveId: accion.resultadoClaveId
+            }
+        });
+
+        let fechaInicio = dayjs(resultadoClave.fechaInicio);
+        let ultimoDiaCuatrimestre = fechaInicio.endOf('quarter').toDate();    
+
+        if (acciones.every(accion => accion.fechaFin < ultimoDiaCuatrimestre)){
+            await resultadoClave.update({ fechaFin: ultimoDiaCuatrimestre });
+        }
     }
+
+}

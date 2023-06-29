@@ -1,13 +1,20 @@
 import { Request, Response } from "express";
-import { Acciones, ResultadosClave } from "../models";
+import { Acciones, ResultadosClave, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
+import dayjs from "dayjs";
 
 
 const includeProps = [
     {
         model: Acciones,
         as: 'acciones',
-        attributes: ['id', 'nombre', 'descripcion', 'status', 'resultadoClaveId', 'propietarioId'],
+        attributes: ['id', 'nombre', 'descripcion', 'status', 'resultadoClaveId', 'propietarioId', 'fechaInicio', 'fechaFin'],
+    },
+    {
+        model: Usuarios,
+        as: 'propietario',
+        attributes: ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto', 'iniciales']
+
     }
 ]
  
@@ -73,6 +80,11 @@ export const createResultadosClave = async (req: Request, res: Response) => {
             operativoId,
             tipoProgreso: "acciones",
             nombre: 'Nuevo resultado clave',
+            status: 'SIN_INICIAR',
+            progreso: 0,
+            fechaInicio: dayjs().startOf('quarter').toDate(),
+            fechaFin: dayjs().endOf('quarter').toDate(),
+
         });
 
         await resultadoClave.reload({
@@ -94,6 +106,9 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin} = req.body;
 
+
+    console.log("tipoProgreso", tipoProgreso);
+    
     try {
         const resultadoClave = await ResultadosClave.findByPk(id,
             {include: includeProps}

@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { Acciones } from "../models";
-import { Op } from "sequelize";
 import { UsuarioInterface } from "../interfaces";
-import { AccionAttributes } from "../models/Acciones";
+import dayjs from "dayjs";
 
 
 export const getAcciones = async (req: Request, res: Response) => {
@@ -40,6 +39,8 @@ export const createAcciones = async (req: Request, res: Response) => {
             nombre,
             resultadoClaveId,
             propietarioId: propietarioId,
+            fechaInicio: dayjs().startOf('quarter').toDate(),
+            fechaFin: dayjs().endOf('quarter').toDate(),
             status: 0
         } );
 
@@ -56,7 +57,7 @@ export const createAcciones = async (req: Request, res: Response) => {
 
 export const updateAcciones = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, descripcion, propietarioId, resultadoClaveId, status } = req.body;
+    const { nombre, descripcion, propietarioId, resultadoClaveId, status, fechaInicio, fechaFin } = req.body;
 
     try {
         const accion = await Acciones.findByPk(id);
@@ -72,6 +73,8 @@ export const updateAcciones = async (req: Request, res: Response) => {
             descripcion,
             propietarioId,
             resultadoClaveId,
+            fechaInicio,
+            fechaFin,
             status
         });
 
