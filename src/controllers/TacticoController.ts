@@ -76,52 +76,84 @@ export const getTactico = async (req: Request, res: Response) => {
     }
 }
 
+
 export const createTactico = async (req: Request, res: Response) => {
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, responsablesArray = [], areasArray = [], estrategicoId = null, propietarioId } = req.body;
+    const { estrategicoId = null, propietarioId } = req.body;
+
+    let nombreObjetivo = estrategicoId? 'Nuevo Objetivo Tactico Estratégico' : 'Nuevo Objetivo Tactico Core';
 
     try {
-        const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);        
+        const objetivoTactico = await Tacticos.create({
+            nombre: nombreObjetivo,
+            estrategicoId,
+            propietarioId,
+            fechaInicio: dayjs().format('YYYY-MM-DD'),
+            fechaFin: dayjs().add(7, 'days').format('YYYY-MM-DD'),
+        });
 
-        let arrayTactico = []
-        for (let i = 0; i < trimestres+1; i++) {
-            const fechaInicioTrimestre = dayjs(fechaInicio).add(i*3, 'month').format('YYYY-MM-DD') + ' 00:01:00';
-            const fechaFinTrimestre = i < trimestres - 1 ? dayjs(fechaInicio).add((i+1)*3, 'month').subtract(1, 'day').format('YYYY-MM-DD') : fechaFin;
-            
-
-            const objetivoTactico = await Tacticos.create({ 
-                nombre, 
-                codigo, 
-                meta, 
-                indicador, 
-                fechaInicio: fechaInicioTrimestre,
-                fechaFin: fechaFinTrimestre,
-                propietarioId, 
-                estrategicoId: estrategicoId ? estrategicoId : null,
-                trimestres: i+1,
-            });
-            
-            await objetivoTactico.setResponsables(responsablesArray);
-            await objetivoTactico.setAreas(areasArray);
-            await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
-            
-            arrayTactico.push(objetivoTactico);
-                
-            if ( i > 0 ) {
-                await Tacticos.update({ objetivoPadre: arrayTactico[0].id }, { where: { id: arrayTactico[i].id } });
-            }
-        }
+        await objetivoTactico.reload({
+            include: ['responsables', 'areas', 'propietario', 'estrategico']
+        });
 
         res.json({
-            objetivoTactico: arrayTactico[0]
+            objetivoTactico
         });
-        
-    } catch (error) {
+
+
+    }catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Hable con el administrador'
         });
     }
 }
+
+// export const createTactico = async (req: Request, res: Response) => {
+//     const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, responsablesArray = [], areasArray = [], estrategicoId = null, propietarioId } = req.body;
+
+//     try {
+//         const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);        
+
+//         let arrayTactico = []
+//         for (let i = 0; i < trimestres+1; i++) {
+//             const fechaInicioTrimestre = dayjs(fechaInicio).add(i*3, 'month').format('YYYY-MM-DD') + ' 00:01:00';
+//             const fechaFinTrimestre = i < trimestres - 1 ? dayjs(fechaInicio).add((i+1)*3, 'month').subtract(1, 'day').format('YYYY-MM-DD') : fechaFin;
+            
+
+//             const objetivoTactico = await Tacticos.create({ 
+//                 nombre, 
+//                 codigo, 
+//                 meta, 
+//                 indicador, 
+//                 fechaInicio: fechaInicioTrimestre,
+//                 fechaFin: fechaFinTrimestre,
+//                 propietarioId, 
+//                 estrategicoId: estrategicoId ? estrategicoId : null,
+//                 trimestres: i+1,
+//             });
+            
+//             await objetivoTactico.setResponsables(responsablesArray);
+//             await objetivoTactico.setAreas(areasArray);
+//             await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+            
+//             arrayTactico.push(objetivoTactico);
+                
+//             if ( i > 0 ) {
+//                 await Tacticos.update({ objetivoPadre: arrayTactico[0].id }, { where: { id: arrayTactico[i].id } });
+//             }
+//         }
+
+//         res.json({
+//             objetivoTactico: arrayTactico[0]
+//         });
+        
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             msg: 'Hable con el administrador'
+//         });
+//     }
+// }
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;

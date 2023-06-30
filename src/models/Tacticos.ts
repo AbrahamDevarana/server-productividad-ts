@@ -9,54 +9,37 @@ export const Tacticos = database.define('obj_tacticos', {
     },
     nombre: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     codigo: {
         type: Sequelize.STRING,
-        allowNull: true
     },
     meta: {
         type: Sequelize.TEXT,
-        allowNull: true
     },
     indicador: {
         type: Sequelize.TEXT,
-        allowNull: true
     },
     progreso: { // avance
         type: Sequelize.INTEGER,
-        allowNull: true,
         defaultValue: 0
     },
     fechaInicio: {
         type: Sequelize.DATE,
-        allowNull: false
+        defaultValue: Sequelize.NOW
     },
     fechaFin: {
         type: Sequelize.DATE,
-        allowNull: false
+        defaultValue: Sequelize.NOW
     },
     propietarioId: {
         type: Sequelize.UUID,
-        allowNull: true
     },
     estrategicoId: {
         type: Sequelize.UUID,
-        allowNull: true
     },
     tipoProgreso: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER, // 1 = manual | 2 = % objetivos operativos
         defaultValue: 1
-    },
-
-    trimestres: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 1
-    },
-    objetivoPadre: { // Objetivo Táctico Dividido por Trimestres 
-        type: Sequelize.UUID,
-        allowNull: true,  
     },
     status: {
         type: Sequelize.STRING(12),
