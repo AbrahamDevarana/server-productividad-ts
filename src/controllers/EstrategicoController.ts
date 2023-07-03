@@ -178,7 +178,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
             });
         } else {
             res.status(404).json({
-                msg: `No existe un objetivo estrategico con el id ${id}`
+                msg: `No existe un objetivo estratégico ${id}`
             });
         }
     } catch (error) {
