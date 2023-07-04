@@ -84,12 +84,13 @@ export const createTactico = async (req: Request, res: Response) => {
 
     const {id: propietarioId} = req.user as UsuarioInterface
     const {startDate, endDate} = getQuarterDates(Number(year), Number(quarter))
-    
+
+    const fechaInicio = dayjs(startDate).format('YYYY-MM-DD') + ' 00:01:00';
+    const fechaFin = dayjs(endDate).format('YYYY-MM-DD') + ' 23:59:00';    
 
     try {
 
         let estrategicoId = null;
-
         const area = await Areas.findOne({ 
             where: {slug}, 
             include: { 
@@ -111,8 +112,8 @@ export const createTactico = async (req: Request, res: Response) => {
             propietarioId,
             estrategicoId,
             nombre: 'Nuevo Objetivo Tactico',
-            fechaInicio: startDate,
-            fechaFin: endDate,
+            fechaInicio,
+            fechaFin,
         });
 
         await objetivoTactico.setAreas([area?.id]);
@@ -185,6 +186,13 @@ export const createTactico = async (req: Request, res: Response) => {
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, codigo, meta, indicador, fechaInicio, fechaFin,  status, responsablesArray = [], areasArray = [], propietarioId, estrategicoId} = req.body;
+
+    
+    const formatoFechaInicio = dayjs(fechaInicio).format('YYYY-MM-DD') + ' 00:01:00';
+    const formatoFechaFin = dayjs(fechaFin).format('YYYY-MM-DD') + ' 23:59:00';
+
+    console.log(formatoFechaInicio, formatoFechaFin);
+    
     
 
     try {
@@ -194,12 +202,14 @@ export const updateTactico = async (req: Request, res: Response) => {
                 nombre, 
                 codigo, 
                 meta, 
-                indicador, 
-                fechaInicio, 
-                fechaFin, 
+                indicador,
+                fechaInicio: formatoFechaInicio,
+                fechaFin: formatoFechaFin,
                 estrategicoId: estrategicoId ? estrategicoId : null, 
                 status, 
                 propietarioId });
+
+
             await objetivoTactico.setResponsables(responsablesArray);
             await objetivoTactico.setAreas(areasArray);
 
@@ -253,35 +263,12 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
     if( year && quarter ) {
         const { startDate, endDate } = getQuarterDates(Number(year), Number(quarter));
 
-        console.log(startDate, endDate);
-        
+        const formatoFechaInicio = dayjs(startDate).format('YYYY-MM-DD') + ' 00:01:00';
+        const formatoFechaFin = dayjs(endDate).format('YYYY-MM-DD') + ' 23:59:00';
 
         where = {
             [Op.or]: [
-                {
-                    fechaInicio: {
-                        [Op.between]: [startDate, endDate]
-                    }
-                },
-                {
-                    fechaFin: {
-                        [Op.between]: [startDate, endDate]
-                    }
-                },
-                {
-                    [Op.and]: [
-                        {
-                            fechaInicio: {
-                                [Op.lte]: startDate
-                            }
-                        },
-                        {
-                            fechaFin: {
-                                [Op.gte]: endDate
-                            }
-                        }
-                    ]
-                }
+               
             ]
         }
     }    
@@ -322,7 +309,6 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
                 ...where,
                 [Op.not]: { estrategicoId: null }
             },
-            logging: console.log
         });
 
         const tacticos_core = await Tacticos.findAll({
@@ -331,7 +317,6 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
                 ...where,
                 estrategicoId: null
             },
-            logging: console.log
         });
 
                 
