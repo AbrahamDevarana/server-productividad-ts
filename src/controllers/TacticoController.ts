@@ -1,7 +1,8 @@
-import { Areas, ObjetivoEstrategico, Tacticos, Usuarios } from '../models'
+import { Areas, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
+import { UsuarioInterface } from '../interfaces'
 
 
 export const getTacticos = async (req: Request, res: Response) => {
@@ -76,24 +77,50 @@ export const getTactico = async (req: Request, res: Response) => {
     }
 }
 
-
 export const createTactico = async (req: Request, res: Response) => {
-    const { estrategicoId = null, propietarioId } = req.body;
+    const { slug, quarter, year, estrategico = false} = req.body;
 
-    let nombreObjetivo = estrategicoId? 'Nuevo Objetivo Tactico Estratégico' : 'Nuevo Objetivo Tactico Core';
+    // let nombreObjetivo = estrategicoId? 'Nuevo Objetivo Tactico Estratégico' : 'Nuevo Objetivo Tactico Core';
+
+    const {id: propietarioId} = req.user as UsuarioInterface
+    const {startDate, endDate} = getQuarterDates(Number(year), Number(quarter))
+    
 
     try {
+
+        let estrategicoId = null;
+
+        const area = await Areas.findOne({ 
+            where: {slug}, 
+            include: { 
+                model: Perspectivas, 
+                as: 'perspectivas', 
+                attributes: ['id', 'nombre'],
+                include: [{
+                    model: ObjetivoEstrategico,
+                    as: 'objetivos_estrategicos',
+                    attributes: ['id']
+                }]
+            }});
+
+        if(estrategico){
+            estrategicoId = (area?.perspectivas.objetivos_estrategicos[0].id);
+        }
+            
         const objetivoTactico = await Tacticos.create({
-            nombre: nombreObjetivo,
-            estrategicoId,
             propietarioId,
-            fechaInicio: dayjs().format('YYYY-MM-DD'),
-            fechaFin: dayjs().add(7, 'days').format('YYYY-MM-DD'),
+            estrategicoId,
+            nombre: 'Nuevo Objetivo Tactico',
+            fechaInicio: startDate,
+            fechaFin: endDate,
         });
+
+        await objetivoTactico.setAreas([area?.id]);
 
         await objetivoTactico.reload({
             include: ['responsables', 'areas', 'propietario', 'estrategico']
         });
+        
 
         res.json({
             objetivoTactico
@@ -226,8 +253,36 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
     if( year && quarter ) {
         const { startDate, endDate } = getQuarterDates(Number(year), Number(quarter));
 
+        console.log(startDate, endDate);
+        
+
         where = {
-            fechaInicio: { [Op.between]: [startDate.toDate(), endDate.toDate()] }
+            [Op.or]: [
+                {
+                    fechaInicio: {
+                        [Op.between]: [startDate, endDate]
+                    }
+                },
+                {
+                    fechaFin: {
+                        [Op.between]: [startDate, endDate]
+                    }
+                },
+                {
+                    [Op.and]: [
+                        {
+                            fechaInicio: {
+                                [Op.lte]: startDate
+                            }
+                        },
+                        {
+                            fechaFin: {
+                                [Op.gte]: endDate
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     }    
     
@@ -266,7 +321,8 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             where: {
                 ...where,
                 [Op.not]: { estrategicoId: null }
-            }
+            },
+            logging: console.log
         });
 
         const tacticos_core = await Tacticos.findAll({
@@ -275,11 +331,10 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
                 ...where,
                 estrategicoId: null
             },
+            logging: console.log
         });
 
-
-        
-            
+                
         res.json({ objetivosTacticos: { tacticos, tacticos_core } });
     } catch (error) {
         console.log(error);

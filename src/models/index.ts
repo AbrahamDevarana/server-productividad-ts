@@ -48,6 +48,7 @@ Usuarios.belongsTo(Roles, { as: 'rol', foreignKey: 'rolId' });
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
 Areas.hasMany(Departamentos, { as: 'departamentos', foreignKey: 'areaId' });
 Areas.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
+Areas.hasOne(Perspectivas, { as: 'perspectivas', foreignKey: 'areaId' });
 
 
 // Departamentos
@@ -57,6 +58,7 @@ Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 
 // Perspectivas
 Perspectivas.hasMany(ObjetivoEstrategico, { as: 'objetivos_estrategicos', foreignKey: 'perspectivaId' });
+Perspectivas.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
 
 // Objetivo Estrategico
 ObjetivoEstrategico.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
@@ -119,10 +121,10 @@ Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr',  through:
 Tacticos.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
 // Tacticos - Áreas
-Tacticos.belongsToMany(Areas, { as: 'areas', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'areaId' });
+Tacticos.belongsToMany(Areas, { as: 'areas', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
 // Áreas - Tacticos
-Areas.belongsToMany(Tacticos, { as: 'tacticos', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
+Areas.belongsToMany(Tacticos, { as: 'tacticos', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'areaId' });
 
 // Usuarios - Tacticos
 Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });

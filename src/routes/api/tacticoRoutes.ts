@@ -6,18 +6,8 @@ const router = Router();
 
 router.get('/', getTacticos);
 router.get('/:id', getTactico);
-router.post('/', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('fechaInicio', 'La fecha de inicio es obligatoria').not().isEmpty(),
-    check('fechaFin', 'La fecha de fin es obligatoria').not().isEmpty(),
-    validarCampos
-], createTactico);
-router.put('/:id', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('fechaInicio', 'La fecha de inicio es obligatoria').not().isEmpty(),
-    check('fechaFin', 'La fecha de fin es obligatoria').not().isEmpty(),
-    validarCampos
-], updateTactico);
+router.post('/', createTactico);
+router.put('/:id', updateTactico);
 
 router.delete('/:id', deleteTactico);
 
