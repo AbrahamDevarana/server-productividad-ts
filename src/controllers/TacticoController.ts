@@ -1,8 +1,47 @@
-import { Areas, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
+
+
+const includes = [
+    {
+        model: Areas,
+        as: 'areas',
+        through: { attributes: [] },
+        attributes: ['id', 'nombre']
+    },
+    {
+        model: Usuarios,
+        as: 'responsables',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+        through: {
+            attributes: []
+        },
+    },
+    {
+        model: Usuarios,
+        as: 'propietario',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+    },
+    {
+        model: ObjetivoEstrategico,
+        as: 'estrategico',
+    },
+    {
+        model: Comentarios,
+        as: 'comentarios',
+        attributes: ['id', 'mensaje', 'createdAt'],
+        include: [
+            {
+                as: 'autor',
+                model: Usuarios,
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+            }
+        ]
+    }
+]
 
 
 export const getTacticos = async (req: Request, res: Response) => {
@@ -58,7 +97,7 @@ export const getTacticos = async (req: Request, res: Response) => {
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoTactico = await Tacticos.findByPk(id, { include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+        const objetivoTactico = await Tacticos.findByPk(id, { include: includes });
         if (objetivoTactico) {
 
             res.json({
@@ -115,7 +154,7 @@ export const createTactico = async (req: Request, res: Response) => {
         await objetivoTactico.setAreas([area?.id]);
 
         await objetivoTactico.reload({
-            include: ['responsables', 'areas', 'propietario', 'estrategico']
+            include: includes
         });
         
 
@@ -158,7 +197,7 @@ export const createTactico = async (req: Request, res: Response) => {
             
 //             await objetivoTactico.setResponsables(responsablesArray);
 //             await objetivoTactico.setAreas(areasArray);
-//             await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+//             await objetivoTactico.reload({ include: includes });
             
 //             arrayTactico.push(objetivoTactico);
                 
@@ -187,6 +226,9 @@ export const updateTactico = async (req: Request, res: Response) => {
     
     let progresoFinal = progreso;
     let statusFinal = status;
+
+
+
     
     try {
         
@@ -207,10 +249,7 @@ export const updateTactico = async (req: Request, res: Response) => {
             if (usuario?.departamento?.area?.id) {
                 areasSet.add(usuario?.departamento?.area?.id);
             }
-        }));
-
-        console.log(areasSet);
-        
+        }));        
         
         const objetivoTactico = await Tacticos.findByPk(id);
 
@@ -244,7 +283,6 @@ export const updateTactico = async (req: Request, res: Response) => {
             }
         }
 
-
         if (objetivoTactico) {
             await objetivoTactico.update({ 
                 nombre, 
@@ -264,7 +302,46 @@ export const updateTactico = async (req: Request, res: Response) => {
                 await objetivoTactico.setAreas([...areasSet]);
             }
 
-            await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
+
+            const includes = [
+                {
+                    model: Areas,
+                    as: 'areas',
+                    through: { attributes: [] },
+                    attributes: ['id', 'nombre']
+                },
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    through: {
+                        attributes: []
+                    },
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                },
+                {
+                    model: ObjetivoEstrategico,
+                    as: 'estrategico',
+                },
+                {
+                    model: Comentarios,
+                    as: 'comentarios',
+                    attributes: ['id', 'mensaje', 'createdAt'],
+                    include: [
+                        {
+                            as: 'autor',
+                            model: Usuarios,
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                        }
+                    ]
+                }
+            ]
+
+            await objetivoTactico.reload({ include: includes });
 
             res.json({
                 objetivoTactico
@@ -354,6 +431,18 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
         {
             model: ObjetivoEstrategico,
             as: 'estrategico',
+        },
+        {
+            model: Comentarios,
+            as: 'comentarios',
+            attributes: ['id', 'mensaje', 'createdAt'],
+            include: [
+                {
+                    as: 'autor',
+                    model: Usuarios,
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                }
+            ]
         }
     ]
 

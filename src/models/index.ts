@@ -74,6 +74,11 @@ ObjetivoEstrategico.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comen
 // Tacticos
 Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 Tacticos.belongsTo(ObjetivoEstrategico, { as: 'estrategico', foreignKey: 'estrategicoId' });
+Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
+    scope: {
+        comentableType: 'TACTICO',
+    }
+});
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsTo(Usuarios, { as: 'operativoPropietario', foreignKey: 'propietarioId' });
