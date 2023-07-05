@@ -15,15 +15,15 @@ export const Areas = database.define('areas', {
     },
     parentId: {
         type: Sequelize.INTEGER,
-        allowNull: true
     },
     leaderId: {
         type: Sequelize.UUID,
-        allowNull: true
     },
     slug:{
         type: Sequelize.STRING,
-        allowNull: true
+    },
+    order: {
+        type: Sequelize.INTEGER,
     },
     status: {
         type: Sequelize.BOOLEAN,

@@ -31,7 +31,8 @@ export const getAreas = async (req: Request, res: Response) => {
                 where,
                 include: areaInclude,
                 limit,
-                offset
+                offset,
+                order: [['order', 'ASC']]
             });
 
             const areas = getPagingData (result, Number(page), Number(size));

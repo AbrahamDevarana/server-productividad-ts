@@ -143,19 +143,64 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
     const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
 
 
+
+    let progresoFinal = progreso;
+    let statusFinal = status;
+
+    const participantes = responsables.map((responsable: any) => {
+        if (typeof responsable === 'object') {
+            return responsable.id;
+        } else {
+            return responsable;
+        }
+    });
+
     
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
+            if(status !== objetivoEstrategico.status){
+                if(status === 'FINALIZADO'){
+                    progresoFinal = 100;
+                    statusFinal = 'FINALIZADO';
+                }else if (status === 'EN PROGRESO'){
+                    statusFinal = 'EN PROGRESO';
+                }else if ( status === 'SIN_INICIAR'){
+                    progresoFinal = 0;
+                    statusFinal = 'SIN_INICIAR';
+                }else if (status === 'EN_TIEMPO' || status === 'CANCELADO' || status === 'EN_PAUSA' || status === 'RETRASADO'){
+                    statusFinal = status;
+                    if(objetivoEstrategico.progreso === 100){
+                        progresoFinal = 99;
+                    } else if (objetivoEstrategico.progreso === 0){
+                        progresoFinal = 1;
+                    }
+                }
+            }
+
+            if(progreso !== objetivoEstrategico.progreso){
+
+                if(progreso === 100){
+                    statusFinal = 'FINALIZADO';
+                }else if (progreso === 0){
+                    statusFinal = 'SIN_INICIAR';
+                }else if (progreso > 0 && progreso < 100){
+                    statusFinal = 'EN_TIEMPO';
+                }
+            }
+
+
+
+
             await objetivoEstrategico.update({ 
                 nombre,
                 codigo, 
                 descripcion, 
                 fechaInicio, 
                 fechaFin, 
-                progreso,
+                progreso: progresoFinal,
                 indicador,
-                status,
+                status: statusFinal,
                 propietarioId
             });
 
@@ -164,8 +209,8 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 await objetivoEstrategico.setPerspectivas(perspectivaId);
             }
 
-            if (responsables.length > 0) {               
-                await objetivoEstrategico.setResponsables(responsables);
+            if (participantes.length > 0) {
+                await objetivoEstrategico.setResponsables(participantes);
             }
      
 

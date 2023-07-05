@@ -1,4 +1,4 @@
-import { Areas, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Areas, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
@@ -78,15 +78,11 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {
-    const { slug, quarter, year, estrategico = false} = req.body;
-
-    // let nombreObjetivo = estrategicoId? 'Nuevo Objetivo Tactico Estratégico' : 'Nuevo Objetivo Tactico Core';
-
+    const { slug, year, estrategico = false} = req.body;
     const {id: propietarioId} = req.user as UsuarioInterface
-    const {startDate, endDate} = getQuarterDates(Number(year), Number(quarter))
 
-    const fechaInicio = dayjs(startDate).format('YYYY-MM-DD') + ' 00:01:00';
-    const fechaFin = dayjs(endDate).format('YYYY-MM-DD') + ' 23:59:00';    
+    const fechaInicio = dayjs(`${year}-01-01`).format('YYYY-MM-DD') + ' 00:01:00';
+    const fechaFin = dayjs(`${year}-12-31`).format('YYYY-MM-DD') + ' 23:59:00';
 
     try {
 
@@ -114,7 +110,7 @@ export const createTactico = async (req: Request, res: Response) => {
             nombre: 'Nuevo Objetivo Tactico',
             fechaInicio,
             fechaFin,
-        });
+        });        
 
         await objetivoTactico.setAreas([area?.id]);
 
@@ -185,33 +181,88 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin,  status, responsablesArray = [], areasArray = [], propietarioId, estrategicoId} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId} = req.body;
 
+    const participantes = [...responsablesArray, propietarioId]
     
-    const formatoFechaInicio = dayjs(fechaInicio).format('YYYY-MM-DD') + ' 00:01:00';
-    const formatoFechaFin = dayjs(fechaFin).format('YYYY-MM-DD') + ' 23:59:00';
-
-    console.log(formatoFechaInicio, formatoFechaFin);
+    let progresoFinal = progreso;
+    let statusFinal = status;
     
-    
-
     try {
+        
+        let areasSet: Set<number> = new Set();
+        await Promise.all(participantes.map(async (responsable: any) => {
+            const usuario = await Usuarios.findByPk(responsable, {
+                include: [{
+                model: Departamentos,
+                as: 'departamento',
+                attributes: ['id', 'nombre'],
+                include: [{
+                    model: Areas,
+                    as: 'area',
+                    attributes: ['id', 'nombre']
+                }]
+                }]
+            });
+            if (usuario?.departamento?.area?.id) {
+                areasSet.add(usuario?.departamento?.area?.id);
+            }
+        }));
+
+        console.log(areasSet);
+        
+        
         const objetivoTactico = await Tacticos.findByPk(id);
+
+        if(status !== objetivoTactico.status){
+            if(status === 'FINALIZADO'){
+                progresoFinal = 100;
+                statusFinal = 'FINALIZADO';
+            }else if (status === 'EN PROGRESO'){
+                statusFinal = 'EN PROGRESO';
+            }else if ( status === 'SIN_INICIAR'){
+                progresoFinal = 0;
+                statusFinal = 'SIN_INICIAR';
+            }else if (status === 'EN_TIEMPO' || status === 'CANCELADO' || status === 'EN_PAUSA' || status === 'RETRASADO'){
+                statusFinal = status;
+                if(objetivoTactico.progreso === 100){
+                    progresoFinal = 99;
+                } else if (objetivoTactico.progreso === 0){
+                    progresoFinal = 1;
+                }
+            }
+        }
+
+        if(progreso !== objetivoTactico.progreso){
+
+            if(progreso === 100){
+                statusFinal = 'FINALIZADO';
+            }else if (progreso === 0){
+                statusFinal = 'SIN_INICIAR';
+            }else if (progreso > 0 && progreso < 100){
+                statusFinal = 'EN_TIEMPO';
+            }
+        }
+
+
         if (objetivoTactico) {
             await objetivoTactico.update({ 
                 nombre, 
                 codigo, 
                 meta, 
                 indicador,
-                fechaInicio: formatoFechaInicio,
-                fechaFin: formatoFechaFin,
                 estrategicoId: estrategicoId ? estrategicoId : null, 
-                status, 
-                propietarioId });
+                status: statusFinal,
+                progreso: progresoFinal,
+                propietarioId 
+            });
 
 
             await objetivoTactico.setResponsables(responsablesArray);
-            await objetivoTactico.setAreas(areasArray);
+            
+            if(areasSet.size > 0){
+                await objetivoTactico.setAreas([...areasSet]);
+            }
 
             await objetivoTactico.reload({ include: ['responsables', 'areas', 'propietario', 'estrategico'] });
 
@@ -255,24 +306,27 @@ export const deleteTactico = async (req: Request, res: Response) => {
 
 export const getTacticosByArea = async (req: Request, res: Response) => {
     const { slug } = req.params;
-    const { year, quarter, limit, offset } = req.query;
-   
-
-    let where = {};
+    const { year } = req.query;
     
-    if( year && quarter ) {
-        const { startDate, endDate } = getQuarterDates(Number(year), Number(quarter));
-
-        const formatoFechaInicio = dayjs(startDate).format('YYYY-MM-DD') + ' 00:01:00';
-        const formatoFechaFin = dayjs(endDate).format('YYYY-MM-DD') + ' 23:59:00';
-
-        where = {
-            [Op.or]: [
-               
-            ]
-        }
-    }    
     
+    let where = {
+        [Op.or]: [
+            {
+                fechaInicio: {
+                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+                }
+            },
+            {
+                fechaFin: {
+                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+                }
+            }
+        ]
+        
+        
+        
+    };
+ 
 
     const includes = [
         {
@@ -280,7 +334,9 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             as: 'areas',
             through: { attributes: [] },
             attributes: ['id', 'nombre'],
-            where: { slug }
+            where: {
+                slug
+            }
         },
         {
             model: Usuarios,
