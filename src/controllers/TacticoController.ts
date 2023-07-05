@@ -60,29 +60,29 @@ export const getTacticos = async (req: Request, res: Response) => {
 
     try {
 
-        const tacticos = await Tacticos.findAll({
+        const tacticosGeneral = await Tacticos.findAll({
             where,
-            include: [{
-                model: Usuarios,
-                as: 'responsables',
-                through: { attributes: [] },
-                where: whereResponsable,
-            },{
-                model: Areas,
-                as: 'areas',
-                through: { attributes: [] },
-                where: whereArea,
-                attributes: ['id', 'nombre']
-            },
-            {
-                model: Usuarios,
-                as: 'propietario',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-            }
-        ]
+            include: includes,
+            // [{
+            //     model: Usuarios,
+            //     as: 'responsables',
+            //     through: { attributes: [] },
+            //     where: whereResponsable,
+            // },{
+            //     model: Areas,
+            //     as: 'areas',
+            //     through: { attributes: [] },
+            //     where: whereArea,
+            //     attributes: ['id', 'nombre']
+            // },
+            // {
+            //     model: Usuarios,
+            //     as: 'propietario',
+            //     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
+            // }]
         });
 
-        res.json({ tacticos });           
+        res.json({ tacticosGeneral });           
 
         
     } catch (error) {
