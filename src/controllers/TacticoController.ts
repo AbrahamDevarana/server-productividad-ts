@@ -1,4 +1,4 @@
-import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Areas, Comentarios, Cuatrimestre, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
@@ -40,6 +40,10 @@ const includes = [
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
             }
         ]
+    },
+    {
+        model: Cuatrimestre,
+        as: 'cuatrimestres',
     }
 ]
 
@@ -338,6 +342,10 @@ export const updateTactico = async (req: Request, res: Response) => {
                             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                         }
                     ]
+                },
+                {
+                    model: Cuatrimestre,
+                    as: 'cuatrimestres',
                 }
             ]
 

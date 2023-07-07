@@ -28,6 +28,8 @@ import { Comentarios } from './Comentarios';
 import GaleriaUsuarios from './custom/GaleriaUsuarios';
 import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Permisos } from './Permisos';
+import PivotObjetivoTacticoCuatrimestre from './pivot/PivotTacticoCuatrimestre';
+import Cuatrimestre from './custom/Cuatrimestres';
 
 
 
@@ -79,6 +81,9 @@ Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', c
         comentableType: 'TACTICO',
     }
 });
+
+Tacticos.belongsToMany(Cuatrimestre, { through: PivotObjetivoTacticoCuatrimestre, as: 'cuatrimestres'} );
+Cuatrimestre.belongsToMany(Tacticos, { through: PivotObjetivoTacticoCuatrimestre, as: 'tacticos'} );
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsTo(Usuarios, { as: 'operativoPropietario', foreignKey: 'propietarioId' });
@@ -187,6 +192,7 @@ export {
     Comentarios,
     Roles,
     Permisos,
+    Cuatrimestre,
 
     PivotTareasResponsables,
     PivotPerspEstr,
@@ -195,6 +201,7 @@ export {
     PivotEstrResp,
     PivotOpUsuario,
     PivotProyectoUsuarios,
+    PivotObjetivoTacticoCuatrimestre,
 
 
     UsuarioHitosOrden,
