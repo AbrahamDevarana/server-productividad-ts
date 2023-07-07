@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ObjetivoOperativos, Usuarios, ResultadosClave } from "../models";
 import { Op } from "sequelize";
+import { UsuarioInterface } from "../interfaces";
 
 
 export const getOperativos = async (req:any, res: Response) => {
@@ -50,7 +51,6 @@ export const getOperativos = async (req:any, res: Response) => {
                     attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
                 }
             ],
-            logging: console.log
         });
       
 
@@ -113,7 +113,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
 export const createOperativo = async (req: Request, res: Response) => {
     
     const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId } = req.body;
-    const participantesIds = operativosResponsable.map((responsable: any) => responsable.id);
+    // const participantesIds = operativosResponsable.map((responsable: any) => responsable.id);
+
+    const { id } = req.user as UsuarioInterface
 
     try {
 
@@ -124,12 +126,12 @@ export const createOperativo = async (req: Request, res: Response) => {
             fechaInicio,
             fechaFin,
             tacticoId,
-            propietarioId,
+            propietarioId: id
         });
 
         
         // @ts-ignore
-        await operativo.setOperativosResponsable(participantesIds);
+        await operativo.setOperativosResponsable(operativosResponsable);
         await operativo.reload( { include: 
             ['operativosResponsable', 'operativoPropietario', 'resultadosClave']
         } );

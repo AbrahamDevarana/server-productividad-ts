@@ -28,8 +28,8 @@ import { Comentarios } from './Comentarios';
 import GaleriaUsuarios from './custom/GaleriaUsuarios';
 import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Permisos } from './Permisos';
-import PivotObjetivoTacticoCuatrimestre from './pivot/PivotTacticoCuatrimestre';
-import Cuatrimestre from './custom/Cuatrimestres';
+import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
+import Trimestre from './custom/Trimestre';
 
 
 
@@ -82,8 +82,8 @@ Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', c
     }
 });
 
-Tacticos.belongsToMany(Cuatrimestre, { through: PivotObjetivoTacticoCuatrimestre, as: 'cuatrimestres'} );
-Cuatrimestre.belongsToMany(Tacticos, { through: PivotObjetivoTacticoCuatrimestre, as: 'tacticos'} );
+Tacticos.belongsToMany(Trimestre, { through: PivotObjetivoTacticoTrimestre, as: 'trimestres'} );
+Trimestre.belongsToMany(Tacticos, { through: PivotObjetivoTacticoTrimestre, as: 'tacticos'} );
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsTo(Usuarios, { as: 'operativoPropietario', foreignKey: 'propietarioId' });
@@ -192,7 +192,7 @@ export {
     Comentarios,
     Roles,
     Permisos,
-    Cuatrimestre,
+    Trimestre,
 
     PivotTareasResponsables,
     PivotPerspEstr,
@@ -201,7 +201,7 @@ export {
     PivotEstrResp,
     PivotOpUsuario,
     PivotProyectoUsuarios,
-    PivotObjetivoTacticoCuatrimestre,
+    PivotObjetivoTacticoTrimestre,
 
 
     UsuarioHitosOrden,

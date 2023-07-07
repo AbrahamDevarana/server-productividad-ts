@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
+import Trimestre from "./custom/Trimestre";
 
 export const Tacticos = database.define('obj_tacticos', {
     id: {
@@ -62,7 +63,21 @@ export const Tacticos = database.define('obj_tacticos', {
             tactico.updatedAt = new Date();
         },
         afterCreate: async (tactico: any) => {
+            
+            //  al crear hacer realción con los Cuatrimestres
+            const year = tactico.fechaInicio.getFullYear();
 
+            let trimestresParaAsignar = await Trimestre.findAll({
+                where: {
+                  [Sequelize.Op.or]: [
+                    { year, trimestre: 4 },
+                    { year, trimestre: 1 },
+                    { year, trimestre: 2 },
+                    { year, trimestre: 3 }
+                  ]
+                }
+              });
+            await tactico.setTrimestres(trimestresParaAsignar);
         },
         afterUpdate: async (tactico: any) => {
            

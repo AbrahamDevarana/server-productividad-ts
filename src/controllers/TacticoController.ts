@@ -1,4 +1,4 @@
-import { Areas, Comentarios, Cuatrimestre, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Areas, Comentarios, Trimestre, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
@@ -42,8 +42,11 @@ const includes = [
         ]
     },
     {
-        model: Cuatrimestre,
-        as: 'cuatrimestres',
+        model: Trimestre,
+        as: 'trimestres',
+        through: {
+            attributes: ['activo']
+        },
     }
 ]
 
@@ -224,7 +227,7 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, trimestresActivos = []} = req.body;
 
     const participantes = [...responsablesArray, propietarioId]
     
@@ -256,6 +259,23 @@ export const updateTactico = async (req: Request, res: Response) => {
         }));        
         
         const objetivoTactico = await Tacticos.findByPk(id);
+
+
+        const trimestres = await Trimestre.findAll({ where: { year } });
+
+
+        for (let trimestre of trimestres) {
+            await objetivoTactico.addTrimestre(trimestre, { through: { activo: false } });
+        }
+
+        for (let trimestreActivo of trimestresActivos) {
+            // @ts-ignore
+            const trimestre = trimestres.find(t => t.trimestre === trimestreActivo);
+            if (!trimestre) {
+              throw new Error(`No se encontró Trimestre con trimestre ${trimestreActivo} para el año ${year}`);
+            }
+            await objetivoTactico.addTrimestre(trimestre, { through: { activo: true } });
+        }
 
         if(status !== objetivoTactico.status){
             if(status === 'FINALIZADO'){
@@ -344,8 +364,11 @@ export const updateTactico = async (req: Request, res: Response) => {
                     ]
                 },
                 {
-                    model: Cuatrimestre,
-                    as: 'cuatrimestres',
+                    model: Trimestre,
+                    as: 'trimestres',
+                    through: {
+                        attributes: ['activo']
+                    },
                 }
             ]
 
@@ -451,6 +474,11 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
                     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
                 }
             ]
+        },
+        {
+            model: Trimestre,
+            as: 'trimestres',
+            through: { attributes: ['activo'] },
         }
     ]
 

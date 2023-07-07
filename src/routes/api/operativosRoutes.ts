@@ -14,23 +14,9 @@ router.get('/:id', getOperativo);
 
 
 
-router.post('/', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('meta', 'La meta es obligatoria').not().isEmpty(),
-    check('indicador', 'El indicador es obligatorio').not().isEmpty(),
-    check('fechaInicio', 'La fecha de inicio es obligatoria').not().isEmpty(),
-    check('fechaFin', 'La fecha de fin es obligatoria').not().isEmpty(),
-    validarCampos
-], createOperativo);
+router.post('/', createOperativo);
 
-router.put('/:id', [
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('meta', 'La meta es obligatoria').not().isEmpty(),
-    check('indicador', 'El indicador es obligatorio').not().isEmpty(),
-    check('fechaInicio', 'La fecha de inicio es obligatoria').not().isEmpty(),
-    check('fechaFin', 'La fecha de fin es obligatoria').not().isEmpty(),
-    validarCampos
-], updateOperativo);
+router.put('/:id', updateOperativo);
 
 
 
