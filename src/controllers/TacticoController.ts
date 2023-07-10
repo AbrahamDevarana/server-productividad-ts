@@ -130,7 +130,7 @@ export const createTactico = async (req: Request, res: Response) => {
     const fechaInicio = dayjs(`${year}-01-01`).format('YYYY-MM-DD') + ' 00:01:00';
     const fechaFin = dayjs(`${year}-12-31`).format('YYYY-MM-DD') + ' 23:59:00';
 
-    try {
+    try {        
 
         let estrategicoId = null;
         const area = await Areas.findOne({ 
@@ -141,14 +141,15 @@ export const createTactico = async (req: Request, res: Response) => {
                 attributes: ['id', 'nombre'],
                 include: [{
                     model: ObjetivoEstrategico,
-                    as: 'objetivos_estrategicos',
+                    as: 'objetivosEstrategicos',
                     attributes: ['id']
                 }]
             }});
 
         if(estrategico){
-            estrategicoId = (area?.perspectivas.objetivos_estrategicos[0].id);
+            estrategicoId = (area?.perspectivas.objetivosEstrategicos[0].id);
         }
+                
             
         const objetivoTactico = await Tacticos.create({
             propietarioId,
@@ -178,84 +179,60 @@ export const createTactico = async (req: Request, res: Response) => {
     }
 }
 
-// export const createTactico = async (req: Request, res: Response) => {
-//     const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, responsablesArray = [], areasArray = [], estrategicoId = null, propietarioId } = req.body;
-
-//     try {
-//         const trimestres = Math.ceil(dayjs(fechaFin).diff(fechaInicio, 'month', true) / 3);        
-
-//         let arrayTactico = []
-//         for (let i = 0; i < trimestres+1; i++) {
-//             const fechaInicioTrimestre = dayjs(fechaInicio).add(i*3, 'month').format('YYYY-MM-DD') + ' 00:01:00';
-//             const fechaFinTrimestre = i < trimestres - 1 ? dayjs(fechaInicio).add((i+1)*3, 'month').subtract(1, 'day').format('YYYY-MM-DD') : fechaFin;
-            
-
-//             const objetivoTactico = await Tacticos.create({ 
-//                 nombre, 
-//                 codigo, 
-//                 meta, 
-//                 indicador, 
-//                 fechaInicio: fechaInicioTrimestre,
-//                 fechaFin: fechaFinTrimestre,
-//                 propietarioId, 
-//                 estrategicoId: estrategicoId ? estrategicoId : null,
-//                 trimestres: i+1,
-//             });
-            
-//             await objetivoTactico.setResponsables(responsablesArray);
-//             await objetivoTactico.setAreas(areasArray);
-//             await objetivoTactico.reload({ include: includes });
-            
-//             arrayTactico.push(objetivoTactico);
-                
-//             if ( i > 0 ) {
-//                 await Tacticos.update({ objetivoPadre: arrayTactico[0].id }, { where: { id: arrayTactico[i].id } });
-//             }
-//         }
-
-//         res.json({
-//             objetivoTactico: arrayTactico[0]
-//         });
-        
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             msg: 'Hable con el administrador'
-//         });
-//     }
-// }
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, trimestresActivos = []} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, trimestresActivos = [], slug} = req.body;
 
-    const participantes = [...responsablesArray, propietarioId]
+    let participantes = [...responsablesArray, propietarioId]
     
     let progresoFinal = progreso;
     let statusFinal = status;
 
-
-
     
     try {
         
+        const area = await Areas.findOne({ 
+            where: {slug}, 
+            include: { 
+                model: Perspectivas, 
+                as: 'perspectivas', 
+                attributes: ['id', 'nombre'],
+                include: [{
+                    model: ObjetivoEstrategico,
+                    as: 'objetivosEstrategicos',
+                    attributes: ['id']
+                }]
+        }});
+
+        let areaArray: any[] = []
         let areasSet: Set<number> = new Set();
+
         await Promise.all(participantes.map(async (responsable: any) => {
             const usuario = await Usuarios.findByPk(responsable, {
                 include: [{
-                model: Departamentos,
-                as: 'departamento',
-                attributes: ['id', 'nombre'],
-                include: [{
-                    model: Areas,
-                    as: 'area',
-                    attributes: ['id', 'nombre']
-                }]
-                }]
-            });
-            if (usuario?.departamento?.area?.id) {
-                areasSet.add(usuario?.departamento?.area?.id);
+                    model: Departamentos,
+                    as: 'departamentos',
+                    attributes: ['id', 'nombre'],
+                    include: [{
+                        model: Areas,
+                        as: 'area',
+                        attributes: ['id', 'nombre']
+                    }]
+                }],
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto']
+            });            
+            
+            if (usuario && usuario.departamentos.length > 0) {
+                
+                usuario.departamentos.forEach((departamento: any) => {
+                    areaArray.push(departamento.area.id);
+                });
+                
             }
+          
+            areasSet = new Set(areaArray);
+            areasSet.add(area?.id);
         }));        
         
         const objetivoTactico = await Tacticos.findByPk(id);
@@ -326,7 +303,7 @@ export const updateTactico = async (req: Request, res: Response) => {
                 await objetivoTactico.setAreas([...areasSet]);
             }
 
-
+            
             const includes = [
                 {
                     model: Areas,
@@ -377,6 +354,8 @@ export const updateTactico = async (req: Request, res: Response) => {
             res.json({
                 objetivoTactico
             });
+
+
         } else {
             res.status(404).json({
                 msg: `No existe un objetivo tactico con el id ${id}`

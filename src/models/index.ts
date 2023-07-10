@@ -35,9 +35,7 @@ import Trimestre from './custom/Trimestre';
 
 
 // Usuarios
-Usuarios.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
-Usuarios.hasMany(Usuarios, { as: 'empleado', foreignKey: 'leaderId' });
-Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
+Usuarios.belongsToMany(Departamentos, { through: 'pivot_departamentos_usuarios', as: 'departamentos', foreignKey: 'usuarioId' });
 Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
 Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyectos', foreignKey: 'usuarioId' });
 Usuarios.hasMany(ObjetivoOperativos, { as: 'objetivosOperativos', foreignKey: 'propietarioId' });
@@ -55,11 +53,11 @@ Areas.hasOne(Perspectivas, { as: 'perspectivas', foreignKey: 'areaId' });
 
 // Departamentos
 Departamentos.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
-Departamentos.hasMany(Usuarios, { as: 'usuarios', foreignKey: 'departamentoId' });
+Departamentos.belongsToMany(Usuarios, { through: 'pivot_departamentos_usuarios', as: 'usuarios', foreignKey: 'departamentoId' });
 Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 
 // Perspectivas
-Perspectivas.hasMany(ObjetivoEstrategico, { as: 'objetivos_estrategicos', foreignKey: 'perspectivaId' });
+Perspectivas.hasMany(ObjetivoEstrategico, { as: 'objetivosEstrategicos', foreignKey: 'perspectivaId' });
 Perspectivas.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
 
 // Objetivo Estrategico
@@ -148,26 +146,6 @@ ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', throug
 
 Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId' });
 Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
-
-
-// /// Polimorficas
-
-// Tareas.hasMany(Comentarios, {
-//     foreignKey: 'comentableId',
-//     constraints: false,
-//     scope: {
-//         comentableType: 'tarea'
-//     }
-// })
-
-// Usuarios.hasMany(Comentarios, {
-//     foreignKey: 'comentableId',
-//     constraints: false,
-//     scope: {
-//         comentableType: 'autor'
-//     }
-// })
-
 
 
 Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos', foreignKey: 'rolId' });

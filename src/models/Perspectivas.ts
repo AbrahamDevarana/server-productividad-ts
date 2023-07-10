@@ -12,6 +12,9 @@ export const Perspectivas = database.define('perspectivas', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    codigo: {
+        type: Sequelize.STRING,
+    },
     descripcion: {
         type: Sequelize.TEXT,
         allowNull: true

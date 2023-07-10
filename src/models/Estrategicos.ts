@@ -59,6 +59,15 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
     hooks: {
         beforeUpdate: async (objetivoEstrategico: any) => {
             objetivoEstrategico.updatedAt = new Date();
+        },
+        afterCreate: async (objetivoEstrategico: any) => {
+            const perspectiva = await objetivoEstrategico.getPerspectivas();
+
+            // contar las estrategias de la perspectiva
+            const estrategias = await perspectiva.getObjetivosEstrategicos();
+            const estrategiasCount = estrategias.length;
+            objetivoEstrategico.codigo = `${perspectiva.codigo}${estrategiasCount}`;
+            await objetivoEstrategico.save();
         }
     },
     defaultScope: {

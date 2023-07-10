@@ -13,7 +13,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
             include: [
                 {
                     model: ObjetivoEstrategico,
-                    as: 'objetivos_estrategicos',
+                    as: 'objetivosEstrategicos',
                     include: [
                         {
                             model: Usuarios,

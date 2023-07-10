@@ -68,9 +68,6 @@ export const Usuarios = database.define('usuarios', {
         allowNull: false,
         defaultValue: true
     },
-    departamentoId: {
-        type: Sequelize.INTEGER,
-    },
     leaderId: {
         type: Sequelize.UUID,
     },
