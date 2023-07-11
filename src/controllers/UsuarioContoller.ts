@@ -29,7 +29,6 @@ export const getUsuarios = async (req: Request, res: Response) => {
     const { nombre, apellidoPaterno, apellidoMaterno, email, page, size, search } = req.query;
     
     const { limit, offset } = getPagination(Number(page), Number(size));
-    
 
     const where: any = {};  
 
@@ -46,13 +45,18 @@ export const getUsuarios = async (req: Request, res: Response) => {
 
     try {
         const result = await Usuarios.findAndCountAll({
+            distinct: true,
             where,
             include: [{model: Departamentos, as: 'departamentos', include: ['area']}, 'direccion'],
             limit: size ? limit: undefined,
             offset: size ? offset: undefined,
+            order: [
+                ['nombre', 'ASC'],
+            ],
         })
 
-        const usuarios = getPagingData(result, Number(page), Number(size))
+        const usuarios = getPagingData(result, Number(page), Number(size))    
+        
         res.json({ usuarios });
 
     } catch (error) {
@@ -187,7 +191,6 @@ export const updateUsuario = async (req: Request, res: Response) => {
         
         const { id } = req.params;
         const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, despartamentos, puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId} = req.body;
-
         
         try {
             const usuario = await Usuarios.findByPk(id,

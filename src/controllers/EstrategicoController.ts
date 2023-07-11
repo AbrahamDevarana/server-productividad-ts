@@ -169,12 +169,12 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                     progresoFinal = 0;
                     statusFinal = 'SIN_INICIAR';
                 }else if (status === 'EN_TIEMPO' || status === 'CANCELADO' || status === 'EN_PAUSA' || status === 'RETRASADO'){
-                    statusFinal = status;
-                    if(objetivoEstrategico.progreso === 100){
-                        progresoFinal = 99;
-                    } else if (objetivoEstrategico.progreso === 0){
-                        progresoFinal = 1;
-                    }
+                    // statusFinal = status;
+                    // if(objetivoEstrategico.progreso === 100){
+                    //     progresoFinal = 99;
+                    // } else if (objetivoEstrategico.progreso === 0){
+                    //     progresoFinal = 1;
+                    // }
                 }
             }
 

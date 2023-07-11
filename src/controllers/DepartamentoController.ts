@@ -32,6 +32,7 @@ export const getDepartamentos = async (req: Request, res: Response) => {
     try {
         const result = await Departamentos.findAndCountAll({
             include: departamentoInclude,
+            distinct: true,
             where,
             limit,
             offset
