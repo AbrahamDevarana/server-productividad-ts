@@ -28,6 +28,12 @@ const includes = [
     {
         model: ObjetivoEstrategico,
         as: 'estrategico',
+        include: [{
+            model: Perspectivas,
+            as: 'perspectivas',
+            attributes: ['id', 'nombre',  'color']
+        }]
+
     },
     {
         model: Comentarios,
@@ -327,6 +333,11 @@ export const updateTactico = async (req: Request, res: Response) => {
                 {
                     model: ObjetivoEstrategico,
                     as: 'estrategico',
+                    include: [{
+                        model: Perspectivas,
+                        as: 'perspectivas',
+                        attributes: ['id', 'nombre',  'color']
+                    }]
                 },
                 {
                     model: Comentarios,
@@ -441,6 +452,11 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
         {
             model: ObjetivoEstrategico,
             as: 'estrategico',
+            include: [{
+                model: Perspectivas,
+                as: 'perspectivas',
+                attributes: ['id', 'nombre',  'color']
+            }]
         },
         {
             model: Comentarios,

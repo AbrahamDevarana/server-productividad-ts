@@ -3,6 +3,7 @@ import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
 import { UsuarioInterface } from '../interfaces';
+import dayjs from 'dayjs';
 
 
 const includeProps = [
@@ -112,22 +113,25 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
 
 export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { perspectivaId } = req.body;
-
-    console.log(perspectivaId);
-    
+   
 
     const { id: propietarioId} = req.user as UsuarioInterface
+            // Primer dia del año actual
+            const fechaInicio = dayjs().startOf('year').toDate();
+            // Ultimo dia del año actual
+            const fechaFin = dayjs().endOf('year').toDate();
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId });
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId, fechaInicio, fechaFin });
         await objetivoEstrategico.reload({
             include: includeProps
         });
+
+
         
-     
         res.json({
             objetivoEstrategico,
-            perspectivaId
+            perspectivaId,
         });
 
     } catch (error) {

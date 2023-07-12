@@ -207,6 +207,8 @@ export const updateUsuario = async (req: Request, res: Response) => {
             const formatedFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD') : null;
             const formatedFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD') : null;
 
+            console.log(puesto);
+            
             
 
             await usuario.update({ 
