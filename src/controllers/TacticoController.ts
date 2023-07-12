@@ -71,39 +71,39 @@ export const getTacticos = async (req: Request, res: Response) => {
     status && (where.status = status);
 
 
-    try {
+    // try {
 
-        const tacticosGeneral = await Tacticos.findAll({
-            where,
-            include: includes,
-            // [{
-            //     model: Usuarios,
-            //     as: 'responsables',
-            //     through: { attributes: [] },
-            //     where: whereResponsable,
-            // },{
-            //     model: Areas,
-            //     as: 'areas',
-            //     through: { attributes: [] },
-            //     where: whereArea,
-            //     attributes: ['id', 'nombre']
-            // },
-            // {
-            //     model: Usuarios,
-            //     as: 'propietario',
-            //     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-            // }]
-        });
+    //     const tacticosGeneral = await Tacticos.findAll({
+    //         where,
+    //         include: includes,
+    //         // [{
+    //         //     model: Usuarios,
+    //         //     as: 'responsables',
+    //         //     through: { attributes: [] },
+    //         //     where: whereResponsable,
+    //         // },{
+    //         //     model: Areas,
+    //         //     as: 'areas',
+    //         //     through: { attributes: [] },
+    //         //     where: whereArea,
+    //         //     attributes: ['id', 'nombre']
+    //         // },
+    //         // {
+    //         //     model: Usuarios,
+    //         //     as: 'propietario',
+    //         //     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
+    //         // }]
+    //     });
 
-        res.json({ tacticosGeneral });           
+    //     res.json({ tacticosGeneral });           
 
         
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
+    // } catch (error) {
+    //     console.log(error);
+    //     res.status(500).json({
+    //         msg: 'Hable con el administrador'
+    //     });
+    // }
 
 }
 
@@ -184,7 +184,6 @@ export const createTactico = async (req: Request, res: Response) => {
         });
     }
 }
-
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -544,10 +543,122 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
 
 
 
+export const getTacticosByEquipos = async (req: Request, res: Response) => {
+    const { slug } = req.params;
+    const { year } = req.query;
+
+
+    console.log(year, slug);
+    
+
+    let where = {
+        [Op.or]: [
+            {
+                fechaInicio: {
+                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+                }
+            },
+            {
+                fechaFin: {
+                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+                }
+            }
+        ],
+    }
+
+   try {
+        // const objetivosTacticos = await Areas.findAll({
+        // where: {
+        //     slug
+        // },
+        // include: [
+        //     {
+        //         model: Tacticos,
+        //         as: 'tacticos',
+        //         include: [
+        //             {
+        //                 model: Usuarios,
+        //                 as: 'responsables',
+        //                 through: { attributes: [] },
+        //             },
+        //             {
+        //                 model: Usuarios,
+        //                 as: 'propietario',
+        //             },
+        //             {
+        //                 model: ObjetivoEstrategico,
+        //                 as: 'estrategico',
+        //                 include: [{
+        //                     model: Perspectivas,
+        //                     as: 'perspectivas',
+        //                     attributes: ['id', 'nombre',  'color']
+        //                 }]
+        //             },
+        //             {
+        //                 model: Comentarios,
+        //                 as: 'comentarios',
+        //                 attributes: ['id', 'mensaje', 'createdAt'],
+        //                 include: [
+        //                     {
+        //                         as: 'autor',
+        //                         model: Usuarios,
+        //                         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+        //                     }   
+        //                 ]
+        //             },
+        //             {
+        //                 model: Trimestre,
+        //                 as: 'trimestres',
+        //                 through: { attributes: ['activo'] },
+        //             }
+        //         ],
+        //         where
+        //     }
+        // ]
+
+        const objetivosTacticos = await Departamentos.findAll({
+            include: [
+                {
+                    model: Areas,
+                    as: 'area',
+                    where: {
+                        slug
+                    },
+                    include: [
+                        {
+                            model: Tacticos,
+                            as: 'tacticos',
+                            
+                        }
+                    ]
+                }
+            ]
+        });
+
+        res.json({ objetivosTacticos });
+
+    
+   } catch (error) {
+         console.log(error);
+         res.status(500).json({
+              msg: 'Hable con el administrador'
+         });
+   }
+
+}
+
+
+
+
+
 const getQuarterDates = (year:number, quarter:number) => {
     const startQuarter = (quarter - 1) * 3 + 1;
     const startDate = dayjs(`${year}-${startQuarter}-01`).startOf('month');
     const endDate = startDate.add(2, 'month').endOf('month');
     return { startDate, endDate };
   }
+  
+
+
+
   
