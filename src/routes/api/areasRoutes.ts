@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { getArea, getAreas, createArea, updateArea, deleteArea} from '../../controllers/AreaController';
+import { getArea, getAreas, createArea, updateArea, deleteArea, getAreaObjetivos} from '../../controllers/AreaController';
 const router = Router();
 
 
 router.get('/', getAreas);
 router.get('/:id', getArea);
+router.get('/getObjetivos/:id', getAreaObjetivos);
 
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),

@@ -13,6 +13,13 @@ const areaInclude = [
     {
         model: Departamentos,
         as: 'departamentos',
+        include: [
+            {
+                model: Usuarios,
+                as: 'usuarios',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+            }
+        ]
     },
     {
         model: Usuarios,
@@ -49,11 +56,18 @@ export const getAreas = async (req: Request, res: Response) => {
 export const getArea = async (req: Request, res: Response) => {
             
     const { id } = req.params;
+    
 
     try {
-        const area = await Areas.findByPk(id);
+        const area = await Areas.findOne({
+            where: { [Op.or]: [{ id }, { slug: id }] },
+            include: areaInclude
+        });
+
+        console.log(area);
+        
+
         if (area) {
-            await area.reload({ include: areaInclude })
             res.json({ area });
         } else {
             res.status(404).json({
@@ -124,6 +138,41 @@ export const deleteArea = async (req: Request, res: Response) => {
                 msg: `No existe la área seleccionada`
             });
         }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
+
+export const getAreaObjetivos = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const area = await Areas.findByPk(id, {
+            include: [
+                {
+                    model: Departamentos,
+                    as: 'departamentos',
+                    include: [
+                        {
+                            model: Usuarios,
+                            as: 'usuarios',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                        }
+                    ]
+                },
+                {
+                    model: Usuarios,
+                    as: 'leader',
+                }
+            ]
+        });
+
+       res.json({ area });
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
