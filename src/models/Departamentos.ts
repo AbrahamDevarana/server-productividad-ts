@@ -24,6 +24,10 @@ export const Departamentos = database.define('departamentos', {
         allowNull: false,
         defaultValue: 1
     },
+    color: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
     slug:{
         type: Sequelize.STRING,
     },

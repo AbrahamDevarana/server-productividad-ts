@@ -1,6 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
 import Trimestre from "./custom/Trimestre";
+import { Areas } from "./Areas";
 
 export const Tacticos = database.define('obj_tacticos', {
     id: {
@@ -83,14 +84,25 @@ export const Tacticos = database.define('obj_tacticos', {
                 const objetivoEstrategico = await tactico.getEstrategico()
                 // Contar cuantos objetivos operativos tiene el objetivo estrategico
                 const objetivosOperativos = await objetivoEstrategico.getTacticos();
-                const totalObjetivosOperativos = objetivosOperativos.length;
+                const totalObjetivosOperativos = objetivosOperativos.length + 1;
                 tactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
-                console.log(tactico.codigo); 
                 await tactico.save();                
             }else{
-
-                const totalObjetivosOperativos = await Tacticos.count();
-                tactico.codigo = `OT-${totalObjetivosOperativos}`;
+                const totalObjetivosOperativos = await Tacticos.count({
+                    where: {
+                        estrategicoId: null
+                    },
+                    include: [{
+                        model: Areas,
+                        as: 'areas',
+                        where: {
+                            codigo: tactico.codigo
+                        }
+                    }]
+                })
+                
+                let code = `${tactico.codigo}-OT-${totalObjetivosOperativos + 1}`;
+                tactico.codigo = code;
                 await tactico.save();
             }
         },

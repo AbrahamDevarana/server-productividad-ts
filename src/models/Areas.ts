@@ -11,7 +11,6 @@ export const Areas = database.define('areas', {
     nombre: {
         type: Sequelize.STRING,
         allowNull: false
-
     },
     parentId: {
         type: Sequelize.INTEGER,
@@ -20,6 +19,9 @@ export const Areas = database.define('areas', {
         type: Sequelize.UUID,
     },
     slug:{
+        type: Sequelize.STRING,
+    },
+    codigo: {
         type: Sequelize.STRING,
     },
     order: {

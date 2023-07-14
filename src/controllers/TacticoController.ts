@@ -139,6 +139,8 @@ export const createTactico = async (req: Request, res: Response) => {
     try {        
 
         let estrategicoId = null;
+
+        let codigo = ''
         const area = await Areas.findOne({ 
             where: {slug}, 
             include: { 
@@ -154,18 +156,25 @@ export const createTactico = async (req: Request, res: Response) => {
 
         if(estrategico){
             estrategicoId = (area?.perspectivas.objetivosEstrategicos[0].id);
+        }else {
+            codigo = area?.codigo
         }
-                
-            
+
         const objetivoTactico = await Tacticos.create({
             propietarioId,
             estrategicoId,
+            codigo,
             nombre: 'Nuevo Objetivo Tactico',
             fechaInicio,
             fechaFin,
         });        
 
         await objetivoTactico.setAreas([area?.id]);
+
+        if(!estrategicoId){
+            objetivoTactico.codigo = area.codigo;
+            await objetivoTactico.save();
+        }
 
         await objetivoTactico.reload({
             include: includes
@@ -212,6 +221,7 @@ export const updateTactico = async (req: Request, res: Response) => {
 
         let areaArray: any[] = []
         let areasSet: Set<number> = new Set();
+        let codigoFinal = codigo;
 
         await Promise.all(participantes.map(async (responsable: any) => {
             const usuario = await Usuarios.findByPk(responsable, {
@@ -242,9 +252,7 @@ export const updateTactico = async (req: Request, res: Response) => {
         
         const objetivoTactico = await Tacticos.findByPk(id);
 
-
         const trimestres = await Trimestre.findAll({ where: { year } });
-
 
         for (let trimestre of trimestres) {
             await objetivoTactico.addTrimestre(trimestre, { through: { activo: false } });
@@ -268,13 +276,6 @@ export const updateTactico = async (req: Request, res: Response) => {
             }else if ( status === 'SIN_INICIAR'){
                 progresoFinal = 0;
                 statusFinal = 'SIN_INICIAR';
-            }else if (status === 'EN_TIEMPO' || status === 'CANCELADO' || status === 'EN_PAUSA' || status === 'RETRASADO'){
-                // statusFinal = status;
-                // if(objetivoTactico.progreso === 100){
-                //     progresoFinal = 99;
-                // } else if (objetivoTactico.progreso === 0){
-                //     progresoFinal = 1;
-                // }
             }
         }
 
@@ -289,10 +290,19 @@ export const updateTactico = async (req: Request, res: Response) => {
             }
         }
 
+        
+
+        if(!estrategicoId){
+            
+            const count = await Tacticos.count({ where: { estrategicoId: null }, include: { model: Areas, as: 'areas', where: { slug } } });
+        
+            codigoFinal = `${area.codigo}-${count + 1}`;            
+        }
+
         if (objetivoTactico) {
             await objetivoTactico.update({ 
                 nombre, 
-                codigo, 
+                codigo: codigoFinal,
                 meta, 
                 indicador,
                 estrategicoId: estrategicoId ? estrategicoId : null, 
