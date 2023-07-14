@@ -15,6 +15,7 @@ import tareasRoutes from './api/tareasRoutes'
 import comentariosRoutes from './api/comentariosRoutes'
 import permisosRoutes from './api/permisosRoutes'
 
+import galeriaRoutes from "./api/galeriaRoutes";
 import uploadRoutes from "./api/uploadRoutes";
 
 const router = Router();
@@ -35,6 +36,8 @@ router.use('/proyectos', proyectosRoutes)
 router.use('/hitos', hitosRoutes)
 router.use('/comentarios', comentariosRoutes)
 router.use('/permisos', permisosRoutes)
+
+router.use('/galeria', galeriaRoutes)
 
 
 

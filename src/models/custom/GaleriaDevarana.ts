@@ -2,7 +2,7 @@ import Sequelize from "sequelize";
 import database from "../../config/database";
 
 
-const GaleriaUsuarios = database.define('galeria_usuarios', {
+export const GaleriaDevarana = database.define('galeria_devarana', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -18,13 +18,7 @@ const GaleriaUsuarios = database.define('galeria_usuarios', {
         allowNull: false,
         defaultValue: ''
     },
-    favorito: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-    },
 }, {
     paranoid: true,
 });
 
-export default GaleriaUsuarios;

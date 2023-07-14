@@ -546,8 +546,6 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
     const { year, departamentoId } = req.query;
 
 
-   
-
     let where = {
         [Op.or]: [
             {
@@ -621,7 +619,7 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
         const tacticos_core = await Departamentos.findAll({
             include: include,
             where: {
-                // tacticos.estrategicoId: null,
+                id: departamentoId,
                 '$area.tacticos.estrategicoId$': null,
             }
         });
@@ -629,7 +627,7 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
         const tacticos = await Departamentos.findAll({
             include: include,
             where: {
-                // [Op.not]: { estrategicoId: null }
+                id: departamentoId,
                 '$area.tacticos.estrategicoId$': {
                     [Op.not]: null
                 }

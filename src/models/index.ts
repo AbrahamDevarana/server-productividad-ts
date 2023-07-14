@@ -12,6 +12,7 @@ import { ResultadosClave } from './ResultadoClave';
 import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
 import { Roles } from './Roles';
+import { GaleriaDevarana } from './custom/GaleriaDevarana';
 
 
 
@@ -184,6 +185,7 @@ export {
 
     UsuarioHitosOrden,
     GaleriaUsuarios,
+    GaleriaDevarana,
     ConfiguracionUsuario
 }
 

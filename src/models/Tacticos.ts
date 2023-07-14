@@ -81,18 +81,18 @@ export const Tacticos = database.define('obj_tacticos', {
 
             if( tactico.estrategicoId ){
                 const objetivoEstrategico = await tactico.getEstrategico()
-            
                 // Contar cuantos objetivos operativos tiene el objetivo estrategico
                 const objetivosOperativos = await objetivoEstrategico.getTacticos();
                 const totalObjetivosOperativos = objetivosOperativos.length;
+                tactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
+                console.log(tactico.codigo); 
+                await tactico.save();                
+            }else{
 
-                tactico.codigo = `${objetivoEstrategico.codigo}-OT${totalObjetivosOperativos}`;
-                console.log(tactico.codigo);
-                
+                const totalObjetivosOperativos = await Tacticos.count();
+                tactico.codigo = `OT-${totalObjetivosOperativos}`;
                 await tactico.save();
-
-                
-            }        
+            }
         },
     },
     defaultScope: {

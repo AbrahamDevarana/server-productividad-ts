@@ -64,9 +64,6 @@ export const getArea = async (req: Request, res: Response) => {
             include: areaInclude
         });
 
-        console.log(area);
-        
-
         if (area) {
             res.json({ area });
         } else {
@@ -145,7 +142,6 @@ export const deleteArea = async (req: Request, res: Response) => {
         });
     }
 }
-
 
 export const getAreaObjetivos = async (req: Request, res: Response) => {
     const { id } = req.params;

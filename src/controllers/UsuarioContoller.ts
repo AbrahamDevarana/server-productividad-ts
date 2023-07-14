@@ -391,10 +391,12 @@ export const uploadConfiguracion = async (req: Request, res: Response) => {
             portadaPerfil
         } = req.body
     
+    
+    
 
     try {
     
-        const usuario = await ConfiguracionUsuario.findOrCreate({ 
+        const configUsuario = await ConfiguracionUsuario.findOrCreate({ 
             where: { usuarioId: id },
             defaults: {
                 usuarioId: id,
@@ -408,23 +410,27 @@ export const uploadConfiguracion = async (req: Request, res: Response) => {
             }
         });
 
-        if(!usuario[1]){
-            await usuario[0].update({ 
-                notificacionesWeb: notificacionesWeb ? notificacionesWeb : usuario[0].notificacionesWeb,
-                notificacionesEmail : notificacionesEmail ? notificacionesEmail : usuario[0].notificacionesEmail,
-                notificacionesEmailDiario : notificacionesEmailDiario ? notificacionesEmailDiario : usuario[0].notificacionesEmailDiario,
-                notificacionesEmailSemanal : notificacionesEmailSemanal ? notificacionesEmailSemanal : usuario[0].notificacionesEmailSemanal,
-                notificacionesEmailMensual : notificacionesEmailMensual ? notificacionesEmailMensual : usuario[0].notificacionesEmailMensual,
-                notificacionesEmailTrimestral : notificacionesEmailTrimestral ? notificacionesEmailTrimestral : usuario[0].notificacionesEmailTrimestral,
-                portadaPerfil : portadaPerfil ? portadaPerfil : usuario[0].portadaPerfil
+        if(!configUsuario[1]){
+            await configUsuario[0].update({ 
+                notificacionesWeb: notificacionesWeb ? notificacionesWeb : configUsuario[0].notificacionesWeb,
+                notificacionesEmail : notificacionesEmail ? notificacionesEmail : configUsuario[0].notificacionesEmail,
+                notificacionesEmailDiario : notificacionesEmailDiario ? notificacionesEmailDiario : configUsuario[0].notificacionesEmailDiario,
+                notificacionesEmailSemanal : notificacionesEmailSemanal ? notificacionesEmailSemanal : configUsuario[0].notificacionesEmailSemanal,
+                notificacionesEmailMensual : notificacionesEmailMensual ? notificacionesEmailMensual : configUsuario[0].notificacionesEmailMensual,
+                notificacionesEmailTrimestral : notificacionesEmailTrimestral ? notificacionesEmailTrimestral : configUsuario[0].notificacionesEmailTrimestral,
+                portadaPerfil : portadaPerfil ? portadaPerfil : configUsuario[0].portadaPerfil
             });
         }
 
-        await usuario[0].reload({
+
+        const usuario = await Usuarios.findByPk(id, {
             include: perfilInclude
         });
+        
 
-        res.json({ usuario: usuario[0] });
+      
+
+        res.json({ usuario });
 
 
     } catch (error) {
