@@ -87,23 +87,6 @@ export const Tacticos = database.define('obj_tacticos', {
                 const totalObjetivosOperativos = objetivosOperativos.length
                 tactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
                 await tactico.save();                
-            }else{
-                const totalObjetivosOperativos = await Tacticos.count({
-                    where: {
-                        estrategicoId: null
-                    },
-                    include: [{
-                        model: Areas,
-                        as: 'areas',
-                        where: {
-                            codigo: tactico.codigo
-                        }
-                    }]
-                })
-                
-                let code = `${tactico.codigo}-OT-${totalObjetivosOperativos}`;
-                tactico.codigo = code;
-                await tactico.save();
             }
         },
     },

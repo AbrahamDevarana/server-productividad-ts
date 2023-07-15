@@ -171,9 +171,26 @@ export const createTactico = async (req: Request, res: Response) => {
 
         await objetivoTactico.setAreas([area?.id]);
 
+
+        
+
         if(!estrategicoId){
-            objetivoTactico.codigo = area.codigo;
-            await objetivoTactico.save();
+            const totalObjetivosOperativos = await Tacticos.count({
+                where: {
+                    estrategicoId: null
+                },
+                include: [{
+                    model: Areas,
+                    as: 'areas',
+                    where: {
+                        codigo: area?.codigo
+                    }
+                }]
+            });
+
+            const codigo = `${area?.codigo}-OT-${totalObjetivosOperativos}`;
+            await objetivoTactico.update({codigo});
+
         }
 
         await objetivoTactico.reload({
