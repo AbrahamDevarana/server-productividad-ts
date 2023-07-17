@@ -1,9 +1,16 @@
 import { Request, Response } from "express";
 import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios } from "../models";
+import dayjs from "dayjs";
+import { Op } from "sequelize";
 
 export const getPerspectivas = async (req: Request, res: Response) => {
+   
+    const { year } = req.query;
 
-    const {} = req.body;
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+    
+
     const where: any = {};
     try {
 
@@ -43,15 +50,23 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                         }
 
                     ],
-                    // attributes: {
-                    //     include: [
-                    //       [Sequelize.literal('(SELECT COUNT(*) FROM `pivot_estr_tacts` WHERE `pivot_estr_tacts`.`objEstrategicoId` = `objetivo_estr`.`id`)'), 'tacticos_count']
-                    //     ]
-                    // }
-                    
+                    required: false,
+                    where: {
+                        [Op.or]: [
+                            {
+                                fechaInicio: {
+                                    [Op.between]: [fechaInicio, fechaFin]
+                                }
+                            },
+                            {
+                                fechaFin: {
+                                    [Op.between]: [fechaInicio, fechaFin]
+                                }
+                            }   
+                        ]
+                    }
                 }
             ],
-            
         });       
 
         res.json({ perspectivas });

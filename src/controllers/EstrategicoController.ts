@@ -4,6 +4,7 @@ import { Op } from 'sequelize'
 import { getPagination, getPagingData } from '../helpers/pagination';
 import { UsuarioInterface } from '../interfaces';
 import dayjs from 'dayjs';
+import { getStatusAndProgress } from '../helpers/getStatusAndProgress';
 
 
 const includeProps = [
@@ -44,36 +45,34 @@ const includeProps = [
 
 
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
-    
 
-    const {page = 0, size = 5, nombre, fechaInicio, fechaFin, status, idPerspectiva} = req.query;    
-    const {limit, offset} = getPagination(Number(page), Number(size));
-
-    const where: any = {};
-    const wherePerspectiva: any = {};
-
-    nombre && (where.nombre = { [Op.like]: `%${nombre}%` });
-    fechaInicio && (where.fechaInicio = { [Op.gte]: fechaInicio });
-    fechaFin && (where.fechaFin = { [Op.lte]: fechaFin });
-
-    status && (where.status = status);
-    idPerspectiva && (wherePerspectiva.id = idPerspectiva);
+    const { year } = req.query;
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     
     try {
-        
-        const result = await ObjetivoEstrategico.findAndCountAll({
+        const objetivosEstrategicos = await ObjetivoEstrategico.findAll({
             include: [{
                     model: Perspectivas,
                     as: 'perspectivas',
-                    where: wherePerspectiva,
                 },
                 'responsables'
         ],
-            where,
-        });
-
-        const objetivosEstrategicos = getPagingData(result, Number(page), Number(size))
-
+            where: {
+                [Op.or]: [
+                    {
+                        fechaInicio: {
+                            [Op.between]: [fechaInicio, fechaFin]
+                        }
+                    },
+                    {
+                        fechaFin: {
+                            [Op.between]: [fechaInicio, fechaFin]
+                        }
+                    }   
+                ]
+            }
+        });        
         res.json({
             objetivosEstrategicos
         });
@@ -112,14 +111,13 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
 }
 
 export const createObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
-    const { perspectivaId } = req.body;
-   
+    const { perspectivaId, year } = req.body;
 
     const { id: propietarioId} = req.user as UsuarioInterface
-            // Primer dia del año actual
-            const fechaInicio = dayjs().startOf('year').toDate();
-            // Ultimo dia del año actual
-            const fechaFin = dayjs().endOf('year').toDate();
+        // Primer dia del año actual
+        const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+        const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+        
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId, fechaInicio, fechaFin });
@@ -146,11 +144,6 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
     const { id } = req.params;
     const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
 
-
-
-    let progresoFinal = progreso;
-    let statusFinal = status;
-
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
             return responsable.id;
@@ -163,38 +156,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
-            if(status !== objetivoEstrategico.status){
-                if(status === 'FINALIZADO'){
-                    progresoFinal = 100;
-                    statusFinal = 'FINALIZADO';
-                }else if (status === 'EN PROGRESO'){
-                    statusFinal = 'EN PROGRESO';
-                }else if ( status === 'SIN_INICIAR'){
-                    progresoFinal = 0;
-                    statusFinal = 'SIN_INICIAR';
-                }else if (status === 'EN_TIEMPO' || status === 'CANCELADO' || status === 'EN_PAUSA' || status === 'RETRASADO'){
-                    // statusFinal = status;
-                    // if(objetivoEstrategico.progreso === 100){
-                    //     progresoFinal = 99;
-                    // } else if (objetivoEstrategico.progreso === 0){
-                    //     progresoFinal = 1;
-                    // }
-                }
-            }
-
-            if(progreso !== objetivoEstrategico.progreso){
-
-                if(progreso === 100){
-                    statusFinal = 'FINALIZADO';
-                }else if (progreso === 0){
-                    statusFinal = 'SIN_INICIAR';
-                }else if (progreso > 0 && progreso < 100){
-                    statusFinal = 'EN_TIEMPO';
-                }
-            }
-
-
-
+            const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoEstrategico});
 
             await objetivoEstrategico.update({ 
                 nombre,

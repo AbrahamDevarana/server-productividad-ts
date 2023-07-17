@@ -1,8 +1,9 @@
 import { Areas, Comentarios, Trimestre, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
-import { Request, Response } from 'express'
+import e, { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
+import { getStatusAndProgress } from '../helpers/getStatusAndProgress'
 
 
 const includes = [
@@ -55,7 +56,6 @@ const includes = [
         },
     }
 ]
-
 
 export const getTacticos = async (req: Request, res: Response) => {
     const {nombre, codigo, fechaInicio, fechaFin, tipoObjetivo, status, order} = req.query;
@@ -133,8 +133,8 @@ export const createTactico = async (req: Request, res: Response) => {
     const { slug, year, estrategico = false} = req.body;
     const {id: propietarioId} = req.user as UsuarioInterface
 
-    const fechaInicio = dayjs(`${year}-01-01`).format('YYYY-MM-DD') + ' 00:01:00';
-    const fechaFin = dayjs(`${year}-12-31`).format('YYYY-MM-DD') + ' 23:59:00';
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
     try {        
 
@@ -150,10 +150,24 @@ export const createTactico = async (req: Request, res: Response) => {
                 include: [{
                     model: ObjetivoEstrategico,
                     as: 'objetivosEstrategicos',
-                    attributes: ['id']
+                    attributes: ['id', 'nombre'],
+                    where: {
+                        [Op.or]: [
+                            {
+                                fechaInicio: {
+                                    [Op.between]: [fechaInicio, fechaFin]
+                                }
+                            },
+                            {
+                                fechaFin: {
+                                    [Op.between]: [fechaInicio, fechaFin]
+                                }
+                            }   
+                        ]
+                    }
                 }]
-            }});
-
+        }});
+            
         if(estrategico){
             estrategicoId = (area?.perspectivas.objetivosEstrategicos[0].id);
         }else {
@@ -171,33 +185,12 @@ export const createTactico = async (req: Request, res: Response) => {
 
         await objetivoTactico.setAreas([area?.id]);
 
-
-        
-
-        if(!estrategicoId){
-            const totalObjetivosOperativos = await Tacticos.count({
-                where: {
-                    estrategicoId: null
-                },
-                include: [{
-                    model: Areas,
-                    as: 'areas',
-                    where: {
-                        codigo: area?.codigo
-                    }
-                }]
-            });
-
-            const codigo = `${area?.codigo}-OT-${totalObjetivosOperativos}`;
-            await objetivoTactico.update({codigo});
-
-        }
+        await updateCode({id: objetivoTactico.id, slug})
 
         await objetivoTactico.reload({
             include: includes
         });
         
-
         res.json({
             objetivoTactico
         });
@@ -213,14 +206,10 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, trimestresActivos = [], slug} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, slug} = req.body;
 
     let participantes = [...responsablesArray, propietarioId]
-    
-    let progresoFinal = progreso;
-    let statusFinal = status;
 
-    
     try {
         
         const area = await Areas.findOne({ 
@@ -269,52 +258,7 @@ export const updateTactico = async (req: Request, res: Response) => {
         
         const objetivoTactico = await Tacticos.findByPk(id);
 
-        const trimestres = await Trimestre.findAll({ where: { year } });
-
-        for (let trimestre of trimestres) {
-            await objetivoTactico.addTrimestre(trimestre, { through: { activo: false } });
-        }
-
-        for (let trimestreActivo of trimestresActivos) {
-            // @ts-ignore
-            const trimestre = trimestres.find(t => t.trimestre === trimestreActivo);
-            if (!trimestre) {
-              throw new Error(`No se encontró Trimestre con trimestre ${trimestreActivo} para el año ${year}`);
-            }
-            await objetivoTactico.addTrimestre(trimestre, { through: { activo: true } });
-        }
-
-        if(status !== objetivoTactico.status){
-            if(status === 'FINALIZADO'){
-                progresoFinal = 100;
-                statusFinal = 'FINALIZADO';
-            }else if (status === 'EN PROGRESO'){
-                statusFinal = 'EN PROGRESO';
-            }else if ( status === 'SIN_INICIAR'){
-                progresoFinal = 0;
-                statusFinal = 'SIN_INICIAR';
-            }
-        }
-
-        if(progreso !== objetivoTactico.progreso){
-
-            if(progreso === 100){
-                statusFinal = 'FINALIZADO';
-            }else if (progreso === 0){
-                statusFinal = 'SIN_INICIAR';
-            }else if (progreso > 0 && progreso < 100){
-                statusFinal = 'EN_TIEMPO';
-            }
-        }
-
-        
-
-        if(!estrategicoId){
-            
-            const count = await Tacticos.count({ where: { estrategicoId: null }, include: { model: Areas, as: 'areas', where: { slug } } });
-        
-            codigoFinal = `${area.codigo}-${count + 1}`;            
-        }
+        const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoTactico});
 
         if (objetivoTactico) {
             await objetivoTactico.update({ 
@@ -328,63 +272,14 @@ export const updateTactico = async (req: Request, res: Response) => {
                 propietarioId 
             });
 
+            await updateCode({id: objetivoTactico.id, slug})
+
 
             await objetivoTactico.setResponsables(responsablesArray);
             
             if(areasSet.size > 0){
                 await objetivoTactico.setAreas([...areasSet]);
             }
-
-            
-            const includes = [
-                {
-                    model: Areas,
-                    as: 'areas',
-                    through: { attributes: [] },
-                    attributes: ['id', 'nombre']
-                },
-                {
-                    model: Usuarios,
-                    as: 'responsables',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-                    through: {
-                        attributes: []
-                    },
-                },
-                {
-                    model: Usuarios,
-                    as: 'propietario',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-                },
-                {
-                    model: ObjetivoEstrategico,
-                    as: 'estrategico',
-                    include: [{
-                        model: Perspectivas,
-                        as: 'perspectivas',
-                        attributes: ['id', 'nombre',  'color']
-                    }]
-                },
-                {
-                    model: Comentarios,
-                    as: 'comentarios',
-                    attributes: ['id', 'mensaje', 'createdAt'],
-                    include: [
-                        {
-                            as: 'autor',
-                            model: Usuarios,
-                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
-                        }
-                    ]
-                },
-                {
-                    model: Trimestre,
-                    as: 'trimestres',
-                    through: {
-                        attributes: ['activo']
-                    },
-                }
-            ]
 
             await objetivoTactico.reload({ include: includes });
 
@@ -675,14 +570,80 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
 
 
 
-const getQuarterDates = (year:number, quarter:number) => {
-    const startQuarter = (quarter - 1) * 3 + 1;
-    const startDate = dayjs(`${year}-${startQuarter}-01`).startOf('month');
-    const endDate = startDate.add(2, 'month').endOf('month');
-    return { startDate, endDate };
-  }
-  
+
+// Custom Controller
+export const updateQuarters = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const {trimestresActivos = [], year} = req.body;
+
+    try {
+
+    const objetivoTactico = await Tacticos.findByPk(id);
+    const trimestres = await Trimestre.findAll({ where: { year } });
+
+    for (let trimestre of trimestres) {
+        await objetivoTactico.addTrimestre(trimestre, { through: { activo: false } });
+    }
+
+    for (let trimestreActivo of trimestresActivos) {
+        // @ts-ignore
+        const trimestre = trimestres.find(t => t.trimestre === trimestreActivo);
+        if (!trimestre) {
+            throw new Error(`No se encontró Trimestre con trimestre ${trimestreActivo} para el año ${year}`);
+        }
+        await objetivoTactico.addTrimestre(trimestre, { through: { activo: true } });
+    }
+    
+    await objetivoTactico.reload({
+        include: [
+            {
+                model: Trimestre,
+                as: 'trimestres',
+                through: { attributes: ['activo'] },
+            }
+        ]
+    });
+
+    res.json({ objetivoTactico });
+    
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
+export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
 
 
+    const objetivoTactico = await Tacticos.findByPk(id);
+    const area = await Areas.findOne({where: {slug}});
 
-  
+    if( objetivoTactico.estrategicoId ){
+        const objetivoEstrategico = await objetivoTactico.getEstrategico()
+        const objetivosOperativos = await objetivoEstrategico.getTacticos();
+        const totalObjetivosOperativos = objetivosOperativos.length
+        objetivoTactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
+        await objetivoTactico.save();                
+    }else {
+        const totalObjetivosOperativos = await Tacticos.count({
+            where: {
+                estrategicoId: null
+            },
+            include: [{
+                model: Areas,
+                as: 'areas',
+                where: {
+                    codigo: area?.codigo
+                }
+            }]
+        });
+        const codigo = `${area?.codigo}-OT-${totalObjetivosOperativos}`;
+        await objetivoTactico.update({codigo});
+
+
+    }
+}

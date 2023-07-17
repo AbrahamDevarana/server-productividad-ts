@@ -79,15 +79,6 @@ export const Tacticos = database.define('obj_tacticos', {
                 }
               });
             await tactico.setTrimestres(trimestresParaAsignar);
-
-            if( tactico.estrategicoId ){
-                const objetivoEstrategico = await tactico.getEstrategico()
-                // Contar cuantos objetivos operativos tiene el objetivo estrategico
-                const objetivosOperativos = await objetivoEstrategico.getTacticos();
-                const totalObjetivosOperativos = objetivosOperativos.length
-                tactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
-                await tactico.save();                
-            }
         },
     },
     defaultScope: {
