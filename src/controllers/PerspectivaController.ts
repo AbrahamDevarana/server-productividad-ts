@@ -48,7 +48,6 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                                 }
                             ]
                         }
-
                     ],
                     required: false,
                     where: {

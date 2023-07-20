@@ -1,5 +1,5 @@
 import { Areas, Comentarios, Trimestre, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
-import e, { Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
@@ -57,56 +57,6 @@ const includes = [
     }
 ]
 
-export const getTacticos = async (req: Request, res: Response) => {
-    const {nombre, codigo, fechaInicio, fechaFin, tipoObjetivo, status, order} = req.query;
-    const where: any = {};
-    const whereResponsable: any = {};
-    const whereArea: any = {};
-
-    nombre && (where.nombre = { [Op.like]: `%${nombre}%` });
-    codigo && (where.codigo = { [Op.like]: `%${codigo}%` });
-    fechaInicio && (where.fechaInicio = { [Op.gte]: fechaInicio });
-    fechaFin && (where.fechaFin = { [Op.lte]: fechaFin });
-    tipoObjetivo && (where.tipoObjetivo = tipoObjetivo);
-    status && (where.status = status);
-
-
-    // try {
-
-    //     const tacticosGeneral = await Tacticos.findAll({
-    //         where,
-    //         include: includes,
-    //         // [{
-    //         //     model: Usuarios,
-    //         //     as: 'responsables',
-    //         //     through: { attributes: [] },
-    //         //     where: whereResponsable,
-    //         // },{
-    //         //     model: Areas,
-    //         //     as: 'areas',
-    //         //     through: { attributes: [] },
-    //         //     where: whereArea,
-    //         //     attributes: ['id', 'nombre']
-    //         // },
-    //         // {
-    //         //     model: Usuarios,
-    //         //     as: 'propietario',
-    //         //     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-    //         // }]
-    //     });
-
-    //     res.json({ tacticosGeneral });           
-
-        
-    // } catch (error) {
-    //     console.log(error);
-    //     res.status(500).json({
-    //         msg: 'Hable con el administrador'
-    //     });
-    // }
-
-}
-
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
@@ -118,7 +68,7 @@ export const getTactico = async (req: Request, res: Response) => {
             });
         } else {
             res.status(404).json({
-                msg: `No existe un objetivo tactico con el id ${id}`
+                msg: `No existe un objetivo tactico`
             });
         }
     } catch (error) {
@@ -141,16 +91,18 @@ export const createTactico = async (req: Request, res: Response) => {
         let estrategicoId = null;
 
         let codigo = ''
-        const area = await Areas.findOne({ 
-            where: {slug}, 
-            include: { 
-                model: Perspectivas, 
-                as: 'perspectivas', 
-                attributes: ['id', 'nombre'],
+
+        const area = await Areas.findOne({
+            where: { slug },
+            include: [
+            {
+                model: Perspectivas,
+                as: 'perspectivas',
+                attributes: ['id'],
                 include: [{
                     model: ObjetivoEstrategico,
                     as: 'objetivosEstrategicos',
-                    attributes: ['id', 'nombre'],
+                    attributes: ['id'],
                     where: {
                         [Op.or]: [
                             {
@@ -166,8 +118,9 @@ export const createTactico = async (req: Request, res: Response) => {
                         ]
                     }
                 }]
-        }});
-            
+            }]
+        });
+
         if(estrategico){
             estrategicoId = (area?.perspectivas.objetivosEstrategicos[0].id);
         }else {
@@ -212,18 +165,18 @@ export const updateTactico = async (req: Request, res: Response) => {
 
     try {
         
-        const area = await Areas.findOne({ 
-            where: {slug}, 
-            include: { 
-                model: Perspectivas, 
-                as: 'perspectivas', 
-                attributes: ['id', 'nombre'],
-                include: [{
-                    model: ObjetivoEstrategico,
-                    as: 'objetivosEstrategicos',
-                    attributes: ['id']
-                }]
-        }});
+        // const area = await Areas.findOne({ 
+        //     where: {slug}, 
+        //     include: { 
+        //         model: Perspectivas, 
+        //         as: 'perspectivas', 
+        //         attributes: ['id', 'nombre'],
+        //         include: [{
+        //             model: ObjetivoEstrategico,
+        //             as: 'objetivosEstrategicos',
+        //             attributes: ['id']
+        //         }]
+        // }});
 
         let areaArray: any[] = []
         let areasSet: Set<number> = new Set();
@@ -253,7 +206,7 @@ export const updateTactico = async (req: Request, res: Response) => {
             }
           
             areasSet = new Set(areaArray);
-            areasSet.add(area?.id);
+            // areasSet.add(area?.id);
         }));        
         
         const objetivoTactico = await Tacticos.findByPk(id);
@@ -380,18 +333,6 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             }]
         },
         {
-            model: Comentarios,
-            as: 'comentarios',
-            attributes: ['id', 'mensaje', 'createdAt'],
-            include: [
-                {
-                    as: 'autor',
-                    model: Usuarios,
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
-                }
-            ]
-        },
-        {
             model: Trimestre,
             as: 'trimestres',
             through: { attributes: ['activo'] },
@@ -464,99 +405,93 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
 }
 
 export const getTacticosByEquipos = async (req: Request, res: Response) => {
-    const { slug } = req.params;
-    const { year, departamentoId } = req.query;
+    const { year, slug } = req.query;    
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
 
     let where = {
         [Op.or]: [
             {
                 fechaInicio: {
-                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+                    [Op.between]: [fechaInicio, fechaFin]
                 }
             },
             {
                 fechaFin: {
-                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+                    [Op.between]: [fechaInicio, fechaFin]
                 }
             }
         ],
     }
-
-    const include = [
+    
+    const includes = [
         {
-            model: Areas,
-            as: 'area',
-            where: {
-                slug
+            model: Usuarios,
+            as: 'responsables',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+            through: {
+                attributes: []
             },
             include: [
                 {
-                    model: Tacticos,
-                    as: 'tacticos',
-                    include: [
-                        {
-                            model: Usuarios,
-                            as: 'responsables',
-                            through: { attributes: [] },
-                        },
-                        {
-                            model: Usuarios,
-                            as: 'propietario',
-                        },
-                        {
-                            model: ObjetivoEstrategico,
-                            as: 'estrategico',
-                            include: [{
-                                model: Perspectivas,
-                                as: 'perspectivas',
-                                attributes: ['id', 'nombre',  'color']
-                            }]
-                        },
-                        {
-                            model: Comentarios,
-                            as: 'comentarios',
-                            attributes: ['id', 'mensaje', 'createdAt'],
-                            include: [
-                                {
-                                    as: 'autor',
-                                    model: Usuarios,
-                                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
-                                }   
-                            ]
-                        },
-                        {
-                            model: Trimestre,
-                            as: 'trimestres',
-                            through: { attributes: ['activo'] },
-                        }
-                    ],
-                    
+                    model: Departamentos,
+                    as: 'departamentos',
+                    attributes: ['id', 'nombre', 'slug'],
                 }
             ]
+        },
+        {
+            model: Usuarios,
+            as: 'propietario',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+            include: [
+                {
+                    model: Departamentos,
+                    as: 'departamentos',
+                    attributes: ['id', 'nombre', 'slug'],
+                }
+            ]
+        },
+        {
+            model: ObjetivoEstrategico,
+            as: 'estrategico',
+            include: [{
+                model: Perspectivas,
+                as: 'perspectivas',
+                attributes: ['id', 'nombre',  'color']
+            }]
+        },
+        {
+            model: Trimestre,
+            as: 'trimestres',
+            through: { attributes: ['activo'] },
         }
     ]
 
    try {
-        const tacticos_core = await Departamentos.findAll({
-            include: include,
+        const tacticos = await Tacticos.findAll({
+            include: includes,
             where: {
-                id: departamentoId,
-                '$area.tacticos.estrategicoId$': null,
-            }
+                ...where,
+                [Op.not]: { estrategicoId: null }
+            },
         });
 
-        const tacticos = await Departamentos.findAll({
-            include: include,
+        const tacticosFiltered = filtrarTacticos(tacticos, slug as string)
+        
+
+        const tacticos_core = await Tacticos.findAll({
+            include: includes,
             where: {
-                id: departamentoId,
-                '$area.tacticos.estrategicoId$': {
-                    [Op.not]: null
-                }
-            }
+                ...where,
+                estrategicoId: null
+            },
         });
 
-        res.json({ objetivosTacticos: {tacticos_core, tacticos} });
+        const tacticosCoreFiltered = filtrarTacticos(tacticos_core, slug as string)
+
+        res.json({ objetivosTacticos: {tacticos_core: tacticosCoreFiltered, tacticos: tacticosFiltered} });
 
     
    } catch (error) {
@@ -567,9 +502,6 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
    }
 
 }
-
-
-
 
 // Custom Controller
 export const updateQuarters = async (req: Request, res: Response) => {
@@ -616,6 +548,7 @@ export const updateQuarters = async (req: Request, res: Response) => {
     }
 }
 
+// Actualiza el código en base a los objetivos estratégicos y área
 export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
 
 
@@ -646,4 +579,127 @@ export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
 
 
     }
+}
+
+// export const getTacticosByArea = async (req: Request, res: Response) => {
+//     const { slug } = req.params;
+//     const { year } = req.query;
+    
+    
+//     let whereDate = {
+//         [Op.or]: [
+//             {
+//                 fechaInicio: {
+//                     [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+//                 }
+//             },
+//             {
+//                 fechaFin: {
+//                     [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
+//                 }
+//             }
+//         ]        
+//     };
+
+
+//     const includes = [
+        
+//         {
+//             model: Usuarios,
+//             as: 'responsables',
+//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+//             through: {
+//                 attributes: []
+//             },
+//             include: [{
+//                 model: Departamentos,
+//                 as: 'departamentos',
+//                 include: [{
+//                     model: Areas,
+//                     as: 'area',
+//                     attributes: ['id', 'nombre', 'slug'],
+//                 }],
+//             }],
+//         },
+//         {
+//             model: Usuarios,
+//             as: 'propietario',
+//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+//             include: [{
+//                 model: Departamentos,
+//                 as: 'departamentos',
+//                 include: [{
+//                     model: Areas,
+//                     as: 'area',
+//                     attributes: ['id', 'nombre', 'slug'],
+//                 }],
+//             }],
+//         },
+//         {
+//             model: ObjetivoEstrategico,
+//             as: 'estrategico',
+//             include: [{
+//                 model: Perspectivas,
+//                 as: 'perspectivas',
+//                 attributes: ['id', 'nombre',  'color']
+//             }]
+//         },
+//         {
+//             model: Trimestre,
+//             as: 'trimestres',
+//             through: { attributes: ['activo'] },
+//         }
+//     ]
+
+    
+//     try {
+//         const tacticos = await Tacticos.findAll({
+//             include: includes,
+//             where: {
+//                 ...whereDate,
+//                 [Op.not]: { estrategicoId: null }
+//             },
+//             logging: console.log
+//         });
+//         const filteredTacticos = filtrarTacticos(tacticos, slug);
+
+//         const tacticos_core = await Tacticos.findAll({
+//             include: includes,
+//             where: {
+//                 ...whereDate,
+//                 estrategicoId: null
+//             },
+//         });
+//         const filteredTacticosCore = filtrarTacticos(tacticos_core, slug);    
+
+//         res.json({ objetivosTacticos: { tacticos:filteredTacticos, tacticos_core:filteredTacticosCore } });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             msg: 'Hable con el administrador'
+//         });
+//     }
+// }
+
+
+const filtrarTacticos = (tacticos: any[], slug: string) => {
+    // Filtra los 'Tacticos' en base al 'slug' del 'Area' al que pertenecen sus 'Usuarios'
+    const filteredTacticos = tacticos.filter(tactico => {
+        // Chequea si el 'propietario' pertenece al 'Area' con el 'slug' dado
+        const isPropietarioInArea = tactico.propietario.departamentos.some((departamento:any) => 
+            departamento.slug === slug
+        );
+
+        // Chequea si alguno de los 'responsables' pertenece al 'Area' con el 'slug' dado
+        const isAnyResponsableInArea = tactico.responsables.some((responsable : any )=>
+            responsable.departamentos.some((departamento:any) => 
+                departamento.slug === slug
+            )
+        );
+
+        // Retorna 'true' si el 'propietario' o algún 'responsable' pertenece al 'Area' con el 'slug' dado
+        return isPropietarioInArea || isAnyResponsableInArea;
+    })
+
+    return filteredTacticos;
 }

@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../../config/database";
 
-export const PivotAreaTactico = database.define('pivot_area_tact', {
+export const PivotAreaTactico = database.define('pivot_area_tacticos', {
     areaId: {
         type: Sequelize.INTEGER,
         allowNull: false,

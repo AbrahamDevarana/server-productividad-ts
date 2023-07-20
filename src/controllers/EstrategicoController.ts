@@ -8,11 +8,11 @@ import { getStatusAndProgress } from '../helpers/getStatusAndProgress';
 
 
 const includeProps = [
-    {
-        model: Tacticos,
-        as: 'tacticos',
-        include: ['propietario', 'responsables', 'areas']
-    },
+    // {
+    //     model: Tacticos,
+    //     as: 'tacticos',
+    //     include: ['propietario', 'responsables', 'areas']
+    // },
     {
         model: Usuarios,
         as: 'responsables',
@@ -43,9 +43,7 @@ const includeProps = [
     }
 ]
 
-
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
-
     const { year } = req.query;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
@@ -86,6 +84,7 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
 }
 
 export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
+
     const { id } = req.params;  
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id, { 

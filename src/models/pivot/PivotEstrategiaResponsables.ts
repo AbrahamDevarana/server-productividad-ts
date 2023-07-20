@@ -3,7 +3,7 @@ import Sequelize from "sequelize";
 import database from "../../config/database";
 
 
-export const PivotEstrResp = database.define('pivot_estr_resp', {
+export const PivotEstrResp = database.define('pivot_estrategicos_responsables', {
     objEstrategicoId: {
         type: Sequelize.UUID,
         allowNull: false,
