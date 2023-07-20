@@ -79,6 +79,54 @@ export const getTactico = async (req: Request, res: Response) => {
     }
 }
 
+export const getTacticos = async (req: Request, res: Response) => {
+    const { year } = req.query;
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+
+    let where = {
+        [Op.or]: [
+            {
+                fechaInicio: {
+                    [Op.between]: [fechaInicio, fechaFin]
+                }
+            },
+            {
+                fechaFin: {
+                    [Op.between]: [fechaInicio, fechaFin]
+                }
+            }
+        ]
+    };
+
+    try {
+        const tacticosGeneral = await Tacticos.findAll({
+            include: [
+                {
+                    model: ObjetivoEstrategico,
+                    as: 'estrategico',
+                    include: [{
+                        model: Perspectivas,
+                        as: 'perspectivas',
+                        attributes: ['id', 'nombre',  'color']
+                    }]
+            
+                }
+            ],
+            where,
+        });
+
+        res.json({ tacticosGeneral });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador',
+            error
+        });
+    }
+}
+
 export const createTactico = async (req: Request, res: Response) => {
     const { slug, year, estrategico = false} = req.body;
     const {id: propietarioId} = req.user as UsuarioInterface

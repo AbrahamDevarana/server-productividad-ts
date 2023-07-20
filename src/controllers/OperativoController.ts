@@ -1,60 +1,42 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario } from "../models";
 import { Op } from "sequelize";
 import { UsuarioInterface } from "../interfaces";
 
 
-export const getOperativos = async (req:any, res: Response) => {
+const includes = [
+    {
+        model: Usuarios,
+        as: 'operativosResponsable',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
+        through: {
+            attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
+            as: 'scoreCard'
+        },
+        required: false
+    },
+    {
+        model: ResultadosClave,
+        as: 'resultadosClave',
+        attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
+        required: false
+    }
+]
 
-    const { tacticoId } = req.params;
+
+export const getOperativos = async (req:any, res: Response) => {
+    
     const {} = req.body;
     
-    let where: any = {}
-    
-    tacticoId && (where.tacticoId = tacticoId);
-    
-    // meter al where
-
-    if (true){
-        where[Op.or] = [
-            { propietarioId: req.user.id },
-            { '$operativosResponsable.id$': req.user.id }
-        ]
-
-    }
-
     try {
         const operativos = await ObjetivoOperativos.findAll({
-            where: {
-                ...where,
-                tacticoId: { [Op.ne]: null }
-            },
             order: [['createdAt', 'ASC']],
-            include: [
-                {
-                    model: Usuarios,
-                    as: 'operativosResponsable',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-                    through: {
-                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
-                        as: 'scoreCard'
-                    },
-                },
-                {
-                    model: Usuarios,
-                    as: 'operativoPropietario',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-                },
-                {
-                    model: ResultadosClave,
-                    as: 'resultadosClave',
-                    attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
-                }
-            ],
+            include: includes
         });
       
+        const filteredObjetivos = filtrarObjetivosUsuario(operativos, req.user.id)
 
-        res.json({ operativos });
+        res.json({ operativos: filteredObjetivos });
     
     } catch (error) {
         console.log(error);
@@ -68,16 +50,14 @@ export const getOperativos = async (req:any, res: Response) => {
 export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, status } = req.body;
-
-    console.log(operativosResponsable);
-    
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, progresoAsignado } = req.body;
+    const { id: userId } = req.user as UsuarioInterface
 
     try {
         const operativo = await ObjetivoOperativos.findByPk(id);
         if (!operativo) {
             return res.status(404).json({
-                msg: `No existe un operativo con el id ${id}`
+                msg: `No existe un operativo`
             });
         }
 
@@ -93,11 +73,21 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 
         // @ts-ignore
-        await operativo.setOperativosResponsable(operativosResponsable);
-        await operativo.reload( { include: 
-            ['operativosResponsable', 'operativoPropietario', 'resultadosClave']
-        } );
+        await operativo.setOperativosResponsable(operativosResponsable);    
+        await operativo.reload( { include: includes } );
 
+        const operativoCreado = await PivotOpUsuario.findOne({
+            where: {
+                objetivoOperativoId: operativo.id,
+                responsableId: userId
+            }
+        });
+        if (operativoCreado) {
+            await operativoCreado.update({
+                progresoAsignado: progresoAsignado as number
+            });
+        }
+       
 
         res.json({operativo});
     
@@ -112,9 +102,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 export const createOperativo = async (req: Request, res: Response) => {
     
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId } = req.body;
-    // const participantesIds = operativosResponsable.map((responsable: any) => responsable.id);
-
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, progresoAsignado } = req.body;
     const { id } = req.user as UsuarioInterface
 
     try {
@@ -131,12 +119,24 @@ export const createOperativo = async (req: Request, res: Response) => {
 
         
         // @ts-ignore
-        await operativo.setOperativosResponsable(operativosResponsable);
-        await operativo.reload( { include: 
-            ['operativosResponsable', 'operativoPropietario', 'resultadosClave']
-        } );
-       
+        await operativo.setOperativosResponsable([...operativosResponsable, id]);
+        await operativo.reload( { include: includes });
 
+
+        const operativoCreado = await PivotOpUsuario.findOne({
+            where: {
+                objetivoOperativoId: operativo.id,
+                responsableId: id
+            }
+        });
+
+        if (operativoCreado) {
+            await operativoCreado.update({
+                progresoAsignado
+            });
+        }
+
+           
         res.json({operativo});
     
     } catch (error) {
@@ -175,29 +175,10 @@ export const deleteOperativo = async (req: Request, res: Response) => {
 export const getObjetivo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
+
     try {
         const operativo = await ObjetivoOperativos.findByPk(id, {
-            include: [
-                {
-                    model: Usuarios,
-                    as: 'operativosResponsable',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-                    through: {
-                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
-                        as: 'scoreCard'
-                    },
-                },
-                {
-                    model: Usuarios,
-                    as: 'operativoPropietario',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
-                },
-                {
-                    model: ResultadosClave,
-                    as: 'resultadosClave',
-                    attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
-                }
-            ]
+            include: includes
         });
         if (!operativo) {
             return res.status(404).json({
@@ -214,4 +195,10 @@ export const getObjetivo = async (req: Request, res: Response) => {
             msg: 'Hable con el administrador'
         });
     }
+}
+
+
+const filtrarObjetivosUsuario = (objetivos: any[], id: string) => {
+    const objetivo = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.id === id));
+    return objetivo;
 }

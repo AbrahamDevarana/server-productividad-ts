@@ -10,7 +10,7 @@ export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
         type: Sequelize.UUID,
         allowNull: false,
     },
-    propietario:{
+    propietario: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false

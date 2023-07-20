@@ -16,6 +16,7 @@ const perfilInclude = [
         model: ObjetivoOperativos, as: 'objetivosOperativos', 
         include: [
             { model: ResultadosClave, as:'resultadosClave' },
+            { model: Usuarios, as: 'operativosResponsable' }
         ] 
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },

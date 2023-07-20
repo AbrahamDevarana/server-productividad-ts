@@ -8,14 +8,8 @@ const router = Router();
 // API url: /operativos
 
 router.get('/', getOperativos);
-
-
 router.get('/:id', getOperativo);
-
-
-
 router.post('/', createOperativo);
-
 router.put('/:id', updateOperativo);
 
 
