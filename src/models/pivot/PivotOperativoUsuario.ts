@@ -20,12 +20,14 @@ export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
         allowNull: true,   
         defaultValue: 0
     },
-    progresoAsignado: {
+    // Se refiere al valor que se asigna a un usuario para que cumpla con el objetivo
+    progresoAsignado: { // Ponderacion
         type: Sequelize.FLOAT,
         allowNull: true,
         defaultValue: 0
     },
-    progresoReal: {
+    // Se refiere al progreso que se va teniendo con base a los resultados clave
+    progresoReal: { // Avance
         type: Sequelize.FLOAT,
         allowNull: true,
         defaultValue: 0
