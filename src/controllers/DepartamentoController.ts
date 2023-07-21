@@ -73,10 +73,10 @@ export const getDepartamento = async (req: Request, res: Response) => {
 }
 
 export const createDepartamento = async (req: Request, res: Response) => {
-    const { nombre, areaId, leaderId = null } = req.body;
+    const { nombre, areaId, leaderId = null, color } = req.body;
 
     try {
-        const departamento = await Departamentos.create({ nombre, areaId, leaderId });
+        const departamento = await Departamentos.create({ nombre, areaId, leaderId, color });
 
 
         departamento.reload({ include: departamentoInclude })
@@ -96,8 +96,7 @@ export const createDepartamento = async (req: Request, res: Response) => {
 
 export const updateDepartamento = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, areaId, leaderId } = req.body;
-
+    const { nombre, areaId, leaderId, color } = req.body;
     try {
         const departamento = await Departamentos.findByPk(id);
 
@@ -105,7 +104,8 @@ export const updateDepartamento = async (req: Request, res: Response) => {
             await departamento.update({ 
                 nombre: nombre? nombre : departamento.nombre,
                 areaId: areaId? areaId : departamento.areaId,
-                leaderId: leaderId? leaderId : departamento.leaderId
+                leaderId: leaderId? leaderId : departamento.leaderId,
+                color: color ? color : departamento.color,
             });
             await departamento.reload({ include: departamentoInclude })
             res.json({ departamento });
