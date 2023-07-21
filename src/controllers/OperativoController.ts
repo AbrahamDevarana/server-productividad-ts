@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario } from "../models";
-import { Op } from "sequelize";
 import { UsuarioInterface } from "../interfaces";
+import dayjs from "dayjs";
+import { Op } from "sequelize";
 
 
 const includes = [
@@ -26,12 +27,27 @@ const includes = [
 
 export const getOperativos = async (req:any, res: Response) => {
     
-    const {} = req.body;
-    
+    const { year, quarter } = req.query;
+    const fechaInicioTrimestre = dayjs().quarter(quarter).year(year).startOf('quarter').toDate();
+    const fechaFinTrimestre = dayjs().quarter(quarter).year(year).endOf('quarter').toDate();
     try {
         const operativos = await ObjetivoOperativos.findAll({
             order: [['createdAt', 'ASC']],
-            include: includes
+            include: includes,
+            where: {
+                [Op.or]: [
+                    {
+                        fechaInicio: {
+                            [Op.between]: [fechaInicioTrimestre, fechaFinTrimestre]
+                        }
+                    },
+                    {
+                        fechaFin: {
+                            [Op.between]: [fechaInicioTrimestre, fechaFinTrimestre]
+                        }
+                    }   
+                ]
+            }
         });
       
         const filteredObjetivos = filtrarObjetivosUsuario(operativos, req.user.id)

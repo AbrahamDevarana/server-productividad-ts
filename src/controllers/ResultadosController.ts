@@ -107,7 +107,6 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin} = req.body;
 
 
-    console.log("tipoProgreso", tipoProgreso);
     
     try {
         const resultadoClave = await ResultadosClave.findByPk(id,
@@ -133,18 +132,20 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
             let accionesCompletadas = 0;
             let accionesTotales = 0;
 
-            acciones.forEach(accion => {
-                if(accion.status === 1){
-                    accionesCompletadas++;
-                }
-                accionesTotales++;
-            })
+           if(acciones.length > 0){
+                acciones.forEach(accion => {
+                    if(accion.status === 1){
+                        accionesCompletadas++;
+                    }
+                    accionesTotales++;
+                })
 
-            progresoTotal = accionesCompletadas/accionesTotales * 100
+                progresoTotal = accionesCompletadas/accionesTotales * 100
+            }
+
         }else{
             progresoTotal = progreso;
         }
-
         await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin  });
 
         await resultadoClave.reload({
