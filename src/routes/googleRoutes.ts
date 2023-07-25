@@ -16,6 +16,10 @@ router.get('/callback', passport.authenticate('google', {
     failureMessage: 'Error al iniciar sesión, porfavor intenta más tarde',
     failureRedirect: process.env.CLIENT_URL + '/error'
 }), (req: Request, res: Response) => {
+
+    console.log(req.user);
+    
+
     const accessToken = createAccessToken(req.user);
     const refreshToken = createRefreshToken(req.user);    
     

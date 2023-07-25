@@ -16,7 +16,7 @@ const departamentoInclude = [
     },
     {
         model: Usuarios,
-        as: 'usuarios',
+        as: 'usuario',
     }
 ]
 

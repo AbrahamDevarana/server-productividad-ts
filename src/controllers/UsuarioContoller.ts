@@ -10,7 +10,7 @@ import { UsuarioInterface } from "../interfaces";
 
 
 const perfilInclude = [
-    { model: Departamentos, as: 'departamentos', include: ['area']}, 
+    { model: Departamentos, as: 'departamento', include: ['area']}, 
     { model: Direccion, as: 'direccion' },
     { 
         model: ObjetivoOperativos, as: 'objetivosOperativos', 
@@ -48,7 +48,7 @@ export const getUsuarios = async (req: Request, res: Response) => {
         const result = await Usuarios.findAndCountAll({
             distinct: true,
             where,
-            include: [{model: Departamentos, as: 'departamentos', include: ['area']}, 'direccion'],
+            include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
             limit: size ? limit: undefined,
             offset: size ? offset: undefined,
             order: [
@@ -76,7 +76,7 @@ export const getUsuario = async (req: Request, res: Response) => {
         try {
             const usuario = await Usuarios.findByPk(id,
                 { 
-                    include: [{model: Departamentos, as: 'departamentos', include: ['area']}, 'direccion'],
+                    include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
                 }
             );
             if (usuario) {                
@@ -175,7 +175,7 @@ export const createUsuario = async (req: Request, res: Response) => {
         // 
 
         await usuario.reload({
-            include: [{model: Departamentos, as: 'departamentos', include: ['area']}, 'direccion'],
+            include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
         });
 
         res.json({usuario});
@@ -191,12 +191,12 @@ export const createUsuario = async (req: Request, res: Response) => {
 export const updateUsuario = async (req: Request, res: Response) => {
         
         const { id } = req.params;
-        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, despartamentos, puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId} = req.body;
+        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId , puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId} = req.body;
         
         try {
             const usuario = await Usuarios.findByPk(id,
                 {
-                    include: [{model: Departamentos, as: 'departamentos', include: ['area']}, 'direccion'],
+                    include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
                 });
     
             if (!usuario) {
@@ -205,8 +205,8 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 });
             }
 
-            const formatedFechaNacimiento = fechaNacimiento ? dayjs(new Date(fechaNacimiento)).format('YYYY-MM-DD') : null;
-            const formatedFechaIngreso = fechaIngreso ? dayjs(new Date(fechaIngreso)).format('YYYY-MM-DD') : null;
+            const formatedFechaNacimiento = fechaNacimiento ? dayjs(fechaNacimiento).toDate() : null;
+            const formatedFechaIngreso = fechaIngreso ? dayjs(fechaIngreso).toDate() : null;
 
             console.log(puesto);
             
@@ -223,6 +223,7 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 fechaIngreso: formatedFechaIngreso ? formatedFechaIngreso : usuario.fechaIngreso,
                 descripcionPerfil: descripcionPerfil ? descripcionPerfil : usuario.descripcionPerfil,
                 leaderId: leaderId ? leaderId : usuario.leaderId,
+                departamentoId: departamentoId ? departamentoId : usuario.departamentoId
             });            
 
             if(direccion){
@@ -245,12 +246,12 @@ export const updateUsuario = async (req: Request, res: Response) => {
             }
 
 
-            if(despartamentos){
-                await usuario.setDepartamentos(despartamentos);
-            }
+            // if(despartamentos){
+            //     await usuario.setDepartamentos(despartamentos);
+            // }
 
             await usuario.reload({
-                include: [{model: Departamentos, as: 'departamentos', include: ['area']}, 'direccion'],
+                include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
             });
 
             res.json({usuario});

@@ -69,6 +69,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
     const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, progresoAsignado } = req.body;
     const { id: userId } = req.user as UsuarioInterface
 
+    const fechaInicial = dayjs(fechaInicio).toDate();
+    const fechaFinal = dayjs(fechaFin).toDate();
+
     try {
         const operativo = await ObjetivoOperativos.findByPk(id);
         if (!operativo) {
@@ -81,8 +84,8 @@ export const updateOperativo = async (req: Request, res: Response) => {
             nombre,
             meta,
             indicador,
-            fechaInicio,
-            fechaFin,
+            fechaInicio: fechaInicial,
+            fechaFin: fechaFinal,
             tacticoId,
             propietarioId,
         });
@@ -121,14 +124,17 @@ export const createOperativo = async (req: Request, res: Response) => {
     const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, progresoAsignado } = req.body;
     const { id } = req.user as UsuarioInterface
 
+    const fechaInicial = dayjs(fechaInicio).toDate();
+    const fechaFinal = dayjs(fechaFin).toDate();
+
     try {
 
         const operativo = await ObjetivoOperativos.create({
             nombre,
             meta,
             indicador,
-            fechaInicio,
-            fechaFin,
+            fechaInicio: fechaInicial,
+            fechaFin: fechaFinal,
             tacticoId,
             propietarioId: id
         });
