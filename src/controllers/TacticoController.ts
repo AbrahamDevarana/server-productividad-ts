@@ -237,7 +237,7 @@ export const updateTactico = async (req: Request, res: Response) => {
             const usuario = await Usuarios.findByPk(responsable, {
                 include: [{
                     model: Departamentos,
-                    as: 'departamentos',
+                    as: 'departamento',
                     attributes: ['id', 'nombre'],
                     include: [{
                         model: Areas,
@@ -248,12 +248,8 @@ export const updateTactico = async (req: Request, res: Response) => {
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto']
             });            
             
-            if (usuario && usuario.departamentos.length > 0) {
-                
-                usuario.departamentos.forEach((departamento: any) => {
-                    areaArray.push(departamento.area.id);
-                });
-                
+            if (usuario && usuario.departamento) {
+                areaArray.push(usuario.departamento.area.id);
             }
           
             areasSet = new Set(areaArray);
@@ -487,7 +483,7 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
             include: [
                 {
                     model: Departamentos,
-                    as: 'departamentos',
+                    as: 'departamento',
                     attributes: ['id', 'nombre', 'slug'],
                 }
             ]
@@ -499,7 +495,7 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
             include: [
                 {
                     model: Departamentos,
-                    as: 'departamentos',
+                    as: 'departamento',
                     attributes: ['id', 'nombre', 'slug'],
                 }
             ]
@@ -539,6 +535,7 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
                 estrategicoId: null
             },
         });
+        
 
         const tacticosCoreFiltered = filtrarTacticos(tacticos_core, slug as string)
 
@@ -632,125 +629,24 @@ export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
     }
 }
 
-// export const getTacticosByArea = async (req: Request, res: Response) => {
-//     const { slug } = req.params;
-//     const { year } = req.query;
-    
-    
-//     let whereDate = {
-//         [Op.or]: [
-//             {
-//                 fechaInicio: {
-//                     [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
-//                 }
-//             },
-//             {
-//                 fechaFin: {
-//                     [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
-//                 }
-//             }
-//         ]        
-//     };
 
 
-//     const includes = [
-        
-//         {
-//             model: Usuarios,
-//             as: 'responsables',
-//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-//             through: {
-//                 attributes: []
-//             },
-//             include: [{
-//                 model: Departamentos,
-//                 as: 'departamentos',
-//                 include: [{
-//                     model: Areas,
-//                     as: 'area',
-//                     attributes: ['id', 'nombre', 'slug'],
-//                 }],
-//             }],
-//         },
-//         {
-//             model: Usuarios,
-//             as: 'propietario',
-//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-//             include: [{
-//                 model: Departamentos,
-//                 as: 'departamentos',
-//                 include: [{
-//                     model: Areas,
-//                     as: 'area',
-//                     attributes: ['id', 'nombre', 'slug'],
-//                 }],
-//             }],
-//         },
-//         {
-//             model: ObjetivoEstrategico,
-//             as: 'estrategico',
-//             include: [{
-//                 model: Perspectivas,
-//                 as: 'perspectivas',
-//                 attributes: ['id', 'nombre',  'color']
-//             }]
-//         },
-//         {
-//             model: Trimestre,
-//             as: 'trimestres',
-//             through: { attributes: ['activo'] },
-//         }
-//     ]
-
-    
-//     try {
-//         const tacticos = await Tacticos.findAll({
-//             include: includes,
-//             where: {
-//                 ...whereDate,
-//                 [Op.not]: { estrategicoId: null }
-//             },
-//             logging: console.log
-//         });
-//         const filteredTacticos = filtrarTacticos(tacticos, slug);
-
-//         const tacticos_core = await Tacticos.findAll({
-//             include: includes,
-//             where: {
-//                 ...whereDate,
-//                 estrategicoId: null
-//             },
-//         });
-//         const filteredTacticosCore = filtrarTacticos(tacticos_core, slug);    
-
-//         res.json({ objetivosTacticos: { tacticos:filteredTacticos, tacticos_core:filteredTacticosCore } });
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             msg: 'Hable con el administrador'
-//         });
-//     }
-// }
-
-
-const filtrarTacticos = (tacticos: any[], slug: string) => {
+const filtrarTacticos = (tacticos: any[], slug: string) => {    
     // Filtra los 'Tacticos' en base al 'slug' del 'Area' al que pertenecen sus 'Usuarios'
     const filteredTacticos = tacticos.filter(tactico => {
+        
         // Chequea si el 'propietario' pertenece al 'Area' con el 'slug' dado
-        const isPropietarioInArea = tactico.propietario.departamentos.some((departamento:any) => 
-            departamento.slug === slug
-        );
+        const isPropietarioInArea = tactico.propietario.departamento?.slug === slug;
 
         // Chequea si alguno de los 'responsables' pertenece al 'Area' con el 'slug' dado
-        const isAnyResponsableInArea = tactico.responsables.some((responsable : any )=>
-            responsable.departamentos.some((departamento:any) => 
-                departamento.slug === slug
-            )
-        );
-
+        const isAnyResponsableInArea = tactico.responsables.some((responsable : any ) => {
+            return responsable.departamento?.slug === slug;
+        });
+        
         // Retorna 'true' si el 'propietario' o algún 'responsable' pertenece al 'Area' con el 'slug' dado
         return isPropietarioInArea || isAnyResponsableInArea;
     })
+
 
     return filteredTacticos;
 }

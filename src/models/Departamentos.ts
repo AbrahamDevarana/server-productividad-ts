@@ -31,6 +31,10 @@ export const Departamentos = database.define('departamentos', {
     slug:{
         type: Sequelize.STRING,
     },
+    order: {
+        type: Sequelize.INTEGER,
+        defaultValue: 2
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { Areas } from "../models/Areas";
 import { getPagination, getPagingData } from "../helpers/pagination";
-import { Departamentos, Usuarios } from "../models";
+import { Departamentos, Perspectivas, Usuarios } from "../models";
 
 
 const areaInclude = [
@@ -18,12 +18,23 @@ const areaInclude = [
                 model: Usuarios,
                 as: 'usuarios',
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+            },
+            {
+                model: Usuarios,
+                as: 'leader',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
             }
-        ]
+        ],
+        
     },
     {
         model: Usuarios,
         as: 'leader',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+    },
+    {
+        model: Perspectivas,
+        as: 'perspectivas',
     }
 ]
 
@@ -61,10 +72,17 @@ export const getArea = async (req: Request, res: Response) => {
     try {
         const area = await Areas.findOne({
             where: { [Op.or]: [{ id }, { slug: id }] },
-            include: areaInclude
+            include: areaInclude,
+            // ordenar por departamentos
+            order: [
+                [{ model: Departamentos, as: 'departamentos' }, 'order', 'ASC'],
+            ]
         });
 
         if (area) {
+
+            console.log(area);
+            
             res.json({ area });
         } else {
             res.status(404).json({

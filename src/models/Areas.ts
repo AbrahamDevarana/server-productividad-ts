@@ -46,6 +46,7 @@ export const Areas = database.define('areas', {
     hooks: {
         beforeUpdate: async (area: any) => {
             area.updatedAt = new Date();
+            area.slug = slugify(area.nombre, { lower: true });
         },
         beforeCreate: async (area: any) => {
             area.slug = slugify(area.nombre, { lower: true });

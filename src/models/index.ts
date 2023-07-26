@@ -36,7 +36,7 @@ import Trimestre from './custom/Trimestre';
 
 
 // Usuarios
-Usuarios.belongsToMany(Departamentos, { through: 'pivot_departamentos_usuarios', as: 'departamentos', foreignKey: 'usuarioId' });
+// Usuarios.belongsToMany(Departamentos, { through: 'pivot_departamentos_usuarios', as: 'departamentos', foreignKey: 'usuarioId' });
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
 
 
