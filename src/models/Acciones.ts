@@ -3,6 +3,7 @@ import database from "../config/database";
 import { ResultadosClave } from "./ResultadoClave";
 import { ObjetivoOperativos } from "./Operativos";
 import dayjs from "dayjs";
+import { PivotOpUsuario } from "./pivot/PivotOperativoUsuario";
 
 
 export interface AccionAttributes {
@@ -120,8 +121,47 @@ const updateProgreso = async (accion: AccionInstance) => {
 
                 await resultadoClave.update({ progreso: progresoTotal });
 
-            }     
+            }
+
+           await updateProgresoResultadoClave({objetivoOperativoId: resultadoClave.operativoId});
         }
+}
+
+
+export const updateProgresoResultadoClave = async ({objetivoOperativoId}: any) => {
+
+    const objetivos = await PivotOpUsuario.findAll({
+        where: {
+            objetivoOperativoId
+        }
+    })
+
+    const resultadosClave = await ResultadosClave.findAll({
+        where: {
+            operativoId: objetivoOperativoId
+        }
+    })
+
+    let promedioResultadosClave = 0;
+
+    if(resultadosClave.length > 0){
+        resultadosClave.forEach(resultadoClave => {
+            promedioResultadosClave += resultadoClave.progreso;
+        })
+        promedioResultadosClave = promedioResultadosClave/resultadosClave.length;
+    }
+
+
+
+    if(objetivos.length > 0){
+        objetivos.forEach(async objetivo => {
+            // @ts-ignore
+            objetivo.progresoReal = promedioResultadosClave;
+            await objetivo.save();
+        })
+    }
+    
+
 }
 
 const updateDate = async (accion: AccionInstance) => {

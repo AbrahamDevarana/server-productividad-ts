@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Acciones, ResultadosClave, Usuarios } from "../models";
+import { Acciones, PivotOpUsuario, ResultadosClave, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
 
@@ -106,6 +106,7 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin} = req.body;
 
+    const { id: userId } = req.user as UsuarioInterface
 
     
     try {
@@ -148,6 +149,8 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
         }
         await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin  });
 
+        await updateProgresoResultadoClave({objetivoOperativoId: operativoId, responsableId: userId});
+
         await resultadoClave.reload({
             include: includeProps
         })
@@ -185,5 +188,40 @@ export const deleteResultadosClave = async (req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Hable con el administrador'
         });
+    }
+}
+
+
+export const updateProgresoResultadoClave = async ({objetivoOperativoId, responsableId}: any) => {
+
+    const objetivos = await PivotOpUsuario.findAll({
+        where: {
+            objetivoOperativoId
+        }
+    })
+
+    const resultadosClave = await ResultadosClave.findAll({
+        where: {
+            operativoId: objetivoOperativoId
+        }
+    })
+
+    let promedioResultadosClave = 0;
+
+    if(resultadosClave.length > 0){
+        resultadosClave.forEach(resultadoClave => {
+            promedioResultadosClave += resultadoClave.progreso;
+        })
+        promedioResultadosClave = promedioResultadosClave/resultadosClave.length;
+    }
+
+
+
+    if(objetivos.length > 0){
+        objetivos.forEach(async objetivo => {
+            // @ts-ignore
+            objetivo.progresoReal = promedioResultadosClave;
+            await objetivo.save();
+        })
     }
 }
