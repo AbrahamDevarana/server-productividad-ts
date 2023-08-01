@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, Roles, Permisos } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, Roles, Permisos, PivotObjetivoTacticoTrimestre, PivotOpUsuario } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -443,5 +443,29 @@ export const uploadConfiguracion = async (req: Request, res: Response) => {
     }
 }
 
+export const resultadosUsuarios = async (req: Request, res: Response) => {
+
+    const { year, quarter } = req.params;
+    const { id } = req.user as UsuarioInterface;
+
+        try {
+
+            const usuarios = await Usuarios.findAll({
+                include: PivotOpUsuario,
+                where: {
+                    [Op.and]: [
+                    ]
+                }
+            })
+
+            res.json({usuarios});
+            
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                msg: 'Hable con el administrador'
+            });
+        }
+}
 
 
