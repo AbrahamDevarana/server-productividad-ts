@@ -1,7 +1,7 @@
 // Path: src\models\Usuario.ts
 import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, Roles, Permisos, PivotObjetivoTacticoTrimestre, PivotOpUsuario } from "../models";
 import { Request, Response } from "express";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
@@ -451,13 +451,20 @@ export const resultadosUsuarios = async (req: Request, res: Response) => {
         try {
 
             const usuarios = await Usuarios.findAll({
-                include: PivotOpUsuario,
-                where: {
-                    [Op.and]: [
-                    ]
-                }
+                include: {
+                    model: ObjetivoOperativos,
+                    as: 'objetivosOperativos',
+                    attributes: ['id'],
+                    through: {
+                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
+                        as: 'scoreCard'
+                    },
+                    required: false,
+                },
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto']
             })
 
+        
             res.json({usuarios});
             
         } catch (error) {

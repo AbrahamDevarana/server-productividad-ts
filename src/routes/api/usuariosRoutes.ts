@@ -4,6 +4,10 @@ import { getUsuario, getUsuarios, createUsuario, updateUsuario, deleteUsuario, u
 import { validarCampos } from '../../middleware/validateFields';
 const router = Router();
 
+
+
+router.get('/resultados', resultadosUsuarios)
+
 router.get('/', getUsuarios);
 router.get('/:id', getUsuario);
 router.get('/perfil/:slug', getPerfil);
@@ -27,7 +31,7 @@ router.delete('/delete-photo/:id', deletePhoto);
 
 router.put('/perfil/:id', updatePerfil);
 
-router.get('/resultados', resultadosUsuarios)
+
 
 
 

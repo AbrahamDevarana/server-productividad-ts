@@ -81,8 +81,6 @@ export const getArea = async (req: Request, res: Response) => {
 
         if (area) {
 
-            console.log(area);
-            
             res.json({ area });
         } else {
             res.status(404).json({

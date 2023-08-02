@@ -18,7 +18,6 @@ export const Usuarios = database.define('usuarios', {
     },
     apellidoPaterno: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     apellidoMaterno: {
         type: Sequelize.STRING,

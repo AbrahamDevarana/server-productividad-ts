@@ -325,10 +325,68 @@ export const deleteTactico = async (req: Request, res: Response) => {
 
 export const getTacticosByArea = async (req: Request, res: Response) => {
     const { slug } = req.params;
-    const { year } = req.query;
+    const { year, search, periodos, status } = req.query;
+
     
+
+    let where = {};
+    let wherePeriodo = {};
+
+    if (status) {
+
+        where = {
+            ...where,
+            [Op.and]: [
+                {
+                    status: {
+                        [Op.in]: status
+                    }
+                }   
+            ]
+        }
+    }
+
+    if(search){        
+        where = {
+            ...where,
+            [Op.and]: [
+               {
+                     [Op.or]: [ 
+                        {
+                            nombre: {
+                                [Op.like]: `%${search}%`
+                            }
+                        },
+                        {
+                            codigo: {
+                                [Op.like]: `%${search}%`
+                            }
+                        }
+                    ]
+               }
+            ]
+        }        
+    }
     
-    let where = {
+
+    if(periodos){
+        wherePeriodo = {
+            ...wherePeriodo,
+            [Op.and]: [
+                {
+                    '$trimestres->pivot_tactico_trimestre.activo$': true,
+                },
+                {
+                    trimestre: {
+                        [Op.in]: periodos
+                    }
+                }
+            ]
+        }
+    }
+
+    where = {
+        ...where,
         [Op.or]: [
             {
                 fechaInicio: {
@@ -340,13 +398,9 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
                     [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
                 }
             }
-        ]
-        
-        
-        
-    };
- 
-
+        ],   
+    }
+     
     const includes = [
         {
             model: Areas,
@@ -383,6 +437,8 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             model: Trimestre,
             as: 'trimestres',
             through: { attributes: ['activo'] },
+            where: wherePeriodo,
+            
         }
     ]
 
@@ -392,7 +448,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             include: includes,
             where: {
                 ...where,
-                [Op.not]: { estrategicoId: null }
+                [Op.not]: { estrategicoId: null },
             },
         });
 
@@ -452,12 +508,68 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
 }
 
 export const getTacticosByEquipos = async (req: Request, res: Response) => {
-    const { year, slug } = req.query;    
+    const { year, search, periodos, status, slug } = req.query;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+    
+    let where = {};
+    let wherePeriodo = {};
 
+    if (status) {
 
-    let where = {
+        where = {
+            ...where,
+            [Op.and]: [
+                {
+                    status: {
+                        [Op.in]: status
+                    }
+                }   
+            ]
+        }
+    }
+
+    if(search){        
+        where = {
+            ...where,
+            [Op.and]: [
+               {
+                     [Op.or]: [ 
+                        {
+                            nombre: {
+                                [Op.like]: `%${search}%`
+                            }
+                        },
+                        {
+                            codigo: {
+                                [Op.like]: `%${search}%`
+                            }
+                        }
+                    ]
+               }
+            ]
+        }        
+    }
+    
+
+    if(periodos){
+        wherePeriodo = {
+            ...wherePeriodo,
+            [Op.and]: [
+                {
+                    '$trimestres->pivot_tactico_trimestre.activo$': true,
+                },
+                {
+                    trimestre: {
+                        [Op.in]: periodos
+                    }
+                }
+            ]
+        }
+    }
+
+    where = {
+        ...where,
         [Op.or]: [
             {
                 fechaInicio: {
@@ -469,9 +581,9 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
                     [Op.between]: [fechaInicio, fechaFin]
                 }
             }
-        ],
+        ],   
     }
-    
+
     const includes = [
         {
             model: Usuarios,
