@@ -180,3 +180,24 @@ export const getLideresByDepartamento = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getUsuariosByDepartamento = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+
+        const departamento = await Departamentos.findOne({
+            where: { id },
+            include: [
+                { model: Usuarios, as: 'usuario', attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno'] },
+              ],
+        });
+            
+        res.json({ departamento });         
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}

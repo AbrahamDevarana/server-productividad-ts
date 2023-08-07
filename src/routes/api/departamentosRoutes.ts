@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { getDepartamento, getDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento, getLideresByDepartamento} from '../../controllers/DepartamentoController';
+import { getDepartamento, getDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento, getLideresByDepartamento, getUsuariosByDepartamento} from '../../controllers/DepartamentoController';
 
 const router = Router();
 
@@ -21,5 +21,7 @@ router.put('/:id', [
 router.delete('/:id', deleteDepartamento);
 
 router.get('/getLeader/:id', getLideresByDepartamento);
+
+router.get('/getUsuarios/:id', getUsuariosByDepartamento);
 
 export default router;

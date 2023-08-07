@@ -16,7 +16,7 @@ const areaInclude = [
         include: [
             {
                 model: Usuarios,
-                as: 'usuarios',
+                as: 'usuario',
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
             },
             {

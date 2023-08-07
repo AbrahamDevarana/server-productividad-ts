@@ -12,6 +12,8 @@ export interface ObjetivoOperativosAttributes {
     fechaInicio: Date;
     fechaFin: Date;
     propietarioId?: string;
+    quarter?: number;
+    year?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -54,6 +56,14 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosInstance>('
     fechaFin: {
         type: Sequelize.DATE,
         allowNull: false
+    },
+    quarter: {
+        type: Sequelize.SMALLINT,
+        allowNull: true
+    },
+    year: {
+        type: Sequelize.SMALLINT,
+        allowNull: true
     },
     createdAt: {
         type: Sequelize.DATE,

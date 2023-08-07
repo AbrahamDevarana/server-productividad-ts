@@ -27,30 +27,25 @@ const includes = [
 
 export const getOperativos = async (req:any, res: Response) => {
     
-    const { year, quarter } = req.query;
-    const fechaInicioTrimestre = dayjs().quarter(quarter).year(year).startOf('quarter').toDate();
-    const fechaFinTrimestre = dayjs().quarter(quarter).year(year).endOf('quarter').toDate();
+    const { year, quarter, usuarioId } = req.query;
+
     try {
         const operativos = await ObjetivoOperativos.findAll({
             order: [['createdAt', 'ASC']],
             include: includes,
             where: {
-                [Op.or]: [
+                [Op.and]: [
                     {
-                        fechaInicio: {
-                            [Op.between]: [fechaInicioTrimestre, fechaFinTrimestre]
-                        }
+                        year
                     },
                     {
-                        fechaFin: {
-                            [Op.between]: [fechaInicioTrimestre, fechaFinTrimestre]
-                        }
-                    }   
+                        quarter
+                    }
                 ]
             }
         });
       
-        const filteredObjetivos = filtrarObjetivosUsuario(operativos, req.user.id)
+        const filteredObjetivos = filtrarObjetivosUsuario(operativos, usuarioId)
 
         res.json({ operativos: filteredObjetivos });
     
@@ -121,7 +116,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 export const createOperativo = async (req: Request, res: Response) => {
     
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, progresoAsignado } = req.body;
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, progresoAsignado, quarter, year} = req.body;
     const { id } = req.user as UsuarioInterface
 
     const fechaInicial = dayjs(fechaInicio).toDate();
@@ -136,7 +131,9 @@ export const createOperativo = async (req: Request, res: Response) => {
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
             tacticoId,
-            propietarioId: id
+            propietarioId: id,
+            quarter,
+            year
         });
 
         
@@ -194,9 +191,8 @@ export const deleteOperativo = async (req: Request, res: Response) => {
     }
 }
 
-export const getObjetivo = async (req: Request, res: Response) => {
+export const getOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
-
 
     try {
         const operativo = await ObjetivoOperativos.findByPk(id, {

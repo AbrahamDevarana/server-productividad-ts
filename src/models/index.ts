@@ -1,4 +1,5 @@
 import { Usuarios } from './Usuarios';
+import { Rendimiento } from './Rendimiento';
 import { Areas } from './Areas';
 import { Direccion } from './Direccion';
 import { Departamentos } from './Departamentos';
@@ -31,20 +32,16 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Permisos } from './Permisos';
 import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
 import Trimestre from './custom/Trimestre';
+import { PivotObjetivosRendimiento } from './pivot/PivotObjetivosRendimiento';
 
 
 
 
 // Usuarios
-// Usuarios.belongsToMany(Departamentos, { through: 'pivot_departamentos_usuarios', as: 'departamentos', foreignKey: 'usuarioId' });
+
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
-
-
-
-
 Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
 Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyectos', foreignKey: 'usuarioId' });
-// Usuarios.hasMany(ObjetivoOperativos, { as: 'objetivosOperativos', foreignKey: 'propietarioId' });
 
 Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
 Usuarios.hasMany(GaleriaUsuarios, { as: 'galeria', foreignKey: 'usuarioId' });
@@ -60,7 +57,6 @@ Areas.hasOne(Perspectivas, { as: 'perspectivas', foreignKey: 'areaId' });
 
 // Departamentos
 Departamentos.belongsTo(Areas, { as: 'area', foreignKey: 'areaId' });
-Departamentos.belongsToMany(Usuarios, { through: 'pivot_departamentos_usuarios', as: 'usuarios', foreignKey: 'departamentoId' }); // borrar
 Departamentos.hasMany(Usuarios, { as: 'usuario', foreignKey: 'departamentoId' });
 Departamentos.belongsTo(Usuarios, { as: 'leader', foreignKey: 'leaderId' });
 
@@ -145,13 +141,11 @@ Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDel
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Objetivo Operativo
-// ObjetivoOperativos.belongsTo(Usuarios, { as: 'operativoPropietario', foreignKey: 'propietarioId' });
-ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'responsableId'});
-Usuarios.belongsToMany(ObjetivoOperativos, { as: 'objetivosOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'responsableId', otherKey: 'objetivoOperativoId' });
+ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', through: PivotObjetivosRendimiento, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'rendimientoId', uniqueKey: 'unique_operativo_rendimiento' });
+Rendimiento.belongsToMany(ObjetivoOperativos, { as: 'rendimientoOperativo', through: PivotObjetivosRendimiento, onDelete: 'CASCADE', foreignKey: 'rendimientoId', otherKey: 'objetivoOperativoId', uniqueKey: 'unique_rendimiento_operativo' });
 
 
-
-Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId' });
+Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });
 Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 
@@ -178,6 +172,7 @@ export {
     Roles,
     Permisos,
     Trimestre,
+    Rendimiento,
 
     PivotTareasResponsables,
     PivotPerspEstr,

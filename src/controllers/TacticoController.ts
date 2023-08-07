@@ -437,8 +437,7 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
             model: Trimestre,
             as: 'trimestres',
             through: { attributes: ['activo'] },
-            where: wherePeriodo,
-            
+            // where: wherePeriodo,
         }
     ]
 
