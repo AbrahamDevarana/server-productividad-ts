@@ -144,6 +144,9 @@ Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: Pivo
 ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', through: PivotObjetivosRendimiento, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'rendimientoId', uniqueKey: 'unique_operativo_rendimiento' });
 Rendimiento.belongsToMany(ObjetivoOperativos, { as: 'rendimientoOperativo', through: PivotObjetivosRendimiento, onDelete: 'CASCADE', foreignKey: 'rendimientoId', otherKey: 'objetivoOperativoId', uniqueKey: 'unique_rendimiento_operativo' });
 
+ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId' });
+Usuarios.belongsToMany(ObjetivoOperativos, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
+
 
 Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });
 Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });

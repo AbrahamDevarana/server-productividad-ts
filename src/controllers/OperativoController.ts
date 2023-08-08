@@ -141,11 +141,13 @@ export const createOperativo = async (req: Request, res: Response) => {
         await operativo.setOperativosResponsable([...operativosResponsable, id]);
         await operativo.reload( { include: includes });
 
+        console.log(operativo);
+        
 
         const operativoCreado = await PivotOpUsuario.findOne({
             where: {
                 objetivoOperativoId: operativo.id,
-                responsableId: id
+                usuarioId: id
             }
         });
 

@@ -23,7 +23,7 @@ export interface ObjetivosOperativosInstance extends Model<ObjetivoOperativosAtt
 }
 
 
-export const ObjetivoOperativos = database.define<ObjetivosOperativosInstance>('obj_operativos', {
+export const ObjetivoOperativos = database.define('obj_operativos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,

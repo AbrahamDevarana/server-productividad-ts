@@ -16,6 +16,8 @@ export interface RendimientoModel extends Model<InferAttributes<RendimientoModel
     extra: string;
     createdAt?: Date;
     updatedAt?: Date;
+
+    addRendimientoOperativo: (objetivoOperativoId: string) => Promise<void>;
 }
 
 

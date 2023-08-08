@@ -2,7 +2,7 @@ import Sequelize from "sequelize";
 import database from "../../config/database";
 
 export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
-    responsableId: {
+    usuarioId: {
         type: Sequelize.UUID,
         allowNull: false,
     },
