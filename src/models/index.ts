@@ -32,7 +32,6 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Permisos } from './Permisos';
 import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
 import Trimestre from './custom/Trimestre';
-import { PivotObjetivosRendimiento } from './pivot/PivotObjetivosRendimiento';
 
 
 
@@ -141,11 +140,11 @@ Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDel
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Objetivo Operativo
-ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', through: PivotObjetivosRendimiento, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'rendimientoId', uniqueKey: 'unique_operativo_rendimiento' });
-Rendimiento.belongsToMany(ObjetivoOperativos, { as: 'rendimientoOperativo', through: PivotObjetivosRendimiento, onDelete: 'CASCADE', foreignKey: 'rendimientoId', otherKey: 'objetivoOperativoId', uniqueKey: 'unique_rendimiento_operativo' });
+ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', through: 'pivot_objetivo_rendimiento', onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'rendimientoId', uniqueKey: 'unique_operativo_rendimiento' });
+Rendimiento.belongsToMany(ObjetivoOperativos, { as: 'rendimientoOperativo', through: 'pivot_objetivo_rendimiento', onDelete: 'CASCADE', foreignKey: 'rendimientoId', otherKey: 'objetivoOperativoId', uniqueKey: 'unique_rendimiento_operativo' });
 
 ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId' });
-Usuarios.belongsToMany(ObjetivoOperativos, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
+Usuarios.belongsToMany(ObjetivoOperativos, { as: 'responsableOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
 
 
 Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });

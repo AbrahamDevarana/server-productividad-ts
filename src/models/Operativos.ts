@@ -1,9 +1,10 @@
-import Sequelize, { Model } from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../config/database";
 import { v4 as uuidv4 } from 'uuid';
 
-export interface ObjetivoOperativosAttributes {
-  
+
+export interface ObjetivosOperativosModel extends Model<InferAttributes<ObjetivosOperativosModel>, InferCreationAttributes<ObjetivosOperativosModel>> {
+
     id?: string;
     nombre: string;
     meta?: string;
@@ -16,14 +17,43 @@ export interface ObjetivoOperativosAttributes {
     year?: number;
     createdAt?: Date;
     updatedAt?: Date;
+
+
+    getTactico_operativo: () => Promise<any>
+    setTactico_operativo: () => Promise<any>
+    createTactico_operativo: () => Promise<any>
+    getResultadosClave: () => Promise<any>
+    countResultadosClave: () => Promise<any>
+    hasResultadosClave: () => Promise<any>
+    setResultadosClave: () => Promise<any>
+    addResultadosClave: () => Promise<any>
+    removeResultadosClave: () => Promise<any>
+    createResultadosClave: () => Promise<any>
+
+    getOperativoRendimiento: () => Promise<any>
+    countOperativoRendimiento: () => Promise<any>
+    hasOperativoRendimiento: () => Promise<any>
+    setOperativoRendimiento: () => Promise<any>
+    addOperativoRendimiento: () => Promise<any>
+    removeOperativoRendimiento: () => Promise<any>
+    createOperativoRendimiento: () => Promise<any>
+
+    getOperativosResponsable: () => Promise<any>
+    countOperativosResponsable: () => Promise<any>
+    hasOperativosResponsable: () => Promise<any>
+    setOperativosResponsable: () => Promise<any>
+    addOperativosResponsable: () => Promise<any>
+    removeOperativosResponsable: () => Promise<any>
+    createOperativosResponsable: () => Promise<any>
+
+    // __proto__
+
+
+
 }
 
-export interface ObjetivosOperativosInstance extends Model<ObjetivoOperativosAttributes>, ObjetivoOperativosAttributes {
-    operativo?: ObjetivosOperativosInstance;
-}
 
-
-export const ObjetivoOperativos = database.define('obj_operativos', {
+export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj_operativos', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -77,11 +107,26 @@ export const ObjetivoOperativos = database.define('obj_operativos', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: (objetivoOperativo: ObjetivosOperativosInstance, options) => {
+        afterUpdate: (objetivoOperativo: ObjetivosOperativosModel, options) => {
          
-        }  
+        },
+        afterFind: async(objetivoOperativo:ObjetivosOperativosModel, options) => {
+
+        // @ts-ignore
+            await calcularRendimiento(objetivoOperativo)
+                
+        }
+            
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 });
+
+
+const calcularRendimiento = async (objetivoOperativo:ObjetivosOperativosModel) => {
+
+
+}
+
+

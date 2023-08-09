@@ -70,9 +70,11 @@ export const getResultadoClave = async (req: Request, res: Response) => {
 }
 
 export const createResultadosClave = async (req: Request, res: Response) => {
-    const { operativoId } = req.body;
+    const { operativoId, quarter, year } = req.body;
 
     const { id: propietarioId } = req.user as UsuarioInterface
+
+
 
     try {
         const resultadoClave = await ResultadosClave.create({
@@ -149,7 +151,7 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
         }
         await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin  });
 
-        await updateProgresoResultadoClave({objetivoOperativoId: operativoId, responsableId: userId});
+        await updateProgresoObjetivo({objetivoOperativoId: operativoId, responsableId: userId});
 
         await resultadoClave.reload({
             include: includeProps
@@ -191,8 +193,8 @@ export const deleteResultadosClave = async (req: Request, res: Response) => {
     }
 }
 
-
-export const updateProgresoResultadoClave = async ({objetivoOperativoId, responsableId}: any) => {
+// Actualiza el valor del resultado clave y objetivos
+export const updateProgresoObjetivo = async ({objetivoOperativoId}: any) => {
 
     const objetivos = await PivotOpUsuario.findAll({
         where: {
@@ -224,4 +226,10 @@ export const updateProgresoResultadoClave = async ({objetivoOperativoId, respons
             await objetivo.save();
         })
     }
+}
+
+export const updateProgresoRendimiento = async ({objetivoOperativoId}: any) => {
+
+    
+
 }

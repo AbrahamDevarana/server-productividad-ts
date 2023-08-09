@@ -20,7 +20,7 @@ export const getRendimiento = async (req: Request, res: Response) => {
                 usuarioId
             }
         });
-
+        
         res.json({ rendimiento });
         
     } catch (error) {

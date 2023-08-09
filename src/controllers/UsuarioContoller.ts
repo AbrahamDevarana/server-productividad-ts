@@ -13,7 +13,7 @@ const perfilInclude = [
     { model: Departamentos, as: 'departamento', include: ['area']}, 
     { model: Direccion, as: 'direccion' },
     { 
-        model: ObjetivoOperativos, as: 'objetivosOperativos', 
+        model: ObjetivoOperativos, as: 'responsableOperativos', 
         include: [
             { model: ResultadosClave, as:'resultadosClave' },
             { model: Usuarios, as: 'operativosResponsable' }
@@ -456,7 +456,7 @@ export const resultadosUsuarios = async (req: Request, res: Response) => {
                     as: 'objetivosOperativos',
                     attributes: ['id'],
                     through: {
-                        attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
+                        attributes: ['propietario', 'progresoAsignado', 'progresoReal'],
                         as: 'scoreCard'
                     },
                     required: false,

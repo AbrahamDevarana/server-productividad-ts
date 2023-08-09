@@ -14,10 +14,20 @@ export interface RendimientoModel extends Model<InferAttributes<RendimientoModel
     resultadoCompetencias: number;
     resultadoFinal: number;
     extra: string;
+    status: string;
     createdAt?: Date;
     updatedAt?: Date;
 
-    addRendimientoOperativo: (objetivoOperativoId: string) => Promise<void>;
+
+    
+    getRendimientoOperativo: () => Promise<any>
+    countRendimientoOperativo: () => Promise<any>
+    hasRendimientoOperativo: () => Promise<any>
+    setRendimientoOperativo: () => Promise<any>
+    addRendimientoOperativo: () => Promise<any>
+    removeRendimientoOperativo: () => Promise<any>
+    createRendimientoOperativo: () => Promise<any>
+    
 }
 
 
@@ -58,6 +68,11 @@ export const Rendimiento = database.define<RendimientoModel>('rendimiento', {
         type: Sequelize.TEXT,
         allowNull: true
     },
+    status: {
+        type: Sequelize.ENUM('open', 'closed'),
+        defaultValue: 'open'
+
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -72,7 +87,9 @@ export const Rendimiento = database.define<RendimientoModel>('rendimiento', {
     hooks: {
         afterUpdate: (rendimiento: RendimientoModel, options) => {
          
-        }  
+        },
+        afterFind: async(rendimiento:RendimientoModel, options) => {
+        }
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }

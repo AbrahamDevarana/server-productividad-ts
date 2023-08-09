@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Rendimiento } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
@@ -11,7 +11,7 @@ const includes = [
         as: 'operativosResponsable',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
         through: {
-            attributes: ['propietario', 'progresoFinal', 'progresoAsignado', 'progresoReal'],
+            attributes: ['propietario', 'progresoAsignado', 'progresoReal'],
             as: 'scoreCard'
         },
         required: false
@@ -61,7 +61,7 @@ export const getOperativos = async (req:any, res: Response) => {
 export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, progresoAsignado } = req.body;
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, progresoAsignado, quarter, year } = req.body;
     const { id: userId } = req.user as UsuarioInterface
 
     const fechaInicial = dayjs(fechaInicio).toDate();
@@ -87,21 +87,22 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 
         // @ts-ignore
-        await operativo.setOperativosResponsable(operativosResponsable);    
-        await operativo.reload( { include: includes } );
-
+        await operativo.setOperativosResponsable(operativosResponsable);
+        
         const operativoCreado = await PivotOpUsuario.findOne({
             where: {
                 objetivoOperativoId: operativo.id,
-                responsableId: userId
+                usuarioId: userId
             }
         });
+        
         if (operativoCreado) {
             await operativoCreado.update({
                 progresoAsignado: progresoAsignado as number
             });
         }
-       
+        
+        await operativo.reload( { include: includes } );
 
         res.json({operativo});
     
@@ -136,14 +137,12 @@ export const createOperativo = async (req: Request, res: Response) => {
             year
         });
 
+        const responables = [...operativosResponsable, id]
         
         // @ts-ignore
-        await operativo.setOperativosResponsable([...operativosResponsable, id]);
-        await operativo.reload( { include: includes });
-
-        console.log(operativo);
+        await operativo.setOperativosResponsable(responables);
         
-
+        
         const operativoCreado = await PivotOpUsuario.findOne({
             where: {
                 objetivoOperativoId: operativo.id,
@@ -156,8 +155,8 @@ export const createOperativo = async (req: Request, res: Response) => {
                 progresoAsignado
             });
         }
-
-           
+        
+        await operativo.reload( { include: includes });
         res.json({operativo});
     
     } catch (error) {

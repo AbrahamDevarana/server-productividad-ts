@@ -15,11 +15,6 @@ export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
         allowNull: false,
         defaultValue: false
     },
-    progresoFinal: {
-        type: Sequelize.FLOAT,
-        allowNull: true,   
-        defaultValue: 0
-    },
     // Se refiere al valor que se asigna a un usuario para que cumpla con el objetivo
     progresoAsignado: { // Ponderacion
         type: Sequelize.FLOAT,
@@ -47,4 +42,11 @@ export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
     },
 }, {
     timestamps: true,
+
+    hooks: {
+
+        afterUpdate: (pivot: any, options) => {
+                           
+        },
+    }
 });

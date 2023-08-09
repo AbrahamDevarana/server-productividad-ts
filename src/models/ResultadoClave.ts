@@ -1,6 +1,6 @@
 import Sequelize, { Association, BelongsTo, Model }  from "sequelize";
 import database from "../config/database";
-import { ObjetivoOperativos, ObjetivosOperativosInstance } from "./Operativos";
+import { ObjetivoOperativos } from "./Operativos";
 import { AccionInstance } from "./Acciones";
 import dayjs from "dayjs";
 
@@ -19,7 +19,7 @@ export interface ResultadoClaveAttributes {
 }
 
 export interface ResultadoClaveInstance extends Model<ResultadoClaveAttributes>, ResultadoClaveAttributes {
-    operativo?: ObjetivosOperativosInstance;
+    
 }
 
 export const ResultadosClave = database.define<ResultadoClaveInstance>('resultado_clave', {
@@ -67,7 +67,7 @@ export const ResultadosClave = database.define<ResultadoClaveInstance>('resultad
     timestamps: true,
     hooks: {
         afterUpdate: async (resultadoClave: ResultadoClaveInstance, options) => {
-               await updateDate(resultadoClave)
+            //    await updateDate(resultadoClave)
         },
 
     },
@@ -77,35 +77,35 @@ export const ResultadosClave = database.define<ResultadoClaveInstance>('resultad
 })
 
 
-const updateDate = async (resultadoClave: ResultadoClaveInstance) => {
+// const updateDate = async (resultadoClave: ResultadoClaveInstance) => {
 
-    // Obtener el operativo
-    const operativo = await ObjetivoOperativos.findOne({
-        where: {
-            id: resultadoClave.operativoId
-        }
-    });
+//     // Obtener el operativo
+//     const operativo = await ObjetivoOperativos.findOne({
+//         where: {
+//             id: resultadoClave.operativoId
+//         }
+//     });
 
-    // Obtener todos los resultados clave del operativo
-    const resultadosClave = await ResultadosClave.findAll({
-        where: {
-            operativoId: operativo!.id
-        }
-    });
+//     // Obtener todos los resultados clave del operativo
+//     const resultadosClave = await ResultadosClave.findAll({
+//         where: {
+//             operativoId: operativo!.id
+//         }
+//     });
 
 
 
-    if(operativo){
-        if(resultadoClave.fechaFin > operativo.fechaFin){
-            await operativo.update({ fechaFin: resultadoClave.fechaFin });
-        }
-    }
+//     if(operativo){
+//         if(resultadoClave.fechaFin > operativo.fechaFin){
+//             await operativo.update({ fechaFin: resultadoClave.fechaFin });
+//         }
+//     }
 
-    let fechaInicio = dayjs(resultadoClave.fechaInicio);
-    let ultimoDiaCuatrimestre = fechaInicio.endOf('quarter').toDate();
+//     let fechaInicio = dayjs(resultadoClave.fechaInicio);
+//     let ultimoDiaCuatrimestre = fechaInicio.endOf('quarter').toDate();
 
-    if( resultadosClave.every( resultado => resultado.fechaFin < ultimoDiaCuatrimestre)){
-        await operativo!.update({ fechaFin: ultimoDiaCuatrimestre });
-    }
+//     if( resultadosClave.every( resultado => resultado.fechaFin < ultimoDiaCuatrimestre)){
+//         await operativo!.update({ fechaFin: ultimoDiaCuatrimestre });
+//     }
 
-}
+// }
