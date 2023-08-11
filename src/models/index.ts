@@ -14,6 +14,8 @@ import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
 import { Roles } from './Roles';
 import { GaleriaDevarana } from './custom/GaleriaDevarana';
+import { Evaluacion } from './Evaluacion';
+import { EvaluacionPreguntas } from './EvaluacionPreguntas';
 
 
 
@@ -32,6 +34,7 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Permisos } from './Permisos';
 import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
 import Trimestre from './custom/Trimestre';
+import { PivotEvaluacionUsuario } from './pivot/PivotEvaluacionUsuario';
 
 
 
@@ -156,6 +159,13 @@ Permisos.belongsToMany(Roles, { through: 'pivot_permisos_roles', as: 'roles', fo
 
 
 
+Evaluacion.belongsToMany(Usuarios, { through: PivotEvaluacionUsuario, as: 'usuarios', foreignKey: 'evaluacionId' });
+Usuarios.belongsToMany(Evaluacion, { through: PivotEvaluacionUsuario, as: 'evaluaciones', foreignKey: 'usuarioId' });
+
+Evaluacion.belongsToMany(EvaluacionPreguntas, { through: 'pivot_evaluacion_preguntas', as: 'preguntas', foreignKey: 'evaluacionId' });
+EvaluacionPreguntas.belongsToMany(Evaluacion, { through: 'pivot_evaluacion_preguntas', as: 'evaluaciones', foreignKey: 'preguntaId' });
+
+
 export {
     Usuarios,
     Areas,
@@ -175,6 +185,8 @@ export {
     Permisos,
     Trimestre,
     Rendimiento,
+    Evaluacion,
+    EvaluacionPreguntas,
 
     PivotTareasResponsables,
     PivotPerspEstr,
