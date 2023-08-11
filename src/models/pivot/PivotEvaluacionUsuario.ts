@@ -17,7 +17,6 @@ export const PivotEvaluacionUsuario = database.define('pivot_evaluacion_usuario'
     },
     evaluadorId: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     comentarios: {
         type: Sequelize.TEXT,        
