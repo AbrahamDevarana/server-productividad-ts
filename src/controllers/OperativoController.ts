@@ -84,8 +84,12 @@ export const updateOperativo = async (req: Request, res: Response) => {
         });
 
 
-        // @ts-ignore
-        await operativo.setOperativosResponsable(operativosResponsable);
+        const setResponsables = new Set();
+        operativosResponsable.forEach( (responsable: string) => {
+            setResponsables.add(responsable);
+        });
+
+        setResponsables.add(propietarioId);
 
         const responsablesLista = await PivotOpUsuario.findAll({
             where: {
@@ -94,7 +98,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
         });
 
         responsablesLista.forEach( async (responsable) => {
-            if (responsable.usuarioId === propietarioId) {
+            if (responsable === propietarioId) {
                 await responsable.update({
                     propietario: true,
                 });
