@@ -17,12 +17,12 @@ export const getTarea = async (req: Request, res: Response) => {
                     {
                         as: 'propietario',
                         model: Usuarios,
-                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                     },
                     {
                         as: 'usuariosTarea',
                         model: Usuarios,
-                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                         through: {
                             attributes: []
                         }
@@ -59,12 +59,12 @@ export const createTarea = async (req: Request, res: Response) => {
                 {
                     as: 'propietario',
                     model: Usuarios,
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                 },
                 {
                     as: 'usuariosTarea',
                     model: Usuarios,
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                     through: {
                         attributes: []
                     }
@@ -118,12 +118,12 @@ export const updateTarea = async (req: Request, res: Response) => {
                 {
                     as: 'propietario',
                     model: Usuarios,
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                 },
                 {
                     as: 'usuariosTarea',
                     model: Usuarios,
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                     through: {
                         attributes: []
                     }

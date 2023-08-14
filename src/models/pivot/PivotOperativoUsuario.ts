@@ -45,8 +45,8 @@ export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
 
     hooks: {
 
-        afterUpdate: (pivot: any, options) => {
-                           
+        afterUpdate: async (pivot: any, options) => {
+            
         },
     }
 });

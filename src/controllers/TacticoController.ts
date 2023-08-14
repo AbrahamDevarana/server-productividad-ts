@@ -44,7 +44,7 @@ const includes = [
             {
                 as: 'autor',
                 model: Usuarios,
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
             }
         ]
     },

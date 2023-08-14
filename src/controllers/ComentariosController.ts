@@ -17,7 +17,7 @@ export const getComentarios = async (req: Request, res: Response) => {
                 {
                     as: 'autor',
                     model: Usuarios,
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                 }
             ]
 
@@ -53,7 +53,7 @@ export const createComentario = async (req: Request, res: Response) => {
                     {
                         as: 'autor',
                         model: Usuarios,
-                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                     }
                 ]
             });

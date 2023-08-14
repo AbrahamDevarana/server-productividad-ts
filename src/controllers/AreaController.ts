@@ -17,12 +17,12 @@ const areaInclude = [
             {
                 model: Usuarios,
                 as: 'usuario',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
             },
             {
                 model: Usuarios,
                 as: 'leader',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
             }
         ],
         
@@ -30,7 +30,7 @@ const areaInclude = [
     {
         model: Usuarios,
         as: 'leader',
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
     },
     {
         model: Perspectivas,
@@ -172,7 +172,7 @@ export const getAreaObjetivos = async (req: Request, res: Response) => {
                         {
                             model: Usuarios,
                             as: 'usuarios',
-                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                         }
                     ]
                 },

@@ -9,7 +9,7 @@ const includes = [
     {
         model: Usuarios,
         as: 'operativosResponsable',
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto'],
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
         through: {
             attributes: ['propietario', 'progresoAsignado', 'progresoReal'],
             as: 'scoreCard'
@@ -40,7 +40,7 @@ export const getOperativos = async (req:any, res: Response) => {
                     },
                     {
                         quarter
-                    }
+                    },
                 ]
             }
         });
@@ -61,8 +61,7 @@ export const getOperativos = async (req:any, res: Response) => {
 export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , propietarioId = '', tacticoId, progresoAsignado, quarter, year } = req.body;
-    const { id: userId } = req.user as UsuarioInterface
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , tacticoId, propietarioId } = req.body;
 
     const fechaInicial = dayjs(fechaInicio).toDate();
     const fechaFinal = dayjs(fechaFin).toDate();
@@ -82,25 +81,31 @@ export const updateOperativo = async (req: Request, res: Response) => {
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
             tacticoId,
-            propietarioId,
         });
 
 
         // @ts-ignore
         await operativo.setOperativosResponsable(operativosResponsable);
-        
-        const operativoCreado = await PivotOpUsuario.findOne({
+
+        const responsablesLista = await PivotOpUsuario.findAll({
             where: {
-                objetivoOperativoId: operativo.id,
-                usuarioId: userId
+                objetivoOperativoId: operativo.id
             }
         });
-        
-        if (operativoCreado) {
-            await operativoCreado.update({
-                progresoAsignado: progresoAsignado as number
-            });
-        }
+
+        responsablesLista.forEach( async (responsable) => {
+            if (responsable.usuarioId === propietarioId) {
+                await responsable.update({
+                    propietario: true,
+                });
+            } else {
+                await responsable.update({
+                    propietario: false,
+                });
+            }
+        });
+
+
         
         await operativo.reload( { include: includes } );
 
@@ -117,8 +122,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 export const createOperativo = async (req: Request, res: Response) => {
     
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, progresoAsignado, quarter, year} = req.body;
-    const { id } = req.user as UsuarioInterface
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, quarter, year, propietarioId} = req.body;
 
     const fechaInicial = dayjs(fechaInicio).toDate();
     const fechaFinal = dayjs(fechaFin).toDate();
@@ -132,31 +136,41 @@ export const createOperativo = async (req: Request, res: Response) => {
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
             tacticoId,
-            propietarioId: id,
             quarter,
             year
         });
 
-        const responables = [...operativosResponsable, id]
-        
+    
+        const setResponsables = new Set();
+        operativosResponsable.forEach( (responsable: string) => {
+            setResponsables.add(responsable);
+        });
+
+        setResponsables.add(propietarioId);
+
         // @ts-ignore
-        await operativo.setOperativosResponsable(responables);
+        await operativo.setOperativosResponsable(Array.from(setResponsables));
         
-        
-        const operativoCreado = await PivotOpUsuario.findOne({
+        const responsablesLista = await PivotOpUsuario.findAll({
             where: {
-                objetivoOperativoId: operativo.id,
-                usuarioId: id
+                objetivoOperativoId: operativo.id
             }
         });
 
-        if (operativoCreado) {
-            await operativoCreado.update({
-                progresoAsignado
-            });
-        }
+        responsablesLista.forEach( async (responsable) => {
+            if (responsable.usuarioId === propietarioId) {
+                await responsable.update({
+                    propietario: true,
+                });
+            } else {
+                await responsable.update({
+                    propietario: false,
+                });
+            }
+        });
         
         await operativo.reload( { include: includes });
+        
         res.json({operativo});
     
     } catch (error) {
@@ -228,6 +242,10 @@ const filtrarObjetivosUsuario = (objetivos: any[], id: string) => {
 export const getOperativosByUsuario = async (req: Request, res: Response) => {
     
     const {quarter, year, usuarioId} = req.body;
+
+    console.log(quarter, year, usuarioId);
+    
+
     try {
         const operativos = await ObjetivoOperativos.findAll({
             include: includes,

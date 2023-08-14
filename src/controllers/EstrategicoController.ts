@@ -16,13 +16,13 @@ const includeProps = [
     {
         model: Usuarios,
         as: 'responsables',
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
         through: { attributes: [] }
     },
     {
         model: Usuarios,
         as: 'propietario',
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
     },
     {
         model: Perspectivas,
@@ -37,7 +37,7 @@ const includeProps = [
             {
                 as: 'autor',
                 model: Usuarios,
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
             }
         ]
     }

@@ -25,7 +25,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                         {
                             model: Usuarios,
                             as: 'responsables',
-                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                         },
                         {
                             model: Tacticos,
@@ -34,7 +34,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                         {
                             model: Usuarios,
                             as: 'propietario',
-                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                         },
                         {
                             model: Comentarios,
@@ -44,7 +44,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                                 {
                                     as: 'autor',
                                     model: Usuarios,
-                                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'],
+                                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
                                 }
                             ]
                         }
