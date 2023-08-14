@@ -91,6 +91,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
         setResponsables.add(propietarioId);
 
+        // @ts-ignore
+        await operativo.setOperativosResponsable(Array.from(setResponsables));
+
         const responsablesLista = await PivotOpUsuario.findAll({
             where: {
                 objetivoOperativoId: operativo.id
