@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, Roles, Permisos, PivotObjetivoTacticoTrimestre, PivotOpUsuario } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, PivotOpUsuario, EvaluacionPreguntas } from "../models";
 import { Request, Response } from "express";
 import { Op, Sequelize } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -443,30 +443,44 @@ export const uploadConfiguracion = async (req: Request, res: Response) => {
     }
 }
 
-export const resultadosUsuarios = async (req: Request, res: Response) => {
+export const getUsuarioProgress = async (req: Request, res: Response) => {
 
-    const { year, quarter } = req.params;
-    const { id } = req.user as UsuarioInterface;
+    const { year, quarter, usuarioId } = req.body;
+    console.log(year, quarter, usuarioId);
+    
 
         try {
 
-            const usuarios = await Usuarios.findAll({
-                include: {
-                    model: ObjetivoOperativos,
-                    as: 'objetivosOperativos',
-                    attributes: ['id'],
-                    through: {
-                        attributes: ['propietario', 'progresoAsignado', 'progresoReal'],
-                        as: 'scoreCard'
-                    },
-                    required: false,
+           const usuario = await Usuarios.findOne({
+                where: {
+                    id: usuarioId
                 },
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto']
-            })
+                attributes: ['id'],
+                include: [
+                    {
+                        model: ObjetivoOperativos,
+                        as: 'responsableOperativos',
+                        attributes: ['id', 'nombre', 'year', 'quarter'],
+                        through: {
+                            attributes: ['progresoAsignado', 'progresoReal'],
+                            as: 'progreso'
+                        },
+                        where: {
+                            year,
+                            quarter
+                        }
+                    },
+                ]
+           })
 
-        
-            res.json({usuarios});
-            
+              if(!usuario){
+                return res.status(404).json({
+                    msg: 'No existe un usuario con el id ' + usuarioId
+                });
+            }
+
+            res.json({usuario});
+       
         } catch (error) {
             console.log(error);
             res.status(500).json({
@@ -476,3 +490,34 @@ export const resultadosUsuarios = async (req: Request, res: Response) => {
 }
 
 
+export const getEvaluacionUsuario = async (req: Request, res: Response) => {
+
+    const { year, quarter, usuarioId } = req.body;
+
+    try {
+
+        const usuario = await Usuarios.findOne({
+            include: [{
+                model: EvaluacionPreguntas,
+                as: 'evaluacionPreguntas',
+                attributes: ['id', 'pregunta', 'tipo', 'peso', 'evaluacionId'],
+            }],
+            where: {
+                id: usuarioId
+            },
+        })
+
+        if(!usuario){
+            return res.status(404).json({ msg: 'No existe un usuario' });
+        }
+        
+        res.json({usuario});
+        
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}

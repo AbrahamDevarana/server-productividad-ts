@@ -221,3 +221,47 @@ const filtrarObjetivosUsuario = (objetivos: any[], id: string) => {
     const objetivo = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.id === id));
     return objetivo;
 }
+
+
+
+// revisión a futuro
+export const getOperativosByUsuario = async (req: Request, res: Response) => {
+    
+    const {quarter, year, usuarioId} = req.body;
+    try {
+        const operativos = await ObjetivoOperativos.findAll({
+            include: includes,
+            where: {
+                [Op.and]: [
+                    {
+                        year
+                    },
+                    {
+                        quarter
+                    },
+                    {
+                        [Op.or]: [
+                            {
+                                propietarioId: usuarioId
+                            },
+                            {
+                                '$operativosResponsable.id$': usuarioId
+                            }
+                        ]
+                    }
+                ]
+            },
+        });
+
+
+        res.json({operativos});
+    
+    } catch (error) {
+        console.log(error);
+        
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+
+}
