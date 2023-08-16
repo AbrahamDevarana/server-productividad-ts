@@ -489,7 +489,6 @@ export const getUsuarioProgress = async (req: Request, res: Response) => {
         }
 }
 
-
 export const getEvaluacionUsuario = async (req: Request, res: Response) => {
 
     const { year, quarter, usuarioId } = req.body;
@@ -521,3 +520,4 @@ export const getEvaluacionUsuario = async (req: Request, res: Response) => {
         });
     }
 }
+

@@ -85,12 +85,18 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 
         const setResponsables = new Set();
+
+        // si propietarioId es arrray tomar el primer valor
+
+        
         operativosResponsable.forEach( (responsable: string) => {
             setResponsables.add(responsable);
         });
-
-        setResponsables.add(propietarioId);
-
+        
+        setResponsables.add( propietarioId );
+        console.log(setResponsables);
+        
+        
         // @ts-ignore
         await operativo.setOperativosResponsable(Array.from(setResponsables));
 
@@ -101,7 +107,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
         });
 
         responsablesLista.forEach( async (responsable) => {
-            if (responsable === propietarioId) {
+            if (responsable.usuarioId === propietarioId) {
                 await responsable.update({
                     propietario: true,
                 });
@@ -149,6 +155,8 @@ export const createOperativo = async (req: Request, res: Response) => {
 
     
         const setResponsables = new Set();
+        console.log(propietarioId);
+        
         operativosResponsable.forEach( (responsable: string) => {
             setResponsables.add(responsable);
         });
