@@ -11,19 +11,12 @@ export const PivotEvaluacionUsuario = database.define('pivot_evaluacion_usuario'
         type: Sequelize.INTEGER,
         allowNull: false
     },
-    usuarioId: {
-        type: Sequelize.STRING,
+    evaluadorId: {
+        type: Sequelize.TEXT,
         allowNull: false
     },
-    evaluadorId: {
-        type: Sequelize.STRING,
-    },
-    comentarios: {
-        type: Sequelize.TEXT,        
-    },
-    calificacion: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
+    evaluadoId: {
+        type: Sequelize.TEXT,
     },
     quarter: {
         type: Sequelize.INTEGER,
@@ -46,8 +39,20 @@ export const PivotEvaluacionUsuario = database.define('pivot_evaluacion_usuario'
     paranoid: true,
     defaultScope:{
         attributes: {exclude: ['createdAt', 'updatedAt', 'deletedAt']}
-    }
+    },
+    indexes: [
+        {
+            unique: false,
+            fields: ['evaluadorId']
+        },
+        {
+            unique: false,
+            fields: ['evaluacionId', 'evaluadoId']
+        },
+    ]
 });
+
+
 
 
 

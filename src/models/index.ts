@@ -1,3 +1,4 @@
+import { PivotEvaluacionUsuario } from './pivot/PivotEvaluacionUsuario';
 import { Usuarios } from './Usuarios';
 import { Rendimiento } from './Rendimiento';
 import { Areas } from './Areas';
@@ -26,20 +27,27 @@ import { PivotAreaTactico } from './pivot/PivotAreaTactico';
 import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 import { PivotOpUsuario } from './pivot/PivotOperativoUsuario';
 import { PivotTareasResponsables } from './pivot/PivotTareasResponsables';
-import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
 import { PivotProyectoUsuarios } from './pivot/PivotProyectoUsuarios';
 import { Comentarios } from './Comentarios';
-import GaleriaUsuarios from './custom/GaleriaUsuarios';
-import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Permisos } from './Permisos';
+
+import { EvaluacionRespuesta } from './EvaluacionRespuesta';
+
+import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
+import GaleriaUsuarios from './custom/GaleriaUsuarios';
 import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
+import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import Trimestre from './custom/Trimestre';
-import { PivotEvaluacionUsuario } from './pivot/PivotEvaluacionUsuario';
+import { TipoEvaluacion } from './TipoEvaluacion';
+
 
 
 
 
 // Usuarios
+
+Usuarios.hasMany(Usuarios, { as: 'subordinados', foreignKey: 'leaderId' });
+Usuarios.belongsTo(Usuarios, { as: 'lider', foreignKey: 'leaderId' });
 
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
 Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
@@ -90,7 +98,7 @@ Tacticos.belongsToMany(Trimestre, { through: PivotObjetivoTacticoTrimestre, as: 
 Trimestre.belongsToMany(Tacticos, { through: PivotObjetivoTacticoTrimestre, as: 'tacticos'} );
 
 // Objetivo Operativo
-ObjetivoOperativos.belongsTo(Tacticos, { as: 'tactico_operativo', foreignKey: 'tacticoId', onDelete: 'SET NULL' });
+ObjetivoOperativos.belongsTo(Tacticos, { as: 'tacticoOperativo', foreignKey: 'tacticoId', onDelete: 'SET NULL' });
 ObjetivoOperativos.hasMany(ResultadosClave, { as: 'resultadosClave', foreignKey: 'operativoId' });
 
 // Resultados Clave
@@ -115,7 +123,7 @@ Tareas.belongsTo(Hitos, { as: 'tareas', foreignKey: 'hitoId' });
 
 
 Comentarios.belongsTo(Usuarios, { as: 'autor', foreignKey: 'autorId' });
-Comentarios.belongsTo(ObjetivoEstrategico, { as: 'objetivo_estrategico', foreignKey: 'comentableId', constraints: false, scope: { comentableType: 'estrategico' } });
+Comentarios.belongsTo(ObjetivoEstrategico, { as: 'objetivoEstrategico', foreignKey: 'comentableId', constraints: false, scope: { comentableType: 'estrategico' } });
 
 
 //* ----------------- Pivot tables -----------------
@@ -124,7 +132,7 @@ Comentarios.belongsTo(ObjetivoEstrategico, { as: 'objetivo_estrategico', foreign
 ObjetivoEstrategico.belongsToMany(Usuarios, { as: 'responsables', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'objEstrategicoId' });
 
 // Perspectivas - Objetivo Estratégico
-Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr',  through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'perspectivaId' });
+Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico',  through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'perspectivaId' });
 
 
 // Tacticos - Usuarios
@@ -140,7 +148,7 @@ Areas.belongsToMany(Tacticos, { as: 'tacticos', through: PivotAreaTactico, onDel
 Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Usuarios - Objetivo Estratégico
-Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivo_estr', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
+Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', through: 'pivot_objetivo_rendimiento', onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'rendimientoId', uniqueKey: 'unique_operativo_rendimiento' });
@@ -158,12 +166,23 @@ Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos',
 Permisos.belongsToMany(Roles, { through: 'pivot_permisos_roles', as: 'roles', foreignKey: 'permisoId' });
 
 
+// Evaluación
 
-Evaluacion.belongsToMany(Usuarios, { through: PivotEvaluacionUsuario, as: 'usuarios', foreignKey: 'evaluacionId' });
-Usuarios.belongsToMany(Evaluacion, { through: PivotEvaluacionUsuario, as: 'evaluaciones', foreignKey: 'usuarioId' });
+TipoEvaluacion.hasMany(Evaluacion, { as: 'evaluaciones', foreignKey: 'tipoEvaluacionId' });
+Evaluacion.belongsTo(TipoEvaluacion, { as: 'tipoEvaluacion', foreignKey: 'tipoEvaluacionId' });
 
 Evaluacion.belongsToMany(EvaluacionPreguntas, { through: 'pivot_evaluacion_preguntas', as: 'preguntas', foreignKey: 'evaluacionId' });
 EvaluacionPreguntas.belongsToMany(Evaluacion, { through: 'pivot_evaluacion_preguntas', as: 'evaluaciones', foreignKey: 'preguntaId' });
+
+
+Usuarios.belongsToMany(Evaluacion, { through: { model: PivotEvaluacionUsuario, unique: false }, as: 'evaluacionesRealizadas', foreignKey: 'evaluadorId' });
+Usuarios.belongsToMany(Evaluacion, { through: { model: PivotEvaluacionUsuario, unique: false }, as: 'evaluacionesRecibidas', foreignKey: 'evaluadoId' });
+Evaluacion.belongsToMany(Usuarios, { through: { model: PivotEvaluacionUsuario, unique: false }, as: 'usuariosEvaluados', foreignKey: 'evaluacionId' });
+
+EvaluacionPreguntas.hasMany(EvaluacionRespuesta, { as: 'respuestas', foreignKey: 'preguntaId' });
+EvaluacionRespuesta.belongsTo(EvaluacionPreguntas, { as: 'pregunta', foreignKey: 'preguntaId' });
+EvaluacionRespuesta.belongsTo(Evaluacion, { as: 'evaluacion', foreignKey: 'evaluacionId' });
+EvaluacionRespuesta.belongsTo(Usuarios, { as: 'evaluado', foreignKey: 'evaluadoId' });
 
 
 export {

@@ -18,7 +18,6 @@ export const getEvaluaciones = async (req: Request, res: Response) => {
     }
 }
 
-
 export const getEvaluacion = async (req: Request, res: Response) => {
         
         const { id } = req.params;
@@ -40,22 +39,20 @@ export const getEvaluacion = async (req: Request, res: Response) => {
         }
 }
 
-
 export const createEvaluacion = async (req: Request, res: Response) => {
         
-        const { nombre, descripcion, status } = req.body;
+        const { nombre, descripcion, status, tipoEvaluacionId, preguntas = []} = req.body;
         
         try {    
             const evaluacion = await Evaluacion.create({ 
                 nombre,
+                tipoEvaluacionId,
                 descripcion,
                 status
             });
 
-
-            // TODO: Obtener relaciones con Usuarios y actualizarlas
-            
-
+            preguntas.length > 0 && await evaluacion.setPreguntas(preguntas);
+        
             res.json(evaluacion);
         } catch (error) {
             console.log(error);
@@ -65,11 +62,10 @@ export const createEvaluacion = async (req: Request, res: Response) => {
         }
 }
 
-
 export const updateEvaluacion = async (req: Request, res: Response) => {
         
     const { id } = req.params;
-    const { nombre, descripcion, status } = req.body;
+    const { nombre, descripcion, tipoEvaluacionId, status, preguntas = [] } = req.body;
     
     try {
         const evaluacion = await Evaluacion.findByPk(id);
@@ -82,12 +78,13 @@ export const updateEvaluacion = async (req: Request, res: Response) => {
         await evaluacion.update({
             nombre,
             descripcion,
+            tipoEvaluacionId,
             status
         });
 
-        //TODO: Obtener relaciones con Usuarios y actualizarlas
-        
+        preguntas.length > 0 && await evaluacion.setPreguntas(preguntas);
         res.json(evaluacion);
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -107,7 +104,9 @@ export const deleteEvaluacion = async (req: Request, res: Response) => {
             });
         }
 
-        await evaluacion.destroy();
+        await evaluacion.update({
+            status: false
+        });
 
         res.json(evaluacion);
     } catch (error) {
@@ -117,4 +116,4 @@ export const deleteEvaluacion = async (req: Request, res: Response) => {
         });
     }
 }
-    
+

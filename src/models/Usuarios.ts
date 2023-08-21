@@ -2,9 +2,9 @@ import Sequelize from "sequelize";
 import database from "../config/database";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
-import { UsuarioInterface } from "../interfaces";
 import slugify from "slugify";
 import ConfiguracionUsuario from "./custom/ConfiguracionUsuario";
+
 
 export const Usuarios = database.define('usuarios', {
     id: {
@@ -147,7 +147,14 @@ export const Usuarios = database.define('usuarios', {
                 notificacionesEmailTrimestral: false,
                 portadaPerfil: '',
             });
+        },
+        afterFind: async (usuario: any) => {
+         
+            // console.log('Usuario encontrado', usuario.__proto__);
+                   
+         
         }
+            
     },
     defaultScope: {
         attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt' , 'googleId'] }
