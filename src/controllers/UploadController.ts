@@ -1,5 +1,5 @@
 import formidable, { Files, Fields } from 'formidable';
-import { deleteFile, uploadFile } from "../helpers/fileManagment";
+import { uploadFile } from "../helpers/fileManagment";
 
 import { Proyectos } from '../models'
 

@@ -151,8 +151,8 @@ export const Usuarios = database.define('usuarios', {
         afterFind: async (usuario: any) => {
          
             // console.log('Usuario encontrado', usuario.__proto__);
-                   
-         
+
+
         }
             
     },

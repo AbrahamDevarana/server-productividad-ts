@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import usuarioRoutes from "./api/usuariosRoutes";
+import perfilRoutes from "./api/perfilRoutes";
 import areaRoutes from "./api/areasRoutes";
 import departamentoRoutes from "./api/departamentosRoutes";
 import perspectivaRoutes from "./api/perspectivasRoutes";
@@ -19,8 +20,6 @@ import galeriaRoutes from "./api/galeriaRoutes";
 import uploadRoutes from "./api/uploadRoutes";
 import rendimientoRoutes from "./api/rendimientoRoutes";
 import evaluacionRoutes from "./api/evaluacionRoutes";
-import evaluacionPreguntasRoutes from "./api/evaluacionPreguntasRoutes";
-import evaluacionUsuariosRoutes from "./api/evaluacionUsuarioRoutes";
 
 
 const router = Router();
@@ -28,6 +27,7 @@ const router = Router();
 router.use('/upload', uploadRoutes)
 
 router.use('/usuarios', usuarioRoutes)
+router.use('/perfiles', perfilRoutes)
 router.use('/areas', areaRoutes )
 router.use('/departamentos', departamentoRoutes)
 router.use('/perspectivas', perspectivaRoutes)
@@ -42,10 +42,7 @@ router.use('/hitos', hitosRoutes)
 router.use('/comentarios', comentariosRoutes)
 router.use('/permisos', permisosRoutes)
 router.use('/rendimiento', rendimientoRoutes)
-
 router.use('/evaluacion', evaluacionRoutes)
-router.use('/evaluacion-preguntas', evaluacionPreguntasRoutes)
-router.use('/evaluacion-usuario', evaluacionUsuariosRoutes)
 
 router.use('/galeria', galeriaRoutes)
 

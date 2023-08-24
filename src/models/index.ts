@@ -36,7 +36,7 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import Trimestre from './custom/Trimestre';
 
 
-import { Evaluacion, EvaluacionUsuario, EvaluacionPregunta, Pregunta, Respuesta } from './evaluacion'
+import { Evaluacion, PivotEvaluacionPregunta, PivotEvaluacionUsuario, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
 
 
 
@@ -153,7 +153,7 @@ ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', thro
 Rendimiento.belongsToMany(ObjetivoOperativos, { as: 'rendimientoOperativo', through: 'pivot_objetivo_rendimiento', onDelete: 'CASCADE', foreignKey: 'rendimientoId', otherKey: 'objetivoOperativoId', uniqueKey: 'unique_rendimiento_operativo' });
 
 ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId' });
-Usuarios.belongsToMany(ObjetivoOperativos, { as: 'responsableOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
+Usuarios.belongsToMany(ObjetivoOperativos, { as: 'objetivosOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
 
 
 Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });
@@ -164,22 +164,25 @@ Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos',
 Permisos.belongsToMany(Roles, { through: 'pivot_permisos_roles', as: 'roles', foreignKey: 'permisoId' });
 
 
-Evaluacion.belongsToMany(Pregunta, { through: EvaluacionPregunta, foreignKey: 'evaluacionId', as: 'preguntasEvaluacion', });
-Pregunta.belongsToMany(Evaluacion, { through: EvaluacionPregunta, foreignKey: 'preguntaId', as: 'evaluacionesPregunta' });
 
-Pregunta.hasOne(Respuesta, { as: 'respuestaPregunta' });
-Respuesta.belongsTo(Pregunta, { as: 'preguntaRespuesta' });
+Evaluacion.belongsToMany(EvaluacionPregunta, { through: {model: PivotEvaluacionPregunta, unique: false}, foreignKey: 'evaluacionId', otherKey:'preguntaId', as: 'preguntasEvaluacion', });
+EvaluacionPregunta.belongsToMany(Evaluacion, { through: {model: PivotEvaluacionPregunta, unique: false}, foreignKey: 'preguntaId', otherKey:'evaluacionId', as: 'evaluacionesPregunta' });
 
-EvaluacionUsuario.hasMany(Respuesta, { as: 'respuestasUsuario' });
-Respuesta.belongsTo(EvaluacionUsuario, { as: 'evaluacionRespuesta' });
+EvaluacionPregunta.belongsToMany(EvaluacionRespuesta, 
+    { through: 'pivot_evaluacion_pregunta', as: 'respuestaPregunta', uniqueKey: 'unique_pregunta_respuesta', foreignKey: 'preguntaId' });
+EvaluacionRespuesta.belongsToMany(EvaluacionPregunta, { through: 'pivot_evaluacion_pregunta', as: 'preguntaRespuesta', uniqueKey: 'unique_respuesta_pregunta', foreignKey: 'respuestaId'});
 
-EvaluacionUsuario.belongsTo(Evaluacion, { as: 'evaluacionUsuario' });
-Evaluacion.hasMany(EvaluacionUsuario, { as: 'usuariosEvaluados' });
 
-Usuarios.hasMany(EvaluacionUsuario, { foreignKey: 'evaluadorId', as: 'evaluacionesRealizadas' });
-Usuarios.hasMany(EvaluacionUsuario, { foreignKey: 'evaluadoId', as: 'evaluacionesRecibidas' });
-EvaluacionUsuario.belongsTo(Usuarios, { as: 'usuarioEvaluador', foreignKey: 'evaluadorId' });
-EvaluacionUsuario.belongsTo(Usuarios, { as: 'usuarioEvaluado', foreignKey: 'evaluadoId' });
+PivotEvaluacionUsuario.hasMany(EvaluacionRespuesta, { as: 'respuestasUsuario', foreignKey: 'evaluacionUsuarioId' });
+EvaluacionRespuesta.belongsTo(PivotEvaluacionUsuario, { as: 'evaluacionRespuesta', foreignKey: 'evaluacionUsuarioId' });
+
+PivotEvaluacionUsuario.belongsTo(Evaluacion, { as: 'evaluacionUsuario', foreignKey: 'evaluacionId' });
+Evaluacion.hasMany(PivotEvaluacionUsuario, { as: 'usuariosEvaluados', foreignKey: 'evaluacionId' });
+
+Usuarios.hasMany(PivotEvaluacionUsuario, { foreignKey: 'evaluadorId', as: 'evaluacionesRealizadas' });
+Usuarios.hasMany(PivotEvaluacionUsuario, { foreignKey: 'evaluadoId', as: 'evaluacionesRecibidas' });
+PivotEvaluacionUsuario.belongsTo(Usuarios, { as: 'usuarioEvaluador', foreignKey: 'evaluadorId' });
+PivotEvaluacionUsuario.belongsTo(Usuarios, { as: 'usuarioEvaluado', foreignKey: 'evaluadoId' });
 
 
 
@@ -219,7 +222,15 @@ export {
     UsuarioHitosOrden,
     GaleriaUsuarios,
     GaleriaDevarana,
-    ConfiguracionUsuario
+    ConfiguracionUsuario,
+
+    Evaluacion,
+    PivotEvaluacionUsuario,
+    PivotEvaluacionPregunta,
+    EvaluacionPregunta,
+    EvaluacionRespuesta,
+
+
 }
 
 

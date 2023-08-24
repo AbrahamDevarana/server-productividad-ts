@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { Hitos, Tareas, UsuarioHitosOrden, Usuarios } from "../models";
+import { Hitos, Tareas, Usuarios } from "../models";
 import { HitosProps, UsuarioInterface } from "../interfaces";
 import { io } from "../services/socketService";
 
@@ -112,7 +112,7 @@ export const updateHito = async (req: Request, res: Response) => {
         const { titulo, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body as HitosProps;
        
 
-        const where: any = { id };
+        // const where = { id };
         try {                      
 
             const hito = await Hitos.findByPk(id);

@@ -8,12 +8,21 @@ export const EvaluacionPregunta = database.define(
             type: Sequelize.INTEGER,
             allowNull: false,
             primaryKey: true,
+            autoIncrement: true,
         },
-        evaluacionId: {
-            type: Sequelize.INTEGER,
+        texto: {
+            type: Sequelize.TEXT,
         },
-        preguntaId: {
-            type: Sequelize.INTEGER,
+        descripcion: {
+            type: Sequelize.TEXT,
+        },
+        createdAt: {
+            type: Sequelize.DATE,
+            defaultValue: Sequelize.NOW,
+        },
+        updatedAt: {
+            type: Sequelize.DATE,
+            defaultValue: Sequelize.NOW,
         },
     },
     {
@@ -21,5 +30,8 @@ export const EvaluacionPregunta = database.define(
         paranoid: true,
         timestamps: true,
         hooks: {},
+        defaultScope: {
+            attributes: { exclude: ["createdAt", "updatedAt, deletedAt"] },
+        },
     },
 );

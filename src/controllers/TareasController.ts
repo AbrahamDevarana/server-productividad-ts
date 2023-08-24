@@ -1,14 +1,11 @@
 import { Request, Response } from "express";
-import { Tareas, Hitos, Proyectos, Usuarios } from "../models";
-import { Op } from "sequelize";
+import { Tareas, Usuarios } from "../models";
 import { TareaInterface, UsuarioInterface } from "../interfaces";
 import { io } from "../services/socketService";
 
 
 export const getTarea = async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    let where = {}
 
     try {
         const tarea = await Tareas.findByPk(id,

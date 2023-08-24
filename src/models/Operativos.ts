@@ -41,7 +41,7 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     getOperativosResponsable: () => Promise<any>
     countOperativosResponsable: () => Promise<any>
     hasOperativosResponsable: () => Promise<any>
-    setOperativosResponsable: () => Promise<any>
+    setOperativosResponsable: (args: unknown[]) => Promise<any>
     addOperativosResponsable: () => Promise<any>
     removeOperativosResponsable: () => Promise<any>
     createOperativosResponsable: () => Promise<any>
@@ -106,27 +106,23 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
 }, {
     paranoid: true,
     timestamps: true,
-    hooks: {
-        afterUpdate: (objetivoOperativo: ObjetivosOperativosModel, options) => {
-         
-        },
-        afterFind: async(objetivoOperativo:ObjetivosOperativosModel, options) => {
+    hooks: {     
+        // afterFind: async function (operativo: any) {
 
-        // @ts-ignore
-            await calcularRendimiento(objetivoOperativo)
-                
-        }
+        //     // console.log(operativo[0].__proto__);
+
+        //     // console.log(await operativo[0].getOperativosResponsable({
+        //     //     through: {
+        //     //         // attributes: ['propietario']
+        //     //     }
+        //     // }));
             
+
+        // }
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 });
-
-
-const calcularRendimiento = async (objetivoOperativo:ObjetivosOperativosModel) => {
-
-
-}
 
 

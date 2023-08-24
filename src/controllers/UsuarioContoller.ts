@@ -1,19 +1,20 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario, PivotOpUsuario, EvaluacionPreguntas } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario } from "../models";
 import { Request, Response } from "express";
-import { Op, Sequelize } from "sequelize";
+import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
+import { EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion";
 
 
 const perfilInclude = [
     { model: Departamentos, as: 'departamento', include: ['area']}, 
     { model: Direccion, as: 'direccion' },
     { 
-        model: ObjetivoOperativos, as: 'responsableOperativos', 
+        model: ObjetivoOperativos, as: 'objetivosOperativos', 
         include: [
             { model: ResultadosClave, as:'resultadosClave' },
             { model: Usuarios, as: 'operativosResponsable' }
@@ -21,6 +22,14 @@ const perfilInclude = [
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
     { model: GaleriaUsuarios, as: 'galeria'},
+    {
+        model: PivotEvaluacionUsuario, as: 'evaluacionesRecibidas',
+        include: [{
+            model: EvaluacionRespuesta,
+            as: 'respuestasUsuario',
+        }]
+        
+    },
     { model: ConfiguracionUsuario, as: 'configuracion'},
 ]
 
@@ -459,7 +468,7 @@ export const getUsuarioProgress = async (req: Request, res: Response) => {
                 include: [
                     {
                         model: ObjetivoOperativos,
-                        as: 'responsableOperativos',
+                        as: 'objetivosOperativos',
                         attributes: ['id', 'nombre', 'year', 'quarter'],
                         through: {
                             attributes: ['progresoAsignado', 'progresoReal'],
@@ -487,37 +496,5 @@ export const getUsuarioProgress = async (req: Request, res: Response) => {
                 msg: 'Hable con el administrador'
             });
         }
-}
-
-export const getEvaluacionUsuario = async (req: Request, res: Response) => {
-
-    const { year, quarter, usuarioId } = req.body;
-
-    try {
-
-        const usuario = await Usuarios.findOne({
-            include: [{
-                model: EvaluacionPreguntas,
-                as: 'evaluacionPreguntas',
-                attributes: ['id', 'pregunta', 'tipo', 'peso', 'evaluacionId'],
-            }],
-            where: {
-                id: usuarioId
-            },
-        })
-
-        if(!usuario){
-            return res.status(404).json({ msg: 'No existe un usuario' });
-        }
-        
-        res.json({usuario});
-        
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
 }
 

@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Rendimiento } from "../models";
-import { UsuarioInterface } from "../interfaces";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario } from "../models";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
 
@@ -97,7 +96,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
         console.log(setResponsables);
         
         
-        // @ts-ignore
+        
         await operativo.setOperativosResponsable(Array.from(setResponsables));
 
         const responsablesLista = await PivotOpUsuario.findAll({
@@ -163,7 +162,7 @@ export const createOperativo = async (req: Request, res: Response) => {
 
         setResponsables.add(propietarioId);
 
-        // @ts-ignore
+    
         await operativo.setOperativosResponsable(Array.from(setResponsables));
         
         const responsablesLista = await PivotOpUsuario.findAll({

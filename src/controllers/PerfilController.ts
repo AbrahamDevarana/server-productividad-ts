@@ -19,6 +19,8 @@ const perfilInclude = [
 ]
 
 export const getPerfil = async (req: Request, res: Response) => {
+    console.log('getPerfil');
+    
 
     const { slug } = req.params;
 

@@ -1,7 +1,6 @@
-import { Comentarios, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Comentarios, ObjetivoEstrategico, Perspectivas, Usuarios } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
-import { getPagination, getPagingData } from '../helpers/pagination';
 import { UsuarioInterface } from '../interfaces';
 import dayjs from 'dayjs';
 import { getStatusAndProgress } from '../helpers/getStatusAndProgress';
