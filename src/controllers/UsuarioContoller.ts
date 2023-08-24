@@ -27,6 +27,11 @@ const perfilInclude = [
         include: [{
             model: EvaluacionRespuesta,
             as: 'respuestasUsuario',
+        },
+        {
+            model: Usuarios,
+            as: 'usuarioEvaluador',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
         }]
         
     },
