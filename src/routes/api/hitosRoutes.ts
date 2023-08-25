@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { validarCampos } from '../../middleware/validateFields';
 import { getHitos, createHito, deleteHito, updateHito } from '../../controllers/HitosController';
 
 const router = Router();

@@ -77,3 +77,77 @@ export const updatePerfil = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getEquipo = async (req: Request, res: Response) => {
+
+    const {id} = req.params;
+
+    const usuario = await Usuarios.findOne({
+        where: { id },
+    })
+
+    if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
+
+    const lider = await usuario.getLider({
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto']
+    })
+    const subordinados = await usuario.getSubordinados({
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto']
+    })
+
+    const equipo = [lider, usuario, ...subordinados]
+    
+
+    res.json({
+        ok: true,
+        equipo
+    })
+}
+
+export const getColaboradores = async (req: Request, res: Response) => {
+
+
+    const {id} = req.params;
+
+    const { year, quarter} = req.query;
+    
+
+        try{
+            const usuario = await Usuarios.findByPk(id, {})
+            if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
+
+            const objetivos = await usuario.getObjetivosOperativos({
+                where: {
+                    year,
+                    quarter
+                },
+                include: [
+                    {
+                        association: 'operativosResponsable',
+                        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto'],
+                        through: {
+                            attributes: []
+                        }
+                    }
+                ]
+            })
+
+        
+            const colaboradores = objetivos.map((objetivo: any) => objetivo.operativosResponsable).flat().filter((operativo: any) => operativo.id !== usuario.id)
+
+
+            return res.json({
+                ok: true,
+                colaboradores
+            })
+
+
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({
+                ok: false,
+                msg: 'Error inesperado'
+            })
+        }
+    
+}

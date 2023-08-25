@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createEvaluacionCoolaboradores, createEvaluacionEquipo, updateEvaluacionPreguntas } from '../../controllers/EvaluacionController';
+import { createEvaluacionCoolaboradores, createEvaluacionEquipo, updateEvaluacionPreguntas, getEvaluacion } from '../../controllers/EvaluacionController';
 
 const router = Router();
 
@@ -8,5 +8,6 @@ const router = Router();
 router.post('/equipo', createEvaluacionEquipo);
 router.post('/colaboradores', createEvaluacionCoolaboradores);
 router.put('/preguntas', updateEvaluacionPreguntas);
+router.get('/', getEvaluacion)
 
 export default router;

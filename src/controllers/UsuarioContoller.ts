@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
-import { Evaluacion, EvaluacionPregunta, EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion";
+import { EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion";
 
 
 const perfilInclude = [
@@ -26,31 +26,31 @@ const perfilInclude = [
     {
         model: PivotEvaluacionUsuario, as: 'evaluacionesRecibidas',
         include: [
-        {
-            model: EvaluacionRespuesta,
-            as: 'respuestasUsuario',
-        },
-        {
-            model: Usuarios,
-            as: 'usuarioEvaluador',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-        },
-        {
-            model: Usuarios,
-            as: 'usuarioEvaluado',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-        },
-        {
-            model: Evaluacion,
-            as: 'evaluacionUsuario',
-            include: [
-                {
-                    model: EvaluacionPregunta,
-                    as: 'preguntasEvaluacion',
-                }
-            ]
-        }
-    ]
+            // {
+            //     model: EvaluacionRespuesta,
+            //     as: 'respuestasUsuario',
+            // },
+            {
+                model: Usuarios,
+                as: 'usuarioEvaluador',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+            },
+            {
+                model: Usuarios,
+                as: 'usuarioEvaluado',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+            },
+            // {
+            //     model: Evaluacion,
+            //     as: 'evaluacionUsuario',
+            //     include: [
+            //         {
+            //             model: EvaluacionPregunta,
+            //             as: 'preguntasEvaluacion',
+            //         }
+            //     ]
+            // }
+        ]
     },
     {
         model: PivotEvaluacionUsuario, as: 'evaluacionesRealizadas',
@@ -258,9 +258,6 @@ export const updateUsuario = async (req: Request, res: Response) => {
             const formatedFechaNacimiento = fechaNacimiento ? dayjs(fechaNacimiento).toDate() : null;
             const formatedFechaIngreso = fechaIngreso ? dayjs(fechaIngreso).toDate() : null;
 
-            console.log(puesto);
-            
-            
 
             await usuario.update({ 
                 nombre: nombre ? nombre : usuario.nombre,

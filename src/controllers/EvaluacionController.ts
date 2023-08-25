@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import {  Evaluacion, PivotEvaluacionUsuario } from "../models/evaluacion"
+import {  Evaluacion, EvaluacionPregunta, EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion"
 import { Usuarios } from "../models";
 import database from "../config/database";
 
@@ -160,4 +160,59 @@ export const updateEvaluacionPreguntas = async (req: Request, res: Response) => 
     }
 }
 
+export const getEvaluacion = async (req: Request, res: Response) => {
+    const { evaluadorId, year, quarter, usuarioId } = req.body;
+
+    console.log(req.body);
+    console.log(req.params);
+    
+
+    
+
+    try {
+        const evaluacion = await PivotEvaluacionUsuario.findOne({
+            where: {
+                evaluadorId,
+                evaluadoId: usuarioId,
+                year,
+                quarter
+            },
+            include: [
+                {
+                    model: Evaluacion,
+                    as: 'evaluacionUsuario',
+                    attributes: ['id', 'nombre', 'descripcion'],
+                    include: [
+                        {
+                            model: EvaluacionPregunta,
+                            as: 'preguntasEvaluacion',
+                            through: {
+                                attributes: []
+                            },
+                            include: [
+                                {
+                                    model: EvaluacionRespuesta,
+                                    as: 'respuestaPregunta',
+                                }
+                            ]
+                        },
+                       
+                    ]
+                }
+            ]
+        })
+
+        return res.json({
+            ok: true,
+            evaluacion
+        })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        }) 
+    } 
+}
 
