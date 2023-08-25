@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
-import { EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion";
+import { Evaluacion, EvaluacionPregunta, EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion";
 
 
 const perfilInclude = [
@@ -22,9 +22,11 @@ const perfilInclude = [
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
     { model: GaleriaUsuarios, as: 'galeria'},
+    
     {
         model: PivotEvaluacionUsuario, as: 'evaluacionesRecibidas',
-        include: [{
+        include: [
+        {
             model: EvaluacionRespuesta,
             as: 'respuestasUsuario',
         },
@@ -32,8 +34,42 @@ const perfilInclude = [
             model: Usuarios,
             as: 'usuarioEvaluador',
             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-        }]
-        
+        },
+        {
+            model: Usuarios,
+            as: 'usuarioEvaluado',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+        },
+        {
+            model: Evaluacion,
+            as: 'evaluacionUsuario',
+            include: [
+                {
+                    model: EvaluacionPregunta,
+                    as: 'preguntasEvaluacion',
+                }
+            ]
+        }
+    ]
+    },
+    {
+        model: PivotEvaluacionUsuario, as: 'evaluacionesRealizadas',
+        include: [
+        {
+            model: EvaluacionRespuesta,
+            as: 'respuestasUsuario',
+        },
+        {
+            model: Usuarios,
+            as: 'usuarioEvaluador',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+        },
+        {
+            model: Usuarios,
+            as: 'usuarioEvaluado',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+        }
+    ]
     },
     { model: ConfiguracionUsuario, as: 'configuracion'},
 ]
