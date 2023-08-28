@@ -126,19 +126,23 @@ export const getColaboradores = async (req: Request, res: Response) => {
                         association: 'operativosResponsable',
                         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto'],
                         through: {
-                            attributes: []
+                            attributes: ['propietario', 'progresoAsignado', 'progresoReal'],
+                            as: 'scoreCard'
                         }
-                    }
+                    },
                 ]
             })
 
         
             const colaboradores = objetivos.map((objetivo: any) => objetivo.operativosResponsable).flat().filter((operativo: any) => operativo.id !== usuario.id)
-
+            const colaboradoresUnicos = Array.from(new Set(colaboradores.map((colaborador:any) => colaborador.id))).map(id => {
+                return colaboradores.find((colaborador:any) => colaborador.id === id);
+            });
+            
 
             return res.json({
                 ok: true,
-                colaboradores
+                colaboradores: colaboradoresUnicos
             })
 
 
@@ -151,3 +155,4 @@ export const getColaboradores = async (req: Request, res: Response) => {
         }
     
 }
+

@@ -1,7 +1,28 @@
-import Sequelize from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../../config/database";
 
-export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
+export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuarioModel>, InferCreationAttributes<PivotOpUsuarioModel>> {
+
+    usuarioId: string;
+    objetivoOperativoId: string;
+    propietario: boolean;
+    progresoAsignado: number;
+    progresoReal: number;
+    extra: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+
+    // __proto__
+
+
+
+    
+}
+
+
+
+
+export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operativo_usuario', {
     usuarioId: {
         type: Sequelize.UUID,
         allowNull: false,
@@ -44,9 +65,5 @@ export const PivotOpUsuario = database.define('pivot_operativo_usuario', {
     timestamps: true,
 
     hooks: {
-
-        afterUpdate: async (pivot: any, options) => {
-            
-        },
     }
 });

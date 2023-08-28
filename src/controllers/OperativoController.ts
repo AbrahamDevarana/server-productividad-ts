@@ -154,7 +154,6 @@ export const createOperativo = async (req: Request, res: Response) => {
 
     
         const setResponsables = new Set();
-        console.log(propietarioId);
         
         operativosResponsable.forEach( (responsable: string) => {
             setResponsables.add(responsable);
@@ -171,20 +170,15 @@ export const createOperativo = async (req: Request, res: Response) => {
             }
         });
 
-        responsablesLista.forEach( async (responsable) => {
-            if (responsable.usuarioId === propietarioId) {
-                await responsable.update({
-                    propietario: true,
-                });
-            } else {
-                await responsable.update({
-                    propietario: false,
-                });
-            }
-        });
+        for (const responsable of responsablesLista) {
+            const propietarioValue = responsable.usuarioId === propietarioId;
+        
+            await responsable.update({
+                propietario: propietarioValue,
+            });
+        }
         
         await operativo.reload( { include: includes });
-        
         res.json({operativo});
     
     } catch (error) {
@@ -244,12 +238,50 @@ export const getOperativo = async (req: Request, res: Response) => {
     }
 }
 
-
 const filtrarObjetivosUsuario = (objetivos: any[], id: string) => {
     const objetivo = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.id === id));
     return objetivo;
 }
 
+export const setPonderaciones = async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const { ponderaciones} = req.body;
+
+    try {
+
+       ponderaciones.forEach( async (ponderacion: any) => {
+            const { objetivoId, progresoAsignado } = ponderacion;
+
+            const pivot = await PivotOpUsuario.findOne({
+                where: {
+                    usuarioId: id,
+                    objetivoOperativoId: objetivoId
+                }
+            });
+
+            if (pivot) {
+                await pivot.update({
+                    progresoAsignado
+                });
+            }
+        });
+
+        return res.json({
+            ok: true,
+            ponderaciones,
+            usuarioId: id
+        })
+        
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+        
+    }
+}
 
 
 // revisión a futuro

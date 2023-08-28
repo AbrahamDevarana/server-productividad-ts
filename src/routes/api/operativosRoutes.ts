@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import { check } from 'express-validator';
-import { validarCampos } from '../../middleware/validateFields';
-import { getOperativos, createOperativo, updateOperativo, getOperativo as getOperativo, getOperativosByUsuario } from '../../controllers/OperativoController'
+import { getOperativos, createOperativo, updateOperativo, getOperativo as getOperativo, getOperativosByUsuario, setPonderaciones } from '../../controllers/OperativoController'
 
 const router = Router();
 
@@ -13,6 +11,8 @@ router.get('/', getOperativos);
 router.get('/:id', getOperativo);
 router.post('/', createOperativo);
 router.put('/:id', updateOperativo);
+
+router.put('/set-ponderaciones/:id', setPonderaciones);
 
 
 
