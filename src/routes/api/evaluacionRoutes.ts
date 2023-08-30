@@ -8,6 +8,6 @@ const router = Router();
 router.post('/equipo', createEvaluacionEquipo);
 router.post('/colaboradores', createEvaluacionCoolaboradores);
 router.put('/preguntas', updateEvaluacionPreguntas);
-router.get('/', getEvaluacion)
+router.get('/:id', getEvaluacion)
 
 export default router;

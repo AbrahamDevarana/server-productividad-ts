@@ -21,57 +21,43 @@ const perfilInclude = [
         ] 
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
-    { model: GaleriaUsuarios, as: 'galeria'},
+    // { model: GaleriaUsuarios, as: 'galeria'},
     
-    {
-        model: PivotEvaluacionUsuario, as: 'evaluacionesRecibidas',
-        include: [
-            // {
-            //     model: EvaluacionRespuesta,
-            //     as: 'respuestasUsuario',
-            // },
-            {
-                model: Usuarios,
-                as: 'usuarioEvaluador',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-            },
-            {
-                model: Usuarios,
-                as: 'usuarioEvaluado',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-            },
-            // {
-            //     model: Evaluacion,
-            //     as: 'evaluacionUsuario',
-            //     include: [
-            //         {
-            //             model: EvaluacionPregunta,
-            //             as: 'preguntasEvaluacion',
-            //         }
-            //     ]
-            // }
-        ]
-    },
-    {
-        model: PivotEvaluacionUsuario, as: 'evaluacionesRealizadas',
-        include: [
-        {
-            model: EvaluacionRespuesta,
-            as: 'respuestasUsuario',
-        },
-        {
-            model: Usuarios,
-            as: 'usuarioEvaluador',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-        },
-        {
-            model: Usuarios,
-            as: 'usuarioEvaluado',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
-        }
-    ]
-    },
-    { model: ConfiguracionUsuario, as: 'configuracion'},
+    // {
+    //     model: PivotEvaluacionUsuario, as: 'evaluacionesRecibidas',
+    //     include: [
+    //         {
+    //             model: Usuarios,
+    //             as: 'usuarioEvaluador',
+    //             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+    //         },
+    //         {
+    //             model: Usuarios,
+    //             as: 'usuarioEvaluado',
+    //             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+    //         }
+    //     ]
+    // },
+    // {
+    //     model: PivotEvaluacionUsuario, as: 'evaluacionesRealizadas',
+    //     include: [
+    //     {
+    //         model: EvaluacionRespuesta,
+    //         as: 'respuestasUsuario',
+    //     },
+    //     {
+    //         model: Usuarios,
+    //         as: 'usuarioEvaluador',
+    //         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+    //     },
+    //     {
+    //         model: Usuarios,
+    //         as: 'usuarioEvaluado',
+    //         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto']
+    //     }
+    // ]
+    // },
+    // { model: ConfiguracionUsuario, as: 'configuracion'},
 ]
 
 export const getUsuarios = async (req: Request, res: Response) => {
@@ -144,31 +130,33 @@ export const getUsuario = async (req: Request, res: Response) => {
         }
 }
 
-export const getPerfil = async (req: Request, res: Response) => {
+// export const getPerfil = async (req: Request, res: Response) => {
 
-    const { slug } = req.params;
+//     throw new Error('Error');
 
-    try {
-        const usuario = await Usuarios.findOne({
-            where: { [Op.or]: [{ slug }, { id: slug }] },
-            include: perfilInclude
-        });
+//     const { slug } = req.params;
 
-        if (usuario) {
-            res.json({ usuario });
-        } else {
-            res.status(404).json({
-                msg: `No existe ese usuario`
-            });
-        }
-    } catch (error) {
-        console.log(error);
+//     try {
+//         const usuario = await Usuarios.findOne({
+//             where: { [Op.or]: [{ slug }, { id: slug }] },
+//             include: perfilInclude
+//         });
+
+//         if (usuario) {
+//             res.json({ usuario });
+//         } else {
+//             res.status(404).json({
+//                 msg: `No existe ese usuario`
+//             });
+//         }
+//     } catch (error) {
+//         console.log(error);
         
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
-}
+//         res.status(500).json({
+//             msg: 'Hable con el administrador'
+//         });
+//     }
+// }
 
 export const updatePerfil = async (req: Request, res: Response) => {
         

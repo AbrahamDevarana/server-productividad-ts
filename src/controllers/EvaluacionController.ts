@@ -161,50 +161,66 @@ export const updateEvaluacionPreguntas = async (req: Request, res: Response) => 
 }
 
 export const getEvaluacion = async (req: Request, res: Response) => {
-    const { evaluadorId, year, quarter, usuarioId } = req.body;
-
-    console.log(req.body);
-    console.log(req.params);
-    
-
-    
+    const { year, quarter } = req.query as any;
+    const { id, } = req.params;
 
     try {
-        const evaluacion = await PivotEvaluacionUsuario.findOne({
-            where: {
-                evaluadorId,
-                evaluadoId: usuarioId,
-                year,
-                quarter
+
+        const usuario = await Usuarios.findByPk(id, {})
+
+        if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
+
+        console.log(await usuario.getEvaluacionesRealizadas({
+            include: [{
+                model: Usuarios,
+                as: 'usuarioEvaluador',
+                attributes: ['id', 'nombre']
             },
-            include: [
-                {
-                    model: Evaluacion,
-                    as: 'evaluacionUsuario',
-                    attributes: ['id', 'nombre', 'descripcion'],
-                    include: [
-                        {
-                            model: EvaluacionPregunta,
-                            as: 'preguntasEvaluacion',
-                            through: {
-                                attributes: []
-                            },
-                            include: [
-                                {
-                                    model: EvaluacionRespuesta,
-                                    as: 'respuestaPregunta',
-                                }
-                            ]
-                        },
+            {
+                model: Usuarios,
+                as: 'usuarioEvaluado',
+                attributes: ['id', 'nombre']
+            }]
+        }));
+        
+
+        // const evaluacion = await PivotEvaluacionUsuario.findOne({
+        //     where: {
+        //         evaluadorId: id,
+        //         year,
+        //         quarter
+        //     },
+        //     include: [
+        //         {
+        //             model: Evaluacion,
+        //             as: 'evaluacionUsuario',
+        //             attributes: ['id', 'nombre', 'descripcion'],
+        //             include: [
+        //                 {
+        //                     model: EvaluacionPregunta,
+        //                     as: 'preguntasEvaluacion',
+        //                     through: {
+        //                         attributes: []
+        //                     },
+        //                     include: [
+        //                         {
+        //                             model: EvaluacionRespuesta,
+        //                             as: 'respuestaPregunta',
+        //                         }
+        //                     ]
+        //                 },
                        
-                    ]
-                }
-            ]
-        })
+        //             ]
+        //         }
+        //     ]
+        // })
+
+        // console.log(evaluacion);
+        
 
         return res.json({
             ok: true,
-            evaluacion
+            // evaluacion
         })
 
     } catch (error) {
@@ -215,4 +231,5 @@ export const getEvaluacion = async (req: Request, res: Response) => {
         }) 
     } 
 }
+
 

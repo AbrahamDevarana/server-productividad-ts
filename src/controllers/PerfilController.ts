@@ -7,7 +7,7 @@ const perfilInclude = [
     { model: Departamentos, as: 'departamento', include: ['area']}, 
     { model: Direccion, as: 'direccion' },
     { 
-        model: ObjetivoOperativos, as: 'responsableOperativos', 
+        model: ObjetivoOperativos, as: 'objetivosOperativos', 
         include: [
             { model: ResultadosClave, as:'resultadosClave' },
             { model: Usuarios, as: 'operativosResponsable' }
@@ -19,8 +19,6 @@ const perfilInclude = [
 ]
 
 export const getPerfil = async (req: Request, res: Response) => {
-    console.log('getPerfil');
-    
 
     const { slug } = req.params;
 
@@ -45,6 +43,7 @@ export const getPerfil = async (req: Request, res: Response) => {
         });
     }
 }
+
 
 export const updatePerfil = async (req: Request, res: Response) => {
         
