@@ -93,9 +93,6 @@ export const updateOperativo = async (req: Request, res: Response) => {
         });
         
         setResponsables.add( propietarioId );
-        console.log(setResponsables);
-        
-        
         
         await operativo.setOperativosResponsable(Array.from(setResponsables));
 
@@ -105,19 +102,13 @@ export const updateOperativo = async (req: Request, res: Response) => {
             }
         });
 
-        responsablesLista.forEach( async (responsable) => {
-            if (responsable.usuarioId === propietarioId) {
-                await responsable.update({
-                    propietario: true,
-                });
-            } else {
-                await responsable.update({
-                    propietario: false,
-                });
-            }
-        });
-
-
+        for (const responsable of responsablesLista) {
+            const propietarioValue = responsable.usuarioId === propietarioId;
+        
+            await responsable.update({
+                propietario: propietarioValue,
+            });
+        }
         
         await operativo.reload( { include: includes } );
 
@@ -179,6 +170,7 @@ export const createOperativo = async (req: Request, res: Response) => {
         }
         
         await operativo.reload( { include: includes });
+
         res.json({operativo});
     
     } catch (error) {
@@ -288,10 +280,7 @@ export const setPonderaciones = async (req: Request, res: Response) => {
 export const getOperativosByUsuario = async (req: Request, res: Response) => {
     
     const {quarter, year, usuarioId} = req.body;
-
-    console.log(quarter, year, usuarioId);
     
-
     try {
         const operativos = await ObjetivoOperativos.findAll({
             include: includes,

@@ -59,10 +59,10 @@ export const Evaluacion = database.define<EvaluacionModelProps>(
         paranoid: true,
         timestamps: true,
         hooks: {
-            afterFind: (evaluacion: any) => {
-                console.log(evaluacion.__proto__);
+            // afterFind: (evaluacion: any) => {
+            //     console.log(evaluacion.__proto__);
                 
-            }
+            // }
         },
         defaultScope: {
             attributes: { exclude: ["createdAt", "updatedAt, deletedAt"] },

@@ -1,13 +1,19 @@
 import { Router } from 'express';
-import { createEvaluacionCoolaboradores, createEvaluacionEquipo, updateEvaluacionPreguntas, getEvaluacion } from '../../controllers/EvaluacionController';
+import { createEvaluacionCoolaboradores, createEvaluacionEquipo, asignarPreguntasEvaluacion, getEvaluacion, asignarEvaluadores, obtenerEvaluadores, obtenerEvaluacion, obtenerUsuariosAEvaluar} from '../../controllers/EvaluacionController';
 
 const router = Router();
 
 // API url: /evaluacion
 
+router.put('/preguntas', asignarPreguntasEvaluacion);
+router.post('/asignar', asignarEvaluadores);
+router.get('/evaluadores/:id', obtenerEvaluadores);
+router.get('/usuarios/:id', obtenerUsuariosAEvaluar);
+router.get('/:id', obtenerEvaluacion)
+
+
 router.post('/equipo', createEvaluacionEquipo);
 router.post('/colaboradores', createEvaluacionCoolaboradores);
-router.put('/preguntas', updateEvaluacionPreguntas);
 router.get('/:id', getEvaluacion)
 
 export default router;

@@ -22,6 +22,23 @@ export const EvaluacionRespuesta = database.define(
             type: Sequelize.STRING,
             allowNull: true,
         },
+        status: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+        },
+        evaluacionId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+        },
+        evaluacionUsuarioId: {
+            type: Sequelize.UUID,
+            allowNull: false,
+        },
+        evaluacionPreguntaId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+        },
         createdAt: {
             type: Sequelize.DATE,
             defaultValue: Sequelize.NOW,

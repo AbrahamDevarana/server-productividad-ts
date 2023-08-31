@@ -10,11 +10,12 @@ export interface EvaluacionUsuarioModelProps extends Model<InferAttributes<Evalu
     evaluacionId: number;
     year: number;
     quarter: number;
+    evaluador?: any;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export const PivotEvaluacionUsuario = database.define<EvaluacionUsuarioModelProps>(
+export const AsignacionEvaluacion = database.define<EvaluacionUsuarioModelProps>(
     "pivot_evaluacion_usuario",
     {
         id: {

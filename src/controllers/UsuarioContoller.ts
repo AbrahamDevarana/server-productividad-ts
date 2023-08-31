@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
-import { EvaluacionRespuesta, PivotEvaluacionUsuario } from "../models/evaluacion";
+import { EvaluacionRespuesta, AsignacionEvaluacion } from "../models/evaluacion";
 
 
 const perfilInclude = [

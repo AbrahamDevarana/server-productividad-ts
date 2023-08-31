@@ -11,7 +11,7 @@ export interface EvaluacionPreguntaModelProps extends Model<InferAttributes<Eval
     updatedAt?: Date;
 }
 
-export const PivotEvaluacionPregunta = database.define<EvaluacionPreguntaModelProps>(
+export const AsignacionPreguntaEvaluacion = database.define<EvaluacionPreguntaModelProps>(
     "pivot_evaluacion_pregunta",
     {
         id: {
