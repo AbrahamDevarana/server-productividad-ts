@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta } from "../models/evaluacion"
+import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from "../models/evaluacion"
 import { Usuarios } from "../models";
 import database from "../config/database";
 
@@ -246,9 +246,14 @@ export const obtenerEvaluacion = async (req: Request, res: Response) => {
             ]
         })
 
+        console.log('Asignacion', asignacion);
+        
+
+
         return res.json({
             ok: true,
-            evaluacion
+            evaluacion,
+            asignacion
         })
         
    } catch (error) {
@@ -289,7 +294,53 @@ export const asignarPreguntasEvaluacion = async (req: Request, res: Response) =>
     }
 }
 
+export const guardarEvaluacion = async (req: Request, res: Response) => {
+    const { respuestas, year, quarter, evaluacionId, usuarioId, evaluacionUsuarioId } = req.body;
 
+
+    try {
+        const respuestasPreparadas = respuestas.map((respuesta: any) => ({
+            resultado: respuesta.rate,
+            comentario: respuesta.comentarios,
+            evaluacionId: evaluacionId,
+            evaluacionUsuarioId: usuarioId,
+            evaluacionPreguntaId: respuesta.preguntaId,
+        }))
+
+
+        await EvaluacionRespuesta.bulkCreate(respuestasPreparadas)
+
+        const asignacion = await AsignacionEvaluacion.findOne({
+            where: {
+                evaluadoId: evaluacionUsuarioId,
+                evaluadorId: usuarioId,
+                year,
+                quarter,
+                evaluacionId: evaluacionId
+
+            }
+        })
+
+        if (!asignacion) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
+
+        asignacion.status = true;
+        await asignacion.save()
+
+        return res.json({
+            ok: true,
+            msg: 'Evaluacion guardada'
+        })
+        
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+        
+    }
+
+}
 
 
 // Deprecated 

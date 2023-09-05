@@ -190,25 +190,6 @@ AsignacionEvaluacion.belongsTo(Usuarios, { as: 'evaluado', foreignKey: 'evaluado
 Evaluacion.hasMany(AsignacionEvaluacion)
 
 
-// EvaluacionPregunta.belongsToMany(EvaluacionRespuesta, 
-//     { through: 'pivot_evaluacion_pregunta', as: 'respuestaPregunta', uniqueKey: 'unique_pregunta_respuesta', foreignKey: 'preguntaId' });
-// EvaluacionRespuesta.belongsToMany(EvaluacionPregunta, { through: 'pivot_evaluacion_pregunta', as: 'preguntaRespuesta', uniqueKey: 'unique_respuesta_pregunta', foreignKey: 'respuestaId'});
-
-
-// PivotEvaluacionUsuario.hasMany(EvaluacionRespuesta, { as: 'respuestasUsuario', foreignKey: 'evaluacionUsuarioId' });
-// EvaluacionRespuesta.belongsTo(PivotEvaluacionUsuario, { as: 'evaluacionRespuesta', foreignKey: 'evaluacionUsuarioId' });
-
-// PivotEvaluacionUsuario.belongsTo(Evaluacion, { as: 'evaluacionUsuario', foreignKey: 'evaluacionId' });
-// Evaluacion.hasMany(PivotEvaluacionUsuario, { as: 'usuariosEvaluados', foreignKey: 'evaluacionId' });
-
-// Usuarios.hasMany(PivotEvaluacionUsuario, { foreignKey: 'evaluadorId', as: 'evaluacionesRealizadas' });
-// Usuarios.hasMany(PivotEvaluacionUsuario, { foreignKey: 'evaluadoId', as: 'evaluacionesRecibidas' });
-// PivotEvaluacionUsuario.belongsTo(Usuarios, { as: 'usuarioEvaluador', foreignKey: 'evaluadorId' });
-// PivotEvaluacionUsuario.belongsTo(Usuarios, { as: 'usuarioEvaluado', foreignKey: 'evaluadoId' });
-
-
-
-
 
 
 export {

@@ -11,6 +11,7 @@ export interface EvaluacionUsuarioModelProps extends Model<InferAttributes<Evalu
     year: number;
     quarter: number;
     evaluador?: any;
+    status?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -35,6 +36,11 @@ export const AsignacionEvaluacion = database.define<EvaluacionUsuarioModelProps>
         evaluacionId: {
             type: Sequelize.INTEGER,
             allowNull: false,
+        },
+        status: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
         },
         year: {
             type: Sequelize.INTEGER,

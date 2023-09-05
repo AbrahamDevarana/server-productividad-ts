@@ -9,6 +9,7 @@ export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuari
     progresoAsignado: number;
     progresoReal: number;
     extra: number;
+    status: 'abierto' | 'cerrado' | 'cancelado' | 'retrasado'
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -52,6 +53,11 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
         type: Sequelize.FLOAT,
         allowNull: true,
         defaultValue: 0
+    },
+    status: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: 'abierto',
     },
     createdAt: {
         type: Sequelize.DATE,
