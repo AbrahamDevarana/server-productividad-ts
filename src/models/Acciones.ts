@@ -1,8 +1,6 @@
 import Sequelize, { Model } from "sequelize";
 import database from "../config/database";
 import { ResultadosClave } from "./ResultadoClave";
-import { ObjetivoOperativos } from "./Operativos";
-import dayjs from "dayjs";
 import { PivotOpUsuario } from "./pivot/PivotOperativoUsuario";
 
 
@@ -68,14 +66,13 @@ export const Acciones = database.define<AccionInstance>('acciones', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: async (accion: AccionInstance, options) => {
-            await updateProgreso(accion);
-            // await updateDate(accion);
-        },
-        afterDestroy: async (accion: AccionInstance, options) => {
+        afterUpdate: async (accion: AccionInstance) => {
             await updateProgreso(accion);
         },
-        afterCreate: async (accion: AccionInstance, options) => {
+        afterDestroy: async (accion: AccionInstance) => {
+            await updateProgreso(accion);
+        },
+        afterCreate: async (accion: AccionInstance) => {
             await updateProgreso(accion);
         }
 
@@ -155,7 +152,6 @@ export const updateProgresoResultadoClave = async ({objetivoOperativoId}: any) =
 
     if(objetivos.length > 0){
         objetivos.forEach(async objetivo => {
-            // @ts-ignore
             objetivo.progresoReal = promedioResultadosClave;
             await objetivo.save();
         })

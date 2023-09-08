@@ -55,9 +55,9 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
         defaultValue: 0
     },
     status: {
-        type: Sequelize.STRING,
+        type: Sequelize.BOOLEAN,
         allowNull: true,
-        defaultValue: 'abierto',
+        defaultValue: true // true = abierto, false = cerrado
     },
     createdAt: {
         type: Sequelize.DATE,

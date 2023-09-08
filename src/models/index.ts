@@ -174,8 +174,8 @@ EvaluacionPregunta.belongsToMany(Evaluacion, { through: {model: AsignacionPregun
 // evaluacionPreguntaId
 
 
-Usuarios.hasMany( EvaluacionRespuesta, { as: 'respuestasUsuario', foreignKey: 'evaluacionUsuarioId' });
-EvaluacionRespuesta.belongsTo( Usuarios, { as: 'usuario', foreignKey: 'evaluacionUsuarioId' });
+// Usuarios.hasMany( EvaluacionRespuesta, { as: 'respuestasUsuario', foreignKey: 'evaluacionUsuarioId' });
+// EvaluacionRespuesta.belongsTo( Usuarios, { as: 'usuario', foreignKey: 'evaluacionUsuarioId' });
 
 EvaluacionRespuesta.belongsTo(Evaluacion, { foreignKey: 'evaluacionId' });
 Evaluacion.hasMany(EvaluacionRespuesta, { foreignKey: 'evaluacionId' });
@@ -188,6 +188,9 @@ AsignacionEvaluacion.belongsTo(Evaluacion)
 AsignacionEvaluacion.belongsTo(Usuarios, { as: 'evaluador', foreignKey: 'evaluadorId' })
 AsignacionEvaluacion.belongsTo(Usuarios, { as: 'evaluado', foreignKey: 'evaluadoId' })
 Evaluacion.hasMany(AsignacionEvaluacion)
+
+AsignacionEvaluacion.hasMany(EvaluacionRespuesta, { foreignKey: 'evaluacionUsuarioId' })
+EvaluacionRespuesta.belongsTo(AsignacionEvaluacion, { foreignKey: 'evaluacionUsuarioId' })
 
 
 

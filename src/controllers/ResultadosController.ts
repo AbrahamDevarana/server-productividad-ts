@@ -22,7 +22,7 @@ export const getResultadosClave = async (req: Request, res: Response) => {
     const { operativoId } = req.query;    
     
     
-    let where: any = {}
+    const where: any = {}
 
     if(operativoId){
         where.operativoId = operativoId;
@@ -70,7 +70,7 @@ export const getResultadoClave = async (req: Request, res: Response) => {
 }
 
 export const createResultadosClave = async (req: Request, res: Response) => {
-    const { operativoId, quarter, year } = req.body;
+    const { operativoId } = req.body;
 
     const { id: propietarioId } = req.user as UsuarioInterface
 
@@ -126,7 +126,7 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
 
         if(tipoProgreso === "acciones"){
             //Actualizar el progreso del resultado clave con el progreso de las acciones que solo tienen 2 estados, completado o no completado
-            let acciones = await Acciones.findAll({
+            const acciones = await Acciones.findAll({
                 where: {
                     resultadoClaveId: id
                 }
@@ -217,19 +217,10 @@ export const updateProgresoObjetivo = async ({objetivoOperativoId}: any) => {
         promedioResultadosClave = promedioResultadosClave/resultadosClave.length;
     }
 
-
-
     if(objetivos.length > 0){
         objetivos.forEach(async objetivo => {
-            // @ts-ignore
             objetivo.progresoReal = promedioResultadosClave;
             await objetivo.save();
         })
     }
-}
-
-export const updateProgresoRendimiento = async ({objetivoOperativoId}: any) => {
-
-    
-
 }

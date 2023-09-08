@@ -44,7 +44,6 @@ export const getPerfil = async (req: Request, res: Response) => {
     }
 }
 
-
 export const updatePerfil = async (req: Request, res: Response) => {
         
     const { id } = req.params;

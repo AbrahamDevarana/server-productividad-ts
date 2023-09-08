@@ -31,10 +31,6 @@ export const EvaluacionRespuesta = database.define(
             type: Sequelize.INTEGER,
             allowNull: false,
         },
-        evaluacionUsuarioId: {
-            type: Sequelize.UUID,
-            allowNull: false,
-        },
         evaluacionPreguntaId: {
             type: Sequelize.INTEGER,
             allowNull: false,

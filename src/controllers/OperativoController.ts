@@ -10,7 +10,7 @@ const includes = [
         as: 'operativosResponsable',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
         through: {
-            attributes: ['propietario', 'progresoAsignado', 'progresoReal'],
+            attributes: ['propietario', 'progresoAsignado', 'progresoReal', 'extra', 'status'],
             as: 'scoreCard'
         },
         required: false

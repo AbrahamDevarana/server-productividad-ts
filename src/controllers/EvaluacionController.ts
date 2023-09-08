@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from "../models/evaluacion"
 import { Usuarios } from "../models";
-import database from "../config/database";
+import database from "../config/database"; 
 
 
 enum TipoEvaluacion {
@@ -221,15 +221,16 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
 export const obtenerEvaluacion = async (req: Request, res: Response) => {
 
     const { id } = req.params;
-    const {  year, quarter, asignadorId } = req.query as any;
+    const {  year, quarter, evaluadoId } = req.query as any;
 
-   try {
+
+    try {
         const asignacion = await AsignacionEvaluacion.findOne({
             where: {
                 year,
                 quarter,
-                evaluadorId: asignadorId,
-                evaluadoId: id
+                evaluadorId: id,
+                evaluadoId: evaluadoId
             }  
         })
         if (!asignacion) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
@@ -246,8 +247,6 @@ export const obtenerEvaluacion = async (req: Request, res: Response) => {
             ]
         })
 
-        console.log('Asignacion', asignacion);
-        
 
 
         return res.json({
@@ -303,12 +302,18 @@ export const guardarEvaluacion = async (req: Request, res: Response) => {
             resultado: respuesta.rate,
             comentario: respuesta.comentarios,
             evaluacionId: evaluacionId,
-            evaluacionUsuarioId: usuarioId,
+            evaluacionUsuarioId,
             evaluacionPreguntaId: respuesta.preguntaId,
         }))
 
 
         await EvaluacionRespuesta.bulkCreate(respuestasPreparadas)
+
+
+        console.log('evaluacionUsuarioId', evaluacionUsuarioId);
+        console.log('usuarioId', usuarioId);
+        
+        
 
         const asignacion = await AsignacionEvaluacion.findOne({
             where: {
@@ -328,7 +333,8 @@ export const guardarEvaluacion = async (req: Request, res: Response) => {
 
         return res.json({
             ok: true,
-            msg: 'Evaluacion guardada'
+            msg: 'Evaluacion guardada',
+            asignacion
         })
         
     } catch (error) {
@@ -342,10 +348,64 @@ export const guardarEvaluacion = async (req: Request, res: Response) => {
 
 }
 
+export const obtenerResultadoEvaluacion = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { year, quarter } = req.query as any;
+
+    console.log('year', year);
+    console.log('quarter', quarter);
+    
+
+    try {
+
+        // Obtener evaluacion
+
+        const asignacion = await AsignacionEvaluacion.findAll({
+            where: {
+                evaluadoId: id,
+                year,
+                quarter
+            }
+        })
+
+        const evaluacionsId = asignacion.map((asignacion: any) => asignacion.evaluadoId)
+        
+
+        if (!asignacion) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
+
+        const respuestas = await EvaluacionRespuesta.findAll({
+            where: {
+                evaluacionUsuarioId: evaluacionsId
+            }
+        })
+        
+        const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 0) / respuestas.length
+        
+        return res.json({
+            ok: true,
+            respuestas,
+            promedio
+        })  
+
+
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+
+}
+
+
 
 // Deprecated 
 export const createEvaluacionEquipo = async (req: Request, res: Response) => {
 
+    throw new Error('Deprecated')
     const  { usuarioId, year, quarter } = req.body;
 
     const t = await database.transaction();
@@ -405,7 +465,7 @@ export const createEvaluacionEquipo = async (req: Request, res: Response) => {
 
 export const createEvaluacionCoolaboradores = async (req: Request, res: Response) => {
 
-
+    throw new Error('Deprecated')
     const { usuarioId, year, quarter } = req.body;
 
     const t = await database.transaction();
@@ -471,7 +531,8 @@ export const createEvaluacionCoolaboradores = async (req: Request, res: Response
 export const getEvaluacion = async (req: Request, res: Response) => {
     const { year, quarter } = req.query as any;
     const { id, } = req.params;
-
+    
+    throw new Error('Deprecated')
     try {
 
         const usuario = await Usuarios.findByPk(id, {})
