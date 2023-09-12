@@ -15,13 +15,8 @@ export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuari
 
     // __proto__
 
-
-
     
 }
-
-
-
 
 export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operativo_usuario', {
     usuarioId: {
@@ -55,9 +50,9 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
         defaultValue: 0
     },
     status: {
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.ENUM('abierto', 'cerrado', 'cancelado', 'retrasado'),
         allowNull: true,
-        defaultValue: true // true = abierto, false = cerrado
+        defaultValue: 'abierto'
     },
     createdAt: {
         type: Sequelize.DATE,

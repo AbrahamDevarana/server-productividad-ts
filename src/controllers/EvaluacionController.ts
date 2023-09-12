@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from "../models/evaluacion"
 import { Usuarios } from "../models";
 import database from "../config/database"; 
+import dayjs from "dayjs";
 
 
 enum TipoEvaluacion {
@@ -10,14 +11,41 @@ enum TipoEvaluacion {
     EvaluacionColaborador = 2
 }
 
+//  Por usuario asignar QUIEN lo va a evaluar
+export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => {
 
-export const asignarEvaluadores = async (req: Request, res: Response) => {
+    const year = dayjs().year()
+    const quarter = Math.ceil((dayjs().month() + 1) / 3)
 
-    const { usuarioId, year, quarter } = req.body;
+    const usuarios = await Usuarios.findAll({})
 
-    try {
-        // Buscar Coolaboradores
-        const usuario = await Usuarios.findByPk(usuarioId, {})
+    for(const usuario of usuarios) {
+
+        const evaluacionLider = await AsignacionEvaluacion.findOne({
+            where: {
+                evaluadoId: usuario.id,
+                year,
+                quarter,
+                evaluacionId: TipoEvaluacion.EvaluacionLider
+            }
+        })
+
+       if(!evaluacionLider) {
+
+        const lider = await usuario.getLider()            
+            if(lider){
+                await AsignacionEvaluacion.create({
+                    evaluadorId: lider.id,
+                    evaluadoId: usuario.id,
+                    year,
+                    quarter,
+                    evaluacionId: TipoEvaluacion.EvaluacionLider
+                })
+            }else {
+                // console.log(`El usuario ${usuario.nombre} no tiene lider`)
+            }
+        }
+
         const objetivos = await usuario.getObjetivosOperativos({
             where: {
                 year,
@@ -31,96 +59,60 @@ export const asignarEvaluadores = async (req: Request, res: Response) => {
             ]
         })
 
-        // Sin repetidos
-        const colaboradores = objetivos.map((objetivo: any) => objetivo.operativosResponsable).flat().filter((colaborador: any) => colaborador.id !== usuarioId).filter((colaborador: any, index: number, self: any) => self.findIndex((t: any) => t.id === colaborador.id) === index)
+        const colaboradores = objetivos.map((objetivo: any) => objetivo.operativosResponsable).flat().filter((colaborador: any) => colaborador.id !== usuario.id).filter((colaborador: any, index: number, self: any) => self.findIndex((t: any) => t.id === colaborador.id) === index)
 
         const colaboradoresIds = colaboradores.map((colaborador: any) => colaborador.id)
 
-        // Contar evaluaciones asignadas al usuario
+
         const evaluacionesActuales = await AsignacionEvaluacion.findAll({
             where: {
-                evaluadoId: usuarioId,
+                evaluadorId: usuario.id,
                 year,
                 quarter,
                 evaluacionId: TipoEvaluacion.EvaluacionColaborador
             }
         })
 
-        // Si ya se asignaron evaluadores para el usuario, no se puede asignar mas
-        if (evaluacionesActuales.length >= 3) return res.status(400).json({
-            ok: false,
-            msg: 'Ya se asignaron evaluadores para este usuario'
-        })
-
         const numeroEvaluadoresActuales = evaluacionesActuales.length
 
-        
-        if(numeroEvaluadoresActuales < 3){
+        // Si ya se asignaron evaluadores para el usuario, no se puede asignar mas
+        if (numeroEvaluadoresActuales < 3){
+
             const idsYaAsignados = evaluacionesActuales.map((evaluacion: any) => evaluacion.evaluadorId)
             const idsPosibles = colaboradoresIds.filter((id: any) => !idsYaAsignados.includes(id))
 
             // Obtener ids aleatorios de los colaboradores
-            const idsAsignar = idsPosibles.sort(() => Math.random() - Math.random()).slice(0, 3 - numeroEvaluadoresActuales)
+            const idsAsignar = idsPosibles.sort(() => Math.random() - Math.random()).slice(0, 3 - numeroEvaluadoresActuales)            
 
-            console.log('idsAsignar', idsAsignar);
+            // TODO : Revisar map de ids asignar con sus evaluaciones si ya tiene 3 ignorar
             
 
             // Crear evaluaciones para los colaboradores
-
-            for (const id of idsAsignar) {
-
-                console.log('ID Asignar', id);
-                
+            for (const id of idsAsignar) {                
                 await AsignacionEvaluacion.create({
                     evaluadorId: id,
-                    evaluadoId: usuarioId,
+                    evaluadoId: usuario.id,
                     year,
                     quarter,
                     evaluacionId: TipoEvaluacion.EvaluacionColaborador
                 })
             }
-        }
-
-        const evaluacionLider = await AsignacionEvaluacion.findOne({
-            where: {
-                evaluadoId: usuarioId,
-                year,
-                quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionLider
-            }
-        })
-
-        if (!evaluacionLider) {
-            const lider = await usuario.getLider()
-            console.log('Lider', lider.id);
+        }else{
+            // console.log(`El usuario ${usuario.nombre} ya tiene 3 evaluadores asignados`)
+            // console.log(await usuario.getEvaluacionesEvaluado());
             
-            await AsignacionEvaluacion.create({
-                evaluadorId: lider.id,
-                evaluadoId: usuarioId,
-                year,
-                quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionLider
-            })
         }
-
-        return res.json({
-            ok: true,
-            msg: 'Evaluadores asignados',
-        })
-
-    } catch (error) {
-        
-        console.log(error)
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error inesperado'
-        })
     }
 
-
-
+    // console.log('Asignacion de evaluadores terminada');
+    return res.json({
+        ok: true,
+        msg: 'Evaluadores asignados',
+    })
+    
 }
 
+// OBTENGO MIS EVALUADORES
 export const obtenerEvaluadores = async (req: Request, res: Response) => {
 
     const { year, quarter } = req.query as any;
@@ -171,6 +163,7 @@ export const obtenerEvaluadores = async (req: Request, res: Response) => {
 
 }
 
+// OBTENGO LOS USUARIOS QUE VOY A EVALUAR
 export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
     const { year, quarter } = req.query as any;
     const { id } = req.params;
@@ -296,24 +289,11 @@ export const asignarPreguntasEvaluacion = async (req: Request, res: Response) =>
 export const guardarEvaluacion = async (req: Request, res: Response) => {
     const { respuestas, year, quarter, evaluacionId, usuarioId, evaluacionUsuarioId } = req.body;
 
+    console.log(evaluacionUsuarioId);
+    
 
     try {
-        const respuestasPreparadas = respuestas.map((respuesta: any) => ({
-            resultado: respuesta.rate,
-            comentario: respuesta.comentarios,
-            evaluacionId: evaluacionId,
-            evaluacionUsuarioId,
-            evaluacionPreguntaId: respuesta.preguntaId,
-        }))
 
-
-        await EvaluacionRespuesta.bulkCreate(respuestasPreparadas)
-
-
-        console.log('evaluacionUsuarioId', evaluacionUsuarioId);
-        console.log('usuarioId', usuarioId);
-        
-        
 
         const asignacion = await AsignacionEvaluacion.findOne({
             where: {
@@ -327,6 +307,26 @@ export const guardarEvaluacion = async (req: Request, res: Response) => {
         })
 
         if (!asignacion) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
+
+
+        const respuestasPreparadas = respuestas.map((respuesta: any) => ({
+            resultado: respuesta.rate,
+            comentario: respuesta.comentarios,
+            evaluacionId: evaluacionId,
+            evaluacionPreguntaId: respuesta.preguntaId,
+            evaluacionUsuarioId: asignacion.id
+        }))
+
+
+        await EvaluacionRespuesta.bulkCreate(respuestasPreparadas)
+
+
+        console.log('evaluacionUsuarioId', evaluacionUsuarioId);
+        console.log('usuarioId', usuarioId);
+        
+        
+
+      
 
         asignacion.status = true;
         await asignacion.save()

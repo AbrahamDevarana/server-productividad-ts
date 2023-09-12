@@ -193,6 +193,9 @@ AsignacionEvaluacion.hasMany(EvaluacionRespuesta, { foreignKey: 'evaluacionUsuar
 EvaluacionRespuesta.belongsTo(AsignacionEvaluacion, { foreignKey: 'evaluacionUsuarioId' })
 
 
+Usuarios.hasMany(AsignacionEvaluacion, { as: 'evaluacionesEvaluado', foreignKey: 'evaluadoId' })
+Usuarios.hasMany(AsignacionEvaluacion, { as: 'evaluacionesEvaluador', foreignKey: 'evaluadorId' })
+
 
 
 export {
