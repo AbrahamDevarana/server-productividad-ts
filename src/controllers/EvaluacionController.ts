@@ -42,8 +42,37 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                     quarter,
                     evaluacionId: TipoEvaluacion.EvaluacionLider
                 })
+                console.log(`El usuario ${usuario.nombre} tiene lider ${lider.nombre}`);
+                
             }else {
-                // console.log(`El usuario ${usuario.nombre} no tiene lider`)
+                console.log(`El usuario ${usuario.nombre} no tiene lider`)
+            }
+        }
+
+        const subordinados = await usuario.getSubordinados()
+
+        if(subordinados.length > 0) {
+            for(const subordinado of subordinados) {
+                const evaluacionColaborador = await AsignacionEvaluacion.findOne({
+                    where: {
+                        evaluadoId: usuario.id,
+                        year,
+                        quarter,
+                        evaluacionId: TipoEvaluacion.EvaluacionLider,
+                        evaluadorId: subordinado.id
+                    }
+                })
+
+                if(!evaluacionColaborador) {
+                    await AsignacionEvaluacion.create({
+                        evaluadorId: subordinado.id,
+                        evaluadoId: usuario.id,
+                        year,
+                        quarter,
+                        evaluacionId: TipoEvaluacion.EvaluacionLider
+                    })
+                    console.log(`El usuario ${usuario.nombre} tiene subordinado ${subordinado.nombre}`);
+                }
             }
         }
 
@@ -375,8 +404,9 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
             
         })
         
+        if (respuestas.length === 0) return res.json({ ok: true, promedio: 0, respuestas: [] })
+        
 
-        // promedio de las respuestas con decimales
         const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 2) / respuestas.length
         
         console.log(promedio);
