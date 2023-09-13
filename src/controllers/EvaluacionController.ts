@@ -4,6 +4,7 @@ import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespue
 import { Usuarios } from "../models";
 import database from "../config/database"; 
 import dayjs from "dayjs";
+import { Op } from "sequelize";
 
 
 enum TipoEvaluacion {
@@ -352,41 +353,41 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
 
     const { id } = req.params;
     const { year, quarter } = req.query as any;
-
-    console.log('year', year);
-    console.log('quarter', quarter);
-    
-
     try {
 
-        // Obtener evaluacion
-
-        const asignacion = await AsignacionEvaluacion.findAll({
+        const asignaciones = await AsignacionEvaluacion.findAll({
             where: {
                 evaluadoId: id,
                 year,
                 quarter
             }
         })
-
-        const evaluacionsId = asignacion.map((asignacion: any) => asignacion.evaluadoId)
-        
-
-        if (!asignacion) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
+        const evaluacionsId = asignaciones.map((asignacion: any) => asignacion.id)
+        if (!asignaciones) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
 
         const respuestas = await EvaluacionRespuesta.findAll({
             where: {
-                evaluacionUsuarioId: evaluacionsId
+                evaluacionUsuarioId: {
+                    [Op.in]: evaluacionsId
+                }
             }
+                
+            
         })
         
-        const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 0) / respuestas.length
+
+        // promedio de las respuestas con decimales
+        const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 2) / respuestas.length
+        
+        console.log(promedio);
         
         return res.json({
             ok: true,
             respuestas,
             promedio
         })  
+
+        
 
 
         
