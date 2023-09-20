@@ -15,6 +15,7 @@ enum TipoEvaluacion {
 //  Por usuario asignar QUIEN lo va a evaluar
 export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => {
 
+
     const year = dayjs().year()
     const quarter = Math.ceil((dayjs().month() + 1) / 3)
 
@@ -49,85 +50,29 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
             }
         }
 
-        const subordinados = await usuario.getSubordinados()
+        // evaluarse a si mismo
 
-        if(subordinados.length > 0) {
-            for(const subordinado of subordinados) {
-                const evaluacionColaborador = await AsignacionEvaluacion.findOne({
-                    where: {
-                        evaluadoId: usuario.id,
-                        year,
-                        quarter,
-                        evaluacionId: TipoEvaluacion.EvaluacionLider,
-                        evaluadorId: subordinado.id
-                    }
-                })
-
-                if(!evaluacionColaborador) {
-                    await AsignacionEvaluacion.create({
-                        evaluadorId: subordinado.id,
-                        evaluadoId: usuario.id,
-                        year,
-                        quarter,
-                        evaluacionId: TipoEvaluacion.EvaluacionLider
-                    })
-                    console.log(`El usuario ${usuario.nombre} tiene subordinado ${subordinado.nombre}`);
-                }
-            }
-        }
-
-        const objetivos = await usuario.getObjetivosOperativos({
+        const evaluacionColaborador = await AsignacionEvaluacion.findOne({
             where: {
+                evaluadoId: usuario.id,
+                evaluadorId: usuario.id,
                 year,
-                quarter
-            },
-            include: [
-                {
-                    association: 'operativosResponsable',
-                    attributes: ['id', 'nombre']
-                }
-            ]
-        })
-
-        const colaboradores = objetivos.map((objetivo: any) => objetivo.operativosResponsable).flat().filter((colaborador: any) => colaborador.id !== usuario.id).filter((colaborador: any, index: number, self: any) => self.findIndex((t: any) => t.id === colaborador.id) === index)
-
-        const colaboradoresIds = colaboradores.map((colaborador: any) => colaborador.id)
-
-        const numeroEvaluadoresActuales = await usuario.getEvaluacionesEvaluador({
-            where: {
-                year,
-                quarter
+                quarter,
+                evaluacionId: TipoEvaluacion.EvaluacionColaborador
             }
         })
 
-        
-        if(numeroEvaluadoresActuales <= 3 ) {
+        if(!evaluacionColaborador) {
+
+            await AsignacionEvaluacion.create({
+                evaluadorId: usuario.id,
+                evaluadoId: usuario.id,
+                year,
+                quarter,
+                evaluacionId: TipoEvaluacion.EvaluacionColaborador
+            })
+            console.log(`El usuario ${usuario.nombre} se evaluara a si mismo`);
             
-            const idsYaAsignados = numeroEvaluadoresActuales.map((evaluacion: any) => evaluacion.evaluadoId)
-            const idsPosibles = colaboradoresIds.filter((id: any) => !idsYaAsignados.includes(id))
-
-            // Obtener ids aleatorios de los colaboradores
-            const idsAsignar = idsPosibles.sort(() => Math.random() - Math.random()).slice(0, 3 - numeroEvaluadoresActuales.length)            
-
-            // asignar evaluadores
-            for (const id of idsAsignar) {
-                
-                if (await usuario.countEvaluacionesEvaluador({
-                    where: {
-                        year,
-                        quarter
-                    }
-                }) <= 3 ) {
-                    await AsignacionEvaluacion.create({
-                        evaluadorId: id,
-                        evaluadoId: usuario.id,
-                        year,
-                        quarter,
-                        evaluacionId: TipoEvaluacion.EvaluacionColaborador
-                    })
-                } 
-               
-            }
         }
     }
 
