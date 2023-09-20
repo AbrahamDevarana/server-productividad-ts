@@ -93,44 +93,41 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
         const colaboradoresIds = colaboradores.map((colaborador: any) => colaborador.id)
 
-
-        const evaluacionesActuales = await AsignacionEvaluacion.findAll({
+        const numeroEvaluadoresActuales = await usuario.getEvaluacionesEvaluador({
             where: {
-                evaluadorId: usuario.id,
                 year,
-                quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionColaborador
+                quarter
             }
         })
 
-        const numeroEvaluadoresActuales = evaluacionesActuales.length
-
-        // Si ya se asignaron evaluadores para el usuario, no se puede asignar mas
-        if (numeroEvaluadoresActuales < 3){
-
-            const idsYaAsignados = evaluacionesActuales.map((evaluacion: any) => evaluacion.evaluadorId)
+        
+        if(numeroEvaluadoresActuales <= 3 ) {
+            
+            const idsYaAsignados = numeroEvaluadoresActuales.map((evaluacion: any) => evaluacion.evaluadoId)
             const idsPosibles = colaboradoresIds.filter((id: any) => !idsYaAsignados.includes(id))
 
             // Obtener ids aleatorios de los colaboradores
-            const idsAsignar = idsPosibles.sort(() => Math.random() - Math.random()).slice(0, 3 - numeroEvaluadoresActuales)            
+            const idsAsignar = idsPosibles.sort(() => Math.random() - Math.random()).slice(0, 3 - numeroEvaluadoresActuales.length)            
 
-            // TODO : Revisar map de ids asignar con sus evaluaciones si ya tiene 3 ignorar
-            
-
-            // Crear evaluaciones para los colaboradores
-            for (const id of idsAsignar) {                
-                await AsignacionEvaluacion.create({
-                    evaluadorId: id,
-                    evaluadoId: usuario.id,
-                    year,
-                    quarter,
-                    evaluacionId: TipoEvaluacion.EvaluacionColaborador
-                })
+            // asignar evaluadores
+            for (const id of idsAsignar) {
+                
+                if (await usuario.countEvaluacionesEvaluador({
+                    where: {
+                        year,
+                        quarter
+                    }
+                }) <= 3 ) {
+                    await AsignacionEvaluacion.create({
+                        evaluadorId: id,
+                        evaluadoId: usuario.id,
+                        year,
+                        quarter,
+                        evaluacionId: TipoEvaluacion.EvaluacionColaborador
+                    })
+                } 
+               
             }
-        }else{
-            // console.log(`El usuario ${usuario.nombre} ya tiene 3 evaluadores asignados`)
-            // console.log(await usuario.getEvaluacionesEvaluado());
-            
         }
     }
 

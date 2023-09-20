@@ -1,6 +1,7 @@
 import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../config/database";
 import { v4 as uuidv4 } from 'uuid';
+import { OperativoHistory } from "./history/OperativoHistory";
 
 
 export interface ObjetivosOperativosModel extends Model<InferAttributes<ObjetivosOperativosModel>, InferCreationAttributes<ObjetivosOperativosModel>> {
@@ -12,9 +13,9 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     tacticoId?: string;
     fechaInicio: Date;
     fechaFin: Date;
-    propietarioId?: string;
     quarter?: number;
     year?: number;
+    editado?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -79,10 +80,6 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
         type: Sequelize.DATE,
         allowNull: false
     },
-    propietarioId: {
-        type: Sequelize.UUID,
-        allowNull: true
-    },
     fechaFin: {
         type: Sequelize.DATE,
         allowNull: false
@@ -94,6 +91,11 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
     year: {
         type: Sequelize.SMALLINT,
         allowNull: true
+    },
+    editado: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        defaultValue: false
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -107,18 +109,20 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
     paranoid: true,
     timestamps: true,
     hooks: {     
-        // afterFind: async function (operativo: any) {
-
-        //     // console.log(operativo[0].__proto__);
-
-        //     // console.log(await operativo[0].getOperativosResponsable({
-        //     //     through: {
-        //     //         // attributes: ['propietario']
-        //     //     }
-        //     // }));
-            
-
-        // }
+        afterUpdate: async (operativo: any) => {
+            OperativoHistory.create({
+                nombre: operativo.nombre,
+                meta: operativo.meta,
+                indicador: operativo.indicador,
+                tacticoId: operativo.tacticoId,
+                fechaInicio: operativo.fechaInicio,
+                fechaFin: operativo.fechaFin,
+                quarter: operativo.quarter,
+                year: operativo.year,
+                idOperativo: operativo.id,
+                status: operativo.status
+            })
+        }
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }

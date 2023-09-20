@@ -3,6 +3,7 @@ import database from "../../config/database";
 
 export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuarioModel>, InferCreationAttributes<PivotOpUsuarioModel>> {
     id: number;
+    idPivot: number;
     usuarioId: string;
     objetivoOperativoId: string;
     propietario: boolean;
@@ -18,11 +19,15 @@ export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuari
     
 }
 
-export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operativo_usuario', {
+export const PivotOpUsuarioHistory = database.define<PivotOpUsuarioModel>('pivot_operativo_usuario', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
+    },
+    idPivot: {
+        type: Sequelize.INTEGER,
+        allowNull: true
     },
     usuarioId: {
         type: Sequelize.UUID,
@@ -55,7 +60,7 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
         defaultValue: 0
     },
     status: {
-        type: Sequelize.ENUM('abierto', 'aprobado', 'cancelado', 'sin_aprobar'),
+        type: Sequelize.ENUM('abierto', '', 'aprobado', 'cancelado', 'sin_aprobar'),
         allowNull: true,
         defaultValue: 'abierto'
     },
