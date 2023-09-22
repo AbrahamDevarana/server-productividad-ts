@@ -9,7 +9,7 @@ export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuari
     progresoAsignado: number;
     progresoReal: number;
     extra: number;
-    status: 'abierto' | 'cerrado' | 'cancelado' | 'retrasado'
+    status: 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO'
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -71,5 +71,10 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
     timestamps: true,
 
     hooks: {
+
+        afterUpdate: async () => {
+   
+
+        }
     }
 });

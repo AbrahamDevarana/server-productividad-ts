@@ -1,7 +1,6 @@
 import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../config/database";
 import { v4 as uuidv4 } from 'uuid';
-import { OperativoHistory } from "./history/OperativoHistory";
 
 
 export interface ObjetivosOperativosModel extends Model<InferAttributes<ObjetivosOperativosModel>, InferCreationAttributes<ObjetivosOperativosModel>> {
@@ -109,19 +108,8 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
     paranoid: true,
     timestamps: true,
     hooks: {     
-        afterUpdate: async (operativo: any) => {
-            OperativoHistory.create({
-                nombre: operativo.nombre,
-                meta: operativo.meta,
-                indicador: operativo.indicador,
-                tacticoId: operativo.tacticoId,
-                fechaInicio: operativo.fechaInicio,
-                fechaFin: operativo.fechaFin,
-                quarter: operativo.quarter,
-                year: operativo.year,
-                idOperativo: operativo.id,
-                status: operativo.status
-            })
+        afterUpdate: async () => {
+           
         }
     },
     defaultScope: {

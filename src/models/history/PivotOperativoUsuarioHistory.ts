@@ -2,15 +2,17 @@ import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequ
 import database from "../../config/database";
 
 export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuarioModel>, InferCreationAttributes<PivotOpUsuarioModel>> {
-    id: number;
-    idPivot: number;
-    usuarioId: string;
-    objetivoOperativoId: string;
-    propietario: boolean;
-    progresoAsignado: number;
-    progresoReal: number;
-    extra: number;
-    status: 'abierto' | 'cerrado' | 'cancelado' | 'retrasado'
+    id?: number;
+    idPivot?: number;
+    usuarioId?: string;
+    objetivoOperativoId?: string;
+    propietario?: boolean;
+    progresoAsignado?: number;
+    progresoReal?: number;
+    extra?: number;
+    status?: 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO'
+    typeUpdated?: 'CREATED' | 'UPDATED' | 'DELETED';
+    modifiedBy: string;
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -60,9 +62,17 @@ export const PivotOpUsuarioHistory = database.define<PivotOpUsuarioModel>('pivot
         defaultValue: 0
     },
     status: {
-        type: Sequelize.ENUM('abierto', '', 'aprobado', 'cancelado', 'sin_aprobar'),
+        type: Sequelize.ENUM('ABIERTO','PENDIENTE_APROBACION', 'APROBADO', 'SIN_APROBAR', 'CANCELADO', 'FINALIZADO' ), 
         allowNull: true,
-        defaultValue: 'abierto'
+        defaultValue: 'ABIERTO'
+    },
+    typeUpdated: {
+        type: Sequelize.ENUM('CREATED', 'UPDATED', 'DELETED'),
+        allowNull: true,
+        defaultValue: 'CREATED'
+    },
+    modifiedBy: {
+        type: Sequelize.UUID,
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -76,5 +86,7 @@ export const PivotOpUsuarioHistory = database.define<PivotOpUsuarioModel>('pivot
     timestamps: true,
 
     hooks: {
+        afterCreate: async () => {
+        }
     }
 });

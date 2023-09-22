@@ -1,8 +1,26 @@
-import Sequelize from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../../config/database";
 
 
-export const OperativoHistory = database.define('history_operativo', {
+export interface OperativoModel extends Model<InferAttributes<OperativoModel>, InferCreationAttributes<OperativoModel>> {
+    id?: string;
+    nombre?: string;
+    meta?: string;
+    indicador?: string;
+    tacticoId?: string;
+    fechaInicio?: Date;
+    fechaFin?: Date;
+    quarter?: number;
+    year?: number;
+    status?: 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO';
+    idOperativo?: string;
+    modifiedBy: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+
+export const OperativoHistory = database.define<OperativoModel>('history_operativo', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -48,6 +66,9 @@ export const OperativoHistory = database.define('history_operativo', {
         type: Sequelize.STRING,
         allowNull: true
     },
+    modifiedBy: {
+        type: Sequelize.UUID,
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -60,5 +81,10 @@ export const OperativoHistory = database.define('history_operativo', {
 {
     paranoid: true,
     timestamps: true,
-    tableName: 'history_operativo'
+    tableName: 'history_operativo',
+    hooks: {
+        afterCreate: async () => {
+           
+        }
+    }
 });
