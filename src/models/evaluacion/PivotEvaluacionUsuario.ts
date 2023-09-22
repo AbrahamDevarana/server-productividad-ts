@@ -11,6 +11,7 @@ export interface EvaluacionUsuarioModelProps extends Model<InferAttributes<Evalu
     year: number;
     quarter: number;
     evaluador?: any;
+    evaluado?: any;
     status?: boolean;
     createdAt?: Date;
     updatedAt?: Date;

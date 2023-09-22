@@ -9,7 +9,8 @@ import { Op } from "sequelize";
 
 enum TipoEvaluacion {
     EvaluacionLider = 1,
-    EvaluacionColaborador = 2
+    EvaluacionColaborador = 2,
+    EvaluacionPropia = 3
 }
 
 //  Por usuario asignar QUIEN lo va a evaluar
@@ -18,65 +19,77 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
     const year = dayjs().year()
     const quarter = Math.ceil((dayjs().month() + 1) / 3)
+    // const MAX_EVALUACIONES = 3
 
     const usuarios = await Usuarios.findAll({})
 
+
     for(const usuario of usuarios) {
 
-        const evaluacionLider = await AsignacionEvaluacion.findOne({
+        const evaluacion = await AsignacionEvaluacion.findAll ({
             where: {
                 evaluadoId: usuario.id,
                 year,
-                quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionLider
+                quarter
             }
         })
 
-       if(!evaluacionLider) {
+        const lider = await usuario.getLider()
+        const subordinados = await usuario.getSubordinados()
 
-        const lider = await usuario.getLider()            
-            if(lider){
+
+        if(lider){
+            const evaluacionLider = evaluacion.find((evaluacion: any) => evaluacion.evaluacionId === TipoEvaluacion.EvaluacionLider)
+        
+            if (!evaluacionLider) {
                 await AsignacionEvaluacion.create({
-                    evaluadorId: lider.id,
-                    evaluadoId: usuario.id,
+                    evaluadorId: usuario.id,
+                    evaluadoId: lider.id,
                     year,
                     quarter,
                     evaluacionId: TipoEvaluacion.EvaluacionLider
                 })
-                console.log(`El usuario ${usuario.nombre} tiene lider ${lider.nombre}`);
+
+                console.log(`Asignado lider ${lider.nombre} a ${usuario.nombre}`);
                 
-            }else {
-                console.log(`El usuario ${usuario.nombre} no tiene lider`)
             }
         }
 
-        // evaluarse a si mismo
-
-        const evaluacionColaborador = await AsignacionEvaluacion.findOne({
-            where: {
-                evaluadoId: usuario.id,
-                evaluadorId: usuario.id,
-                year,
-                quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionColaborador
+       if(subordinados.length > 0) {
+            const evaluacionColaborador = evaluacion.find((evaluacion: any) => evaluacion.evaluacionId === TipoEvaluacion.EvaluacionColaborador)
+            if (!evaluacionColaborador) {
+                await Promise.all(subordinados.map(async (subordinado: any) => {
+                    await AsignacionEvaluacion.create({
+                        evaluadorId: usuario.id,
+                        evaluadoId: subordinado.id,
+                        year,
+                        quarter,
+                        evaluacionId: TipoEvaluacion.EvaluacionColaborador
+                    })
+                }))
+                console.log(`Asignado colaboradores a ${usuario.nombre}`);
+                
             }
-        })
+       }
 
-        if(!evaluacionColaborador) {
-
+        const evaluacionPropia = evaluacion.find((evaluacion: any) => evaluacion.evaluacionId === TipoEvaluacion.EvaluacionPropia)
+        if (!evaluacionPropia) {
             await AsignacionEvaluacion.create({
                 evaluadorId: usuario.id,
                 evaluadoId: usuario.id,
                 year,
                 quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionColaborador
+                evaluacionId: TipoEvaluacion.EvaluacionPropia
             })
-            console.log(`El usuario ${usuario.nombre} se evaluara a si mismo`);
-            
         }
+        console.log(`Asignado evaluacion propia a ${usuario.nombre}`);
+        
     }
 
-    // console.log('Asignacion de evaluadores terminada');
+
+
+
+
     return res.json({
         ok: true,
         msg: 'Evaluadores asignados',
@@ -140,12 +153,11 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
     const { year, quarter } = req.query as any;
     const { id } = req.params;
 
-    const usuariosColaborador = await AsignacionEvaluacion.findAll({
+    const usuariosEvaluaciones = await AsignacionEvaluacion.findAll({
         where: {
             evaluadorId: id,
             year,
             quarter,
-            evaluacionId: TipoEvaluacion.EvaluacionColaborador
         },
         include: [
             {
@@ -156,29 +168,20 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
         ]
     })
 
-    const usuariosLider = await AsignacionEvaluacion.findAll({
-        where: {
-            evaluadorId: id,
-            year,
-            quarter,
-            evaluacionId: TipoEvaluacion.EvaluacionLider
-        },
-        include: [
-            {
-                model: Usuarios,
-                as: 'evaluado',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
-            }
-        ]
-    })
 
-    const colaboradores = usuariosColaborador.map((usuario: any) => usuario.evaluado)
-    const lider = usuariosLider.map((usuario: any) => usuario.evaluado)
+    // encontrar a los de evaluacionId 1, 2, 3
+    const lider = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionLider)?.evaluado
+    const colaboradores = usuariosEvaluaciones.filter((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionColaborador).map((usuario: any) => usuario.evaluado)
+    const propia = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionPropia)?.evaluado
+
+
+    
 
     return res.json({
         ok: true,
-        usuariosColaborador: colaboradores,
-        usuariosLider: lider
+        evaluacionColaborador: colaboradores,
+        evaluacionLider: lider,
+        evaluacionPropia: propia
     })
 
 }

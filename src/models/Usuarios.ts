@@ -70,6 +70,9 @@ export const Usuarios = database.define('usuarios', {
     leaderId: {
         type: Sequelize.UUID,
     },
+    encargadoId: {
+        type: Sequelize.UUID,
+    },
     googleId: {
         type: Sequelize.STRING,
     },
@@ -148,12 +151,6 @@ export const Usuarios = database.define('usuarios', {
                 portadaPerfil: '',
             });
         },
-        afterFind: async (usuario: any) => {
-         
-            // console.log('Usuario encontrado', usuario.__proto__);
-
-
-        }
             
     },
     defaultScope: {

@@ -4,11 +4,12 @@ import dayjs from "dayjs";
 import { Op } from "sequelize";
 
 
+
 const includes = [
     {
         model: Usuarios,
         as: 'operativosResponsable',
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
         through: {
             attributes: ['propietario', 'progresoAsignado', 'progresoReal', 'extra', 'status'],
             as: 'scoreCard'
@@ -27,6 +28,8 @@ const includes = [
 export const getOperativos = async (req:any, res: Response) => {
     
     const { year, quarter, usuarioId } = req.query;
+
+
 
     try {
         const operativos = await ObjetivoOperativos.findAll({
@@ -274,4 +277,6 @@ export const setPonderaciones = async (req: Request, res: Response) => {
         
     }
 }
+
+
 
