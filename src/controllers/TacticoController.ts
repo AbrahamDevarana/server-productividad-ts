@@ -137,6 +137,9 @@ export const createTactico = async (req: Request, res: Response) => {
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
+    
+    
+
     try {        
 
         let estrategicoId = null;
@@ -664,10 +667,52 @@ export const getTacticosByObjetivoEstrategico = async (req: Request, res: Respon
     
     const { estrategicoId } = req.params;
     const { year, quarter, search } = req.query;
-
-    if(!estrategicoId) return res.status(400).json({msg: 'Se no se envió el id del objetivo estratégico'})
-
+    
     let where = {};
+
+    const includes = [
+        {
+            model: Usuarios,
+            as: 'responsables',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+            through: {
+                attributes: []
+            },
+            include: [
+                {
+                    model: Departamentos,
+                    as: 'departamento',
+                    attributes: ['id', 'nombre', 'slug'],
+                }
+            ]
+        },
+        {
+            model: Usuarios,
+            as: 'propietario',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+            include: [
+                {
+                    model: Departamentos,
+                    as: 'departamento',
+                    attributes: ['id', 'nombre', 'slug'],
+                }
+            ]
+        },
+        {
+            model: ObjetivoEstrategico,
+            as: 'estrategico',
+            include: [{
+                model: Perspectivas,
+                as: 'perspectivas',
+                attributes: ['id', 'nombre',  'color']
+            }]
+        },
+        {
+            model: Trimestre,
+            as: 'trimestres',
+            through: { attributes: ['activo'] },
+        }
+    ]
     
     if(search){        
         where = {
@@ -688,18 +733,29 @@ export const getTacticosByObjetivoEstrategico = async (req: Request, res: Respon
                     ]
                }
             ]
-        }        
+        } 
     }
 
-    
+
+    if(estrategicoId !== 'undefined'){
+        where = {
+            ...where,
+            estrategicoId
+        }
+    }else {
+        where = {
+            ...where,
+            estrategicoId: null
+        }
+    }
+
+
 
     try {
         const objetivosTacticos = await Tacticos.findAll({
-            where: {
-                estrategicoId,
-                ...where,
-            }}
-        );
+            where: where,
+            include: includes,
+        });
 
         res.json({ objetivosTacticos });
 

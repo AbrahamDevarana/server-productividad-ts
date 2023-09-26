@@ -262,18 +262,39 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
     
     const { year, slug } = req.query;
 
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+
     try {
         const area = await Areas.findOne({
             where: { slug },
         });
 
-        
-        
+        const perspectiva = await area.getPerspectivas()
 
-        
+        const objetivosEstrategicos = await ObjetivoEstrategico.findAll({
+            where: {
+                [Op.or]: [
+                    {
+                        fechaInicio: {
+                            [Op.between]: [fechaInicio, fechaFin]
+                        }
+                    },
+                    {
+                        fechaFin: {
+                            [Op.between]: [fechaInicio, fechaFin]
+                        }
+                    }   
+                ],
+                perspectivaId: perspectiva.id
+            },
+        });
 
-        
-       
+    
+        res.json({
+            objetivosEstrategicos,
+        });
+    
     } catch (error) {
         console.log(error);
         res.status(500).json({
