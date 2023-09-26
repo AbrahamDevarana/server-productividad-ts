@@ -37,6 +37,7 @@ import Trimestre from './custom/Trimestre';
 
 
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
+import { HistorialPerformance } from './HistorialPerformance';
 
 
 
@@ -195,6 +196,10 @@ EvaluacionRespuesta.belongsTo(AsignacionEvaluacion, { foreignKey: 'evaluacionUsu
 
 Usuarios.hasMany(AsignacionEvaluacion, { as: 'evaluacionesEvaluado', foreignKey: 'evaluadoId' })
 Usuarios.hasMany(AsignacionEvaluacion, { as: 'evaluacionesEvaluador', foreignKey: 'evaluadorId' })
+
+
+Usuarios.hasMany(HistorialPerformance, { as: 'historialPerformance', foreignKey: 'usuarioId' })
+HistorialPerformance.belongsTo(Usuarios, { as: 'usuario', foreignKey: 'usuarioId' })
 
 
 

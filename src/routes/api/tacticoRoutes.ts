@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { createTactico, deleteTactico, getTactico, updateTactico, getTacticosByArea, getTacticosByEstrategia, getTacticosByEquipos, updateQuarters, getTacticos} from '../../controllers/TacticoController';
+import { createTactico, deleteTactico, getTactico, updateTactico, getTacticosByArea, getTacticosByEquipos, updateQuarters, getTacticos, getTacticosByObjetivoEstrategico} from '../../controllers/TacticoController';
 
 const router = Router();
 
 router.get('/equipo', getTacticosByEquipos)
 router.get('/area/:slug', getTacticosByArea)
 router.put('/quarters/:id', updateQuarters);
-router.get('/estrategia/:estrategiaId', getTacticosByEstrategia)
+// router.get('/estrategia/:estrategiaId', getTacticosByEstrategia)
+router.get('/objetivo/:estrategicoId', getTacticosByObjetivoEstrategico)
+
 
 router.get('/:id', getTactico);
 router.get('/', getTacticos);

@@ -154,3 +154,33 @@ export const getColaboradores = async (req: Request, res: Response) => {
     
 }
 
+
+export const updatePortrait = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { portadaPerfil } = req.body;
+
+    try {
+       const configuracionUsuario = await ConfiguracionUsuario.findOne({
+            where: {
+                usuarioId: id
+            }
+        })
+       
+        if (!configuracionUsuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
+
+        await configuracionUsuario.update({ portadaPerfil })
+
+        return res.json({
+            ok: true,
+            configuracionUsuario
+        })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}

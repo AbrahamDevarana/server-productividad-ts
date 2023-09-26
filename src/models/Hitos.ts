@@ -1,8 +1,5 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
-import { Proyectos } from "./Proyectos";
-import { Usuarios } from "./Usuarios";
-import UsuarioHitosOrden from "./custom/UsuarioHitosOrden";
 
 
 export const Hitos = database.define('hitos', {

@@ -1,4 +1,4 @@
-import { Comentarios, ObjetivoEstrategico, Perspectivas, Usuarios } from '../models'
+import { Areas, Comentarios, ObjetivoEstrategico, Perspectivas, Usuarios } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { UsuarioInterface } from '../interfaces';
@@ -200,6 +200,8 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const deleteObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
+
+    
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
@@ -222,14 +224,17 @@ export const deleteObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
+
+    console.log('getObjetivosEstrategicoByPerspectiva');
     
+    throw new Error('No implementado');
     
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findAll({ 
             include: [{
                 model: Perspectivas,
                 as: 'perspectivas',
-                where: { id: id },
+                where: { id },
                 attributes: [],
                 through: { attributes: [] }
             }],
@@ -249,4 +254,33 @@ export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: R
             msg: 'Hable con el administrador'
         });
     }
+}
+
+export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request, res: Response) => {
+
+    console.log('getObjetivosEstrategicoByArea');
+    
+    const { year, slug } = req.query;
+
+    try {
+        const area = await Areas.findOne({
+            where: { slug },
+        });
+
+        
+        
+
+        
+
+        
+       
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+
+    
+
 }

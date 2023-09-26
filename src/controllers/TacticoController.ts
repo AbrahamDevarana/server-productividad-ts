@@ -85,7 +85,7 @@ export const getTacticos = async (req: Request, res: Response) => {
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
 
-    let where = {
+    const where = {
         [Op.or]: [
             {
                 fechaInicio: {
@@ -212,26 +212,16 @@ export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, slug} = req.body;
 
-    let participantes = [...responsablesArray, propietarioId]
+    const participantes = [...responsablesArray, propietarioId]
+
+    console.log({estrategicoId});
+    
 
     try {
-        
-        // const area = await Areas.findOne({ 
-        //     where: {slug}, 
-        //     include: { 
-        //         model: Perspectivas, 
-        //         as: 'perspectivas', 
-        //         attributes: ['id', 'nombre'],
-        //         include: [{
-        //             model: ObjetivoEstrategico,
-        //             as: 'objetivosEstrategicos',
-        //             attributes: ['id']
-        //         }]
-        // }});
 
-        let areaArray: any[] = []
+        const areaArray: any[] = []
         let areasSet: Set<number> = new Set();
-        let codigoFinal = codigo;
+        const codigoFinal = codigo;
 
         await Promise.all(participantes.map(async (responsable: any) => {
             const usuario = await Usuarios.findByPk(responsable, {
@@ -259,6 +249,9 @@ export const updateTactico = async (req: Request, res: Response) => {
         const objetivoTactico = await Tacticos.findByPk(id);
 
         const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoTactico});
+
+        console.log(objetivoTactico.estrategicoId);
+        
 
         if (objetivoTactico) {
             await objetivoTactico.update({ 
@@ -323,11 +316,11 @@ export const deleteTactico = async (req: Request, res: Response) => {
     }
 }
 
+
+// throw new Error('Not implemented yet');
 export const getTacticosByArea = async (req: Request, res: Response) => {
     const { slug } = req.params;
     const { year, search, periodos, status } = req.query;
-
-    
 
     let where = {};
     let wherePeriodo = {};
@@ -469,7 +462,10 @@ export const getTacticosByArea = async (req: Request, res: Response) => {
     }
 }
 
+///  No se usa
 export const getTacticosByEstrategia = async (req: Request, res: Response) => {
+
+    throw new Error('Not implemented yet');
     const { estrategiaId } = req.params;
     
     try {
@@ -507,6 +503,8 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
 }
 
 export const getTacticosByEquipos = async (req: Request, res: Response) => {
+
+
     const { year, search, periodos, status, slug } = req.query;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
@@ -660,6 +658,57 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
          });
    }
 
+}
+
+export const getTacticosByObjetivoEstrategico = async (req: Request, res: Response) => {
+    
+    const { estrategicoId } = req.params;
+    const { year, quarter, search } = req.query;
+
+    if(!estrategicoId) return res.status(400).json({msg: 'Se no se envió el id del objetivo estratégico'})
+
+    let where = {};
+    
+    if(search){        
+        where = {
+            ...where,
+            [Op.and]: [
+               {
+                     [Op.or]: [ 
+                        {
+                            nombre: {
+                                [Op.like]: `%${search}%`
+                            }
+                        },
+                        {
+                            codigo: {
+                                [Op.like]: `%${search}%`
+                            }
+                        }
+                    ]
+               }
+            ]
+        }        
+    }
+
+    
+
+    try {
+        const objetivosTacticos = await Tacticos.findAll({
+            where: {
+                estrategicoId,
+                ...where,
+            }}
+        );
+
+        res.json({ objetivosTacticos });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });   
+    }
 }
 
 // Custom Controller

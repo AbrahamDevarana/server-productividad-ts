@@ -20,6 +20,7 @@ import galeriaRoutes from "./api/galeriaRoutes";
 import uploadRoutes from "./api/uploadRoutes";
 import rendimientoRoutes from "./api/rendimientoRoutes";
 import evaluacionRoutes from "./api/evaluacionRoutes";
+import historialPerformanceRoutes from "./api/historialPerformanceRoutes";
 
 
 const router = Router();
@@ -43,6 +44,7 @@ router.use('/comentarios', comentariosRoutes)
 router.use('/permisos', permisosRoutes)
 router.use('/rendimiento', rendimientoRoutes)
 router.use('/evaluacion', evaluacionRoutes)
+router.use('/historial-performance', historialPerformanceRoutes)
 
 router.use('/galeria', galeriaRoutes)
 

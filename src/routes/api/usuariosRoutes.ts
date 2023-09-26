@@ -10,7 +10,6 @@ router.get('/resultados', getUsuarioProgress)
 
 router.get('/', getUsuarios);
 router.get('/:id', getUsuario);
-// router.get('/perfil/:slug', getPerfil);
 router.put('/config', uploadConfiguracion);
 
 router.post('/', [
