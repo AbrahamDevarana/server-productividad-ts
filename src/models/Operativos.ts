@@ -109,8 +109,15 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
     timestamps: true,
     hooks: {     
         afterUpdate: async () => {
+
+            // 
            
-        }
+        },
+        afterCreate: async () => {
+
+            // 
+           
+        },
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }

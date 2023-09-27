@@ -666,7 +666,8 @@ export const getTacticosByEquipos = async (req: Request, res: Response) => {
 export const getTacticosByObjetivoEstrategico = async (req: Request, res: Response) => {
     
     const { estrategicoId } = req.params;
-    const { year, quarter, search } = req.query;
+    const { year, quarter, search, slug } = req.query;
+
     
     let where = {};
 
@@ -749,13 +750,32 @@ export const getTacticosByObjetivoEstrategico = async (req: Request, res: Respon
         }
     }
 
-
-
     try {
-        const objetivosTacticos = await Tacticos.findAll({
-            where: where,
-            include: includes,
+
+        const area = await Areas.findOne({
+            where: {
+                slug
+            }
         });
+
+
+        // console.log('Área', area);
+
+        let objetivosTacticos = []
+        
+            
+        if(estrategicoId === 'undefined'){
+            objetivosTacticos = await area.getTacticos({
+                include: includes,
+                where: where
+            });
+        }else {
+            objetivosTacticos = await Tacticos.findAll({
+                include: includes,
+                where: where
+            });
+        }
+
 
         res.json({ objetivosTacticos });
 

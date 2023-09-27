@@ -210,6 +210,8 @@ export const deleteOperativo = async (req: Request, res: Response) => {
 }
 
 export const getOperativo = async (req: Request, res: Response) => {
+
+    
     const { id } = req.params;
 
     try {
