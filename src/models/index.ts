@@ -38,6 +38,7 @@ import Trimestre from './custom/Trimestre';
 
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
 import { HistorialPerformance } from './HistorialPerformance';
+import { Task } from './Task';
 
 
 
@@ -170,13 +171,6 @@ Evaluacion.belongsToMany(EvaluacionPregunta, { through: {model: AsignacionPregun
 EvaluacionPregunta.belongsToMany(Evaluacion, { through: {model: AsignacionPreguntaEvaluacion, unique: false}, foreignKey: 'preguntaId', otherKey:'evaluacionId', as: 'evaluacionesPregunta' });
 
 
-// evaluacionId
-// evaluacionUsuarioId
-// evaluacionPreguntaId
-
-
-// Usuarios.hasMany( EvaluacionRespuesta, { as: 'respuestasUsuario', foreignKey: 'evaluacionUsuarioId' });
-// EvaluacionRespuesta.belongsTo( Usuarios, { as: 'usuario', foreignKey: 'evaluacionUsuarioId' });
 
 EvaluacionRespuesta.belongsTo(Evaluacion, { foreignKey: 'evaluacionId' });
 Evaluacion.hasMany(EvaluacionRespuesta, { foreignKey: 'evaluacionId' });
@@ -202,6 +196,26 @@ Usuarios.hasMany(HistorialPerformance, { as: 'historialPerformance', foreignKey:
 HistorialPerformance.belongsTo(Usuarios, { as: 'usuario', foreignKey: 'usuarioId' })
 
 
+
+// Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
+//     scope: {
+//         comentableType: 'TACTICO',
+//     }
+// });
+
+
+ResultadosClave.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constraints: false,
+    scope: {
+        taskeableType: 'RESULTADO_CLAVE',
+    }
+});
+
+
+Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeableId', constraints: false,
+    scope: {
+        taskeableType: 'RESULTADO_CLAVE',
+    }
+});
 
 export {
     Usuarios,

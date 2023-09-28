@@ -13,7 +13,7 @@ const includeProps = [
     {
         model: Usuarios,
         as: 'propietario',
-        attributes: ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'foto', 'iniciales']
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
 
     }
 ]
