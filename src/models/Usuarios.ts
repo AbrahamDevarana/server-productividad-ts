@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import slugify from "slugify";
 import ConfiguracionUsuario from "./custom/ConfiguracionUsuario";
-import { Task } from "./Task";
 
 
 export const Usuarios = database.define('usuarios', {
@@ -151,16 +150,7 @@ export const Usuarios = database.define('usuarios', {
                 notificacionesEmailTrimestral: false,
                 portadaPerfil: '',
             });
-        },
-        
-        afterFind: async (usuario: any) => {
-
-            const task = await Task.findOne({ where: { id: 1} });
-
-            console.log( task.__proto__ );
-        }
-
-            
+        },            
     },
     defaultScope: {
         attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt' , 'googleId'] }

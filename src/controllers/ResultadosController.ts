@@ -1,27 +1,33 @@
 import { Request, Response } from "express";
-import { Acciones, PivotOpUsuario, ResultadosClave, Usuarios } from "../models";
+import { PivotOpUsuario, ResultadosClave, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
+import { Task } from "../models/Task";
 
 
 const includeProps = [
-    {
-        model: Acciones,
-        as: 'acciones',
-        attributes: ['id', 'nombre', 'descripcion', 'status', 'resultadoClaveId', 'propietarioId', 'fechaInicio', 'fechaFin'],
-    },
     {
         model: Usuarios,
         as: 'propietario',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
 
+    },
+    {
+        model: Task,
+        as: 'task',
+        attributes: ['id', 'nombre', 'descripcion', 'prioridad', 'propietarioId', 'fechaFin', 'status', 'taskeableId'],
+        include: [
+            {
+                model: Usuarios,
+                as: 'propietario',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+            }
+        ]
     }
 ]
  
 export const getResultadosClave = async (req: Request, res: Response) => {
     const { operativoId } = req.query;    
-    
-    
     const where: any = {}
 
     if(operativoId){
@@ -34,8 +40,7 @@ export const getResultadosClave = async (req: Request, res: Response) => {
             order: [['createdAt', 'ASC']],
             include: includeProps
 
-        });
-
+        });        
         res.json({ resultadosClave });
     }
     catch (error) {
@@ -126,18 +131,19 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
 
         if(tipoProgreso === "acciones"){
             //Actualizar el progreso del resultado clave con el progreso de las acciones que solo tienen 2 estados, completado o no completado
-            const acciones = await Acciones.findAll({
+            const tasks = await Task.findAll({
                 where: {
-                    resultadoClaveId: id
+                    taskeableId: resultadoClave.id,
+                    taskeableType: 'RESULTADO_CLAVE'
                 }
-            });
+            })
 
             let accionesCompletadas = 0;
             let accionesTotales = 0;
 
-           if(acciones.length > 0){
-                acciones.forEach(accion => {
-                    if(accion.status === 1){
+           if(tasks.length > 0){
+                tasks.forEach(task => {
+                    if(task.status === 'FINALIZADA'){
                         accionesCompletadas++;
                     }
                     accionesTotales++;

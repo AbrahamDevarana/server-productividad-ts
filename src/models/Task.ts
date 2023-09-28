@@ -1,5 +1,7 @@
 import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../config/database";
+import { ResultadosClave } from "./ResultadoClave";
+import { PivotOpUsuario } from "./pivot/PivotOperativoUsuario";
 
 export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreationAttributes<TaskModel>> {
     
@@ -7,7 +9,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     nombre: string;
     descripcion?: string;
     taskeableId: string;
-    taskeableType: string;
+    taskeableType: 'RESULTADO_CLAVE';
     prioridad: 'ALTA' | 'NORMAL' | 'BAJA';
     status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADA' | 'CANCELADA'
     propietarioId: string;
@@ -69,14 +71,14 @@ export const Task = database.define('tasks', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        beforeUpdate: async (tarea: any) => {
-            tarea.updatedAt = new Date();
+        afterUpdate: async (task: TaskModel) => {
+            await updateProgreso(task);
         },
-        afterUpdate: async (tarea: any) => {
-            
+        afterDestroy: async (task: TaskModel) => {
+            await updateProgreso(task);
         },
-        afterCreate: async (tarea: any) => {
-
+        afterCreate: async (task: TaskModel) => {
+            await updateProgreso(task);
         }
         
     },
@@ -86,3 +88,77 @@ export const Task = database.define('tasks', {
     },
 });
 
+
+const updateProgreso = async (task: TaskModel) => {
+    
+    const resultadoClave = await ResultadosClave.findOne({
+        where: {
+            id: task.taskeableId
+        }
+    });
+    
+    const acciones = await Task.findAll({
+        where: {
+            taskeableId: task.taskeableId
+        }
+    });
+
+
+    if(resultadoClave){
+        if(resultadoClave.tipoProgreso === 'acciones'){
+           
+            let accionesCompletadas = 0;
+            let accionesTotales = 0;
+
+            acciones.forEach(accion => {
+                if(accion.status === 'FINALIZADA'){
+                    accionesCompletadas++;
+                }
+                accionesTotales++;
+            })
+
+            const progresoTotal = accionesCompletadas/accionesTotales * 100
+
+            await resultadoClave.update({ progreso: progresoTotal });
+
+        }
+
+       await updateProgresoResultadoClave({objetivoOperativoId: resultadoClave.operativoId});
+    }
+}
+
+
+export const updateProgresoResultadoClave = async ({objetivoOperativoId}: any) => {
+
+const objetivos = await PivotOpUsuario.findAll({
+    where: {
+        objetivoOperativoId
+    }
+})
+
+const resultadosClave = await ResultadosClave.findAll({
+    where: {
+        operativoId: objetivoOperativoId
+    }
+})
+
+let promedioResultadosClave = 0;
+
+if(resultadosClave.length > 0){
+    resultadosClave.forEach(resultadoClave => {
+        promedioResultadosClave += resultadoClave.progreso;
+    })
+    promedioResultadosClave = promedioResultadosClave/resultadosClave.length;
+}
+
+
+
+if(objetivos.length > 0){
+    objetivos.forEach(async objetivo => {
+        objetivo.progresoReal = promedioResultadosClave;
+        await objetivo.save();
+    })
+}
+
+
+}

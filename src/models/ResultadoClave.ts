@@ -1,14 +1,13 @@
-import Sequelize, { Association, BelongsTo, Model }  from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model }  from "sequelize";
 import database from "../config/database";
-import { ObjetivoOperativos } from "./Operativos";
-import { AccionInstance } from "./Acciones";
-import dayjs from "dayjs";
+import { OperativoModel } from "./history/OperativoHistory";
 
-export interface ResultadoClaveAttributes {
+
+export interface ResultadoClaveModel extends Model<InferAttributes<ResultadoClaveModel>, InferCreationAttributes<ResultadoClaveModel>> {
     id?: string;
     nombre: string;
     progreso: number;
-    tipoProgreso: string;
+    tipoProgreso: 'porcentaje' | 'acciones';
     fechaInicio: Date;
     fechaFin: Date;
     operativoId: string;
@@ -16,13 +15,24 @@ export interface ResultadoClaveAttributes {
     status: string;
     createdAt?: Date;
     updatedAt?: Date;
+
+
+    getOperativo: () => any;
+    setOperativo: (operativo: OperativoModel) => void;
+    createOperativo: (operativo: OperativoModel) => void;
+    getPropietario: () => any;
+    setPropietario: (propietario: any) => void;
+    createPropietario: (propietario: any) => void;
+    getTask:  () => any;
+    countTask:  () => any;
+    hasTask:  () => any;
+    setTask: (task: any) => void;
+    addTask: (task: any) => void;
+    removeTask: (task: any) => void;
+    createTask: (task: any) => void;
 }
 
-export interface ResultadoClaveInstance extends Model<ResultadoClaveAttributes>, ResultadoClaveAttributes {
-    
-}
-
-export const ResultadosClave = database.define<ResultadoClaveInstance>('resultado_clave', {
+export const ResultadosClave = database.define<ResultadoClaveModel>('resultado_clave', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -66,46 +76,8 @@ export const ResultadosClave = database.define<ResultadoClaveInstance>('resultad
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: async (resultadoClave: ResultadoClaveInstance, options) => {
-            //    await updateDate(resultadoClave)
-        },
-
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
     },
 })
-
-
-// const updateDate = async (resultadoClave: ResultadoClaveInstance) => {
-
-//     // Obtener el operativo
-//     const operativo = await ObjetivoOperativos.findOne({
-//         where: {
-//             id: resultadoClave.operativoId
-//         }
-//     });
-
-//     // Obtener todos los resultados clave del operativo
-//     const resultadosClave = await ResultadosClave.findAll({
-//         where: {
-//             operativoId: operativo!.id
-//         }
-//     });
-
-
-
-//     if(operativo){
-//         if(resultadoClave.fechaFin > operativo.fechaFin){
-//             await operativo.update({ fechaFin: resultadoClave.fechaFin });
-//         }
-//     }
-
-//     let fechaInicio = dayjs(resultadoClave.fechaInicio);
-//     let ultimoDiaCuatrimestre = fechaInicio.endOf('quarter').toDate();
-
-//     if( resultadosClave.every( resultado => resultado.fechaFin < ultimoDiaCuatrimestre)){
-//         await operativo!.update({ fechaFin: ultimoDiaCuatrimestre });
-//     }
-
-// }

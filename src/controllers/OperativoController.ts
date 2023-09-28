@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task } from "../models";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
 
@@ -28,9 +28,6 @@ const includes = [
 export const getOperativos = async (req:any, res: Response) => {
     
     const { year, quarter, usuarioId } = req.query;
-
-
-
     try {
         const operativos = await ObjetivoOperativos.findAll({
             order: [['createdAt', 'ASC']],
@@ -146,6 +143,7 @@ export const createOperativo = async (req: Request, res: Response) => {
             year
         });
 
+        if(!operativo) return res.status(400).json({ msg: 'No se pudo crear el operativo' });
     
         const setResponsables = new Set();
         
@@ -172,6 +170,45 @@ export const createOperativo = async (req: Request, res: Response) => {
             });
         }
         
+
+
+
+        // Crear resultado clave con 3 tasks
+
+       if(operativo.id){
+            const resultadoClave = await ResultadosClave.create({
+                nombre: operativo.nombre,
+                fechaInicio: operativo.fechaInicio,
+                fechaFin: operativo.fechaFin,
+                operativoId: operativo.id,
+                status: 'SIN_INICIAR',
+                tipoProgreso: 'acciones',
+                progreso: 0,
+                propietarioId: propietarioId
+            })
+
+            if(!resultadoClave) return res.status(400).json({ msg: 'No se pudo crear el resultado clave' });
+
+            await resultadoClave.reload();
+
+            const nombres = ['Acción 1', 'Acción 2', 'Acción 3'];
+            if(resultadoClave.id){
+                for (const nombre of nombres) {
+                    await Task.create({
+                        nombre,
+                        propietarioId,
+                        taskeableId: resultadoClave.id,
+                        taskeableType: 'RESULTADO_CLAVE',
+                        prioridad: 'NORMAL',
+                        status: 'SIN_INICIAR',
+                        fechaFin: resultadoClave.fechaFin,
+                    })   
+
+                }
+            }
+
+        }
+
         await operativo.reload( { include: includes });
 
         res.json({operativo});
@@ -236,8 +273,12 @@ export const getOperativo = async (req: Request, res: Response) => {
 }
 
 const filtrarObjetivosUsuario = (objetivos: any[], id: string) => {
-    const objetivo = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.id === id));
-    return objetivo;
+    // id or slug
+    const objetivoId = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.id === id));
+    if(objetivoId.length > 0) return objetivoId;
+    
+    const objetivoSlug = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.slug === id));
+    return objetivoSlug;
 }
 
 export const setPonderaciones = async (req: Request, res: Response) => {

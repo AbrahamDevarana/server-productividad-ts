@@ -1,5 +1,5 @@
 // Path: src\models\Usuario.ts
-import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, GaleriaUsuarios, ConfiguracionUsuario } from "../models";
+import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, ConfiguracionUsuario } from "../models";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
@@ -7,7 +7,6 @@ import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
-import { EvaluacionRespuesta, AsignacionEvaluacion } from "../models/evaluacion";
 
 
 const perfilInclude = [

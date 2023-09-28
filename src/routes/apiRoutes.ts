@@ -8,7 +8,7 @@ import perspectivaRoutes from "./api/perspectivasRoutes";
 import estrategicoRoutes from './api/estrategicoRoutes'
 import tacticoRoutes from './api/tacticoRoutes'
 import operativoRoutes from './api/operativosRoutes'
-import accionesRoutes from './api/accionesRoutes'
+import taskRoutes from './api/taskRoutes'
 import resultadosRoutes from './api/resultadosRoutes'
 import proyectosRoutes from './api/proyectosRoute'
 import hitosRoutes from './api/hitosRoutes'
@@ -35,7 +35,7 @@ router.use('/perspectivas', perspectivaRoutes)
 router.use('/estrategicos', estrategicoRoutes)
 router.use('/tacticos', tacticoRoutes)
 router.use('/operativos', operativoRoutes)
-router.use('/acciones', accionesRoutes)
+router.use('/tasks', taskRoutes)
 router.use('/tareas', tareasRoutes)
 router.use('/resultados', resultadosRoutes)
 router.use('/proyectos', proyectosRoutes)   

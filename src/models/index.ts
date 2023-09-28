@@ -7,7 +7,7 @@ import { Perspectivas } from './Perspectivas';
 import { ObjetivoEstrategico } from './Estrategicos';
 import { Tacticos } from './Tacticos';
 import { ObjetivoOperativos } from './Operativos';
-import { Acciones } from './Acciones';
+// import { Acciones } from './Acciones';
 import { Tareas } from './Tareas';
 import { ResultadosClave } from './ResultadoClave';
 import { Proyectos } from './Proyectos';
@@ -104,7 +104,7 @@ ObjetivoOperativos.hasMany(ResultadosClave, { as: 'resultadosClave', foreignKey:
 // Resultados Clave
 ResultadosClave.belongsTo(ObjetivoOperativos, { as: 'operativo', foreignKey: 'operativoId' });
 ResultadosClave.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-ResultadosClave.hasMany(Acciones, { as: 'acciones', foreignKey: 'resultadoClaveId' });
+// ResultadosClave.hasMany(Acciones, { as: 'acciones', foreignKey: 'resultadoClaveId' });
 
 // Proyectos
 Proyectos.hasMany(Hitos, { as: 'proyectosHito', foreignKey: 'proyectoId', onDelete: 'CASCADE' });
@@ -196,20 +196,14 @@ Usuarios.hasMany(HistorialPerformance, { as: 'historialPerformance', foreignKey:
 HistorialPerformance.belongsTo(Usuarios, { as: 'usuario', foreignKey: 'usuarioId' })
 
 
-
-// Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
-//     scope: {
-//         comentableType: 'TACTICO',
-//     }
-// });
-
-
 ResultadosClave.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constraints: false,
     scope: {
         taskeableType: 'RESULTADO_CLAVE',
     }
 });
 
+
+Task.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 
 Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeableId', constraints: false,
     scope: {
@@ -227,7 +221,7 @@ export {
     Tacticos,
     ObjetivoOperativos,
     ResultadosClave,
-    Acciones,
+    // Acciones,
     Tareas,
     Proyectos,
     Hitos,
@@ -236,6 +230,7 @@ export {
     Permisos,
     Trimestre,
     Rendimiento,
+    Task,
 
     PivotTareasResponsables,
     PivotPerspEstr,

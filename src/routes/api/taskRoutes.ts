@@ -1,25 +1,25 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { getAcciones,  createAcciones, deleteAcciones, updateAcciones } from '../../controllers/AccionesController';
+import { createTask, deleteTask, getTask, updateTask} from '../../controllers/TaskController';
 const router = Router();
 
 
-router.get('/', getAcciones)
+router.get('/', getTask)
 
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('resultadoClaveId', 'El resultado clave es obligatorio').not().isEmpty(),
+    check('taskeableId', 'El resultado clave es obligatorio').not().isEmpty(),
     validarCampos
-], createAcciones)
+], createTask)
 
 router.put('/:id', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('resultadoClaveId', 'El resultado clave es obligatorio').not().isEmpty(),
+    check('taskeableId', 'El resultado clave es obligatorio').not().isEmpty(),
     validarCampos
-], updateAcciones)
+], updateTask)
 
-router.delete('/:id', deleteAcciones)
+router.delete('/:id', deleteTask)
 
 
 
