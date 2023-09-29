@@ -69,7 +69,7 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, propietarioId, resultadoClaveId, status, fechaFin } = req.body;
+    const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad } = req.body;
 
     try {
         const task = await Task.findByPk(id);
@@ -83,9 +83,10 @@ export const updateTask = async (req: Request, res: Response) => {
         await task.update({
             nombre,
             propietarioId,
-            taskeableId: resultadoClaveId,
+            taskeableId,
             fechaFin,
             status,
+            prioridad
         });
 
         await task.reload({

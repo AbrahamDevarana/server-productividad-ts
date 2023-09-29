@@ -40,7 +40,7 @@ export const getResultadosClave = async (req: Request, res: Response) => {
             order: [['createdAt', 'ASC']],
             include: includeProps
 
-        });        
+        });
         res.json({ resultadosClave });
     }
     catch (error) {
@@ -91,13 +91,34 @@ export const createResultadosClave = async (req: Request, res: Response) => {
             progreso: 0,
             fechaInicio: dayjs().startOf('quarter').toDate(),
             fechaFin: dayjs().endOf('quarter').toDate(),
-
+            color: 'rgba(101, 106, 118, 1)'
         });
+
+    
+
+        // Crear 3 tasks
+
+        const nombres = ['Acción 1', 'Acción 2', 'Acción 3'];
+
+        if(resultadoClave.id){
+            for (const nombre of nombres) {
+                await Task.create({
+                    nombre,
+                    propietarioId,
+                    taskeableId: resultadoClave.id,
+                    taskeableType: 'RESULTADO_CLAVE',
+                    prioridad: 'NORMAL',
+                    status: 'SIN_INICIAR',
+                    fechaFin: resultadoClave.fechaFin,
+                })   
+
+            }
+        }
 
         await resultadoClave.reload({
             include: includeProps
         })
-
+        
         res.json({ resultadoClave });
     }
     catch (error) {
@@ -111,8 +132,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
 
 export const updateResultadosClave = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin} = req.body;
-
+    const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin, color} = req.body;
     const { id: userId } = req.user as UsuarioInterface
 
     
@@ -143,7 +163,7 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
 
            if(tasks.length > 0){
                 tasks.forEach(task => {
-                    if(task.status === 'FINALIZADA'){
+                    if(task.status === 'FINALIZADO'){
                         accionesCompletadas++;
                     }
                     accionesTotales++;
@@ -155,7 +175,7 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
         }else{
             progresoTotal = progreso;
         }
-        await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin  });
+        await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin, color });
 
         await updateProgresoObjetivo({objetivoOperativoId: operativoId, responsableId: userId});
 

@@ -7,7 +7,6 @@ import { Perspectivas } from './Perspectivas';
 import { ObjetivoEstrategico } from './Estrategicos';
 import { Tacticos } from './Tacticos';
 import { ObjetivoOperativos } from './Operativos';
-// import { Acciones } from './Acciones';
 import { Tareas } from './Tareas';
 import { ResultadosClave } from './ResultadoClave';
 import { Proyectos } from './Proyectos';
@@ -221,7 +220,7 @@ export {
     Tacticos,
     ObjetivoOperativos,
     ResultadosClave,
-    // Acciones,
+
     Tareas,
     Proyectos,
     Hitos,

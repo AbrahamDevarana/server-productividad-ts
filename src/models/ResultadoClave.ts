@@ -13,6 +13,7 @@ export interface ResultadoClaveModel extends Model<InferAttributes<ResultadoClav
     operativoId: string;
     propietarioId: string;
     status: string;
+    color: string;
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -51,7 +52,7 @@ export const ResultadosClave = database.define<ResultadoClaveModel>('resultado_c
     tipoProgreso:{
         type: Sequelize.STRING,
         allowNull: true,
-        defaultValue: 'porcentaje'
+        defaultValue: 'acciones'
     },
     fechaInicio: {
         type: Sequelize.DATE,
@@ -66,6 +67,11 @@ export const ResultadosClave = database.define<ResultadoClaveModel>('resultado_c
     propietarioId: {
         type: Sequelize.UUID,
         allowNull: false
+    },
+    color: {
+        type: Sequelize.STRING(36),
+        allowNull: false,
+        defaultValue: 'rgba(101, 106, 118, 1)'
     },
     status: {
         type: Sequelize.STRING(12),

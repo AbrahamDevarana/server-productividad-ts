@@ -184,7 +184,8 @@ export const createOperativo = async (req: Request, res: Response) => {
                 status: 'SIN_INICIAR',
                 tipoProgreso: 'acciones',
                 progreso: 0,
-                propietarioId: propietarioId
+                propietarioId: propietarioId,
+                color: 'rgba(101, 106, 118, 1)'
             })
 
             if(!resultadoClave) return res.status(400).json({ msg: 'No se pudo crear el resultado clave' });

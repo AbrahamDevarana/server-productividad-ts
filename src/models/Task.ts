@@ -11,7 +11,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     taskeableId: string;
     taskeableType: 'RESULTADO_CLAVE';
     prioridad: 'ALTA' | 'NORMAL' | 'BAJA';
-    status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADA' | 'CANCELADA'
+    status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADO' | 'CANCELADO'
     propietarioId: string;
     fechaFin: Date;
     createdAt?: Date;
@@ -111,7 +111,7 @@ const updateProgreso = async (task: TaskModel) => {
             let accionesTotales = 0;
 
             acciones.forEach(accion => {
-                if(accion.status === 'FINALIZADA'){
+                if(accion.status === 'FINALIZADO'){
                     accionesCompletadas++;
                 }
                 accionesTotales++;
