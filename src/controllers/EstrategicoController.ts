@@ -258,8 +258,6 @@ export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: R
 
 export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request, res: Response) => {
 
-    console.log('getObjetivosEstrategicoByArea');
-    
     const { year, slug } = req.query;
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
@@ -288,6 +286,11 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
                 ],
                 perspectivaId: perspectiva.id
             },
+            include: [{
+                model: Perspectivas,
+                as: 'perspectivas',
+                attributes: ['id', 'nombre', 'icono', 'color', 'status'],
+            }]
         });
 
     

@@ -3,6 +3,30 @@ import { ConfiguracionUsuario, Departamentos, Direccion, GaleriaUsuarios, Objeti
 import { Op } from "sequelize";
 
 
+
+const getIncludes = (year: any, quarter: any) => {
+    return [
+        { model: Departamentos, as: 'departamento', include: ['area']}, 
+        { model: Direccion, as: 'direccion' },
+        { 
+            model: ObjetivoOperativos, as: 'objetivosOperativos', 
+            include: [
+                { model: ResultadosClave, as:'resultadosClave' },
+                { model: Usuarios, as: 'operativosResponsable' }
+            ],
+            where: {
+                year,
+                quarter
+            },
+            required: false
+        },
+        { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
+        { model: GaleriaUsuarios, as: 'galeria'},
+        { model: ConfiguracionUsuario, as: 'configuracion'},
+    ]
+}
+
+
 const perfilInclude = [
     { model: Departamentos, as: 'departamento', include: ['area']}, 
     { model: Direccion, as: 'direccion' },
@@ -20,12 +44,16 @@ const perfilInclude = [
 
 export const getPerfil = async (req: Request, res: Response) => {
 
-    const { slug } = req.params;
+    const { slug} = req.params;
+    const {year, quarter} = req.query;
+    
 
     try {
         const usuario = await Usuarios.findOne({
-            where: { [Op.or]: [{ slug }, { id: slug }] },
-            include: perfilInclude
+            include: getIncludes(year, quarter),
+            where: { 
+                [Op.or]: [{ slug }, { id: slug }]
+            }
         });
 
         if (usuario) {
@@ -47,8 +75,7 @@ export const getPerfil = async (req: Request, res: Response) => {
 export const updatePerfil = async (req: Request, res: Response) => {
         
     const { id } = req.params;
-    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades, social } = req.body;
-
+    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades, social, nombreCorto} = req.body
 
     try {
         const usuario = await Usuarios.findByPk(id)
@@ -59,7 +86,7 @@ export const updatePerfil = async (req: Request, res: Response) => {
             });
         }
 
-        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades, social });            
+        await usuario.update({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, descripcionPerfil, responsabilidades, social, nombreCorto });            
 
         await usuario.reload({
             include: perfilInclude
@@ -154,14 +181,18 @@ export const getColaboradores = async (req: Request, res: Response) => {
     
 }
 
-
 export const updatePortrait = async (req: Request, res: Response) => {
 
     const { id } = req.params;
     const { portadaPerfil } = req.body;
 
+    console.log(portadaPerfil);
+    console.log(id);
+    
+    
+
     try {
-       const configuracionUsuario = await ConfiguracionUsuario.findOne({
+       const configuracionUsuario = await ConfiguracionUsuario.findOrCreate({
             where: {
                 usuarioId: id
             }
@@ -169,11 +200,11 @@ export const updatePortrait = async (req: Request, res: Response) => {
        
         if (!configuracionUsuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
 
-        await configuracionUsuario.update({ portadaPerfil })
+        await configuracionUsuario[0].update({ portadaPerfil });
 
         return res.json({
             ok: true,
-            configuracionUsuario
+            configuracionUsuario: configuracionUsuario[0]
         })
 
     } catch (error) {
