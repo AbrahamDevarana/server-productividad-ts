@@ -12,11 +12,11 @@ export const PivotEvaluacionUsuario = database.define('pivot_evaluacion_usuario'
         allowNull: false
     },
     evaluadorId: {
-        type: Sequelize.TEXT,
+        type: Sequelize.UUID,
         allowNull: false
     },
     evaluadoId: {
-        type: Sequelize.TEXT,
+        type: Sequelize.UUID,
     },
     quarter: {
         type: Sequelize.INTEGER,
@@ -43,11 +43,7 @@ export const PivotEvaluacionUsuario = database.define('pivot_evaluacion_usuario'
     indexes: [
         {
             unique: false,
-            fields: ['evaluadorId']
-        },
-        {
-            unique: false,
-            fields: ['evaluacionId', 'evaluadoId']
+            fields: ['evaluacionId', 'evaluadoId', 'evaluadorId'],
         },
     ]
 });

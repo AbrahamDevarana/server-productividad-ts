@@ -414,8 +414,7 @@ export const uploadConfiguracion = async (req: Request, res: Response) => {
 export const getUsuarioProgress = async (req: Request, res: Response) => {
 
     const { year, quarter, usuarioId } = req.body;
-    console.log(year, quarter, usuarioId);
-    
+
 
         try {
 

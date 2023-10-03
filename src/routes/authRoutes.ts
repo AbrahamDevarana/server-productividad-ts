@@ -10,7 +10,7 @@ import { sessionValidate, refreshAccessToken } from "../controllers/AuthControll
 router.get('/validate', sessionValidate )
 
 
-router.get('/logout', ( req:Request, res:Response ) => {
+router.get('/logout', ( req: Request, res: Response ) => {
     res.clearCookie('connect.sid')
     res.status(200).json({ message: 'Has cerrado sesión correctamente'})
 })

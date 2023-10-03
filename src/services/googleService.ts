@@ -9,7 +9,7 @@ const googleAuth = new GoogleStrategy.Strategy({
     callbackURL: process.env.GOOGLE_CALLBACK_URL as string,
     }, async (accessToken: any, refreshToken: any, profile: any, done: any) => {
         const email = profile.emails[0].value;
-        const user = await Usuarios.findOne({ where: { email } });
+        const user = await Usuarios.findOne({ where: { email, status: 1} });
 
         if (user) {
             await Usuarios.update({

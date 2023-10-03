@@ -17,7 +17,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 if (decoded) {
                     
                     
-                    const usuario = await Usuarios.findOne({ where: { id: decoded.id } });
+                    const usuario = await Usuarios.findOne({ where: { id: decoded.id, status: 1 } });
                     if (!usuario) {
                         return res.status(401).json({ message: 'No has iniciado sesión' })
                     }else{

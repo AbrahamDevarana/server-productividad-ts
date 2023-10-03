@@ -28,4 +28,3 @@ export const getOrCreateRendimientoByUsuario = async (req: Request, res: Respons
 }
 
 
-

@@ -69,8 +69,8 @@ export const Rendimiento = database.define<RendimientoModel>('rendimiento', {
         allowNull: true
     },
     status: {
-        type: Sequelize.ENUM('open', 'closed'),
-        defaultValue: 'open'
+        type: Sequelize.ENUM('ABIERTO', 'CERRADO'),
+        defaultValue: 'ABIERTO'
 
     },
     createdAt: {

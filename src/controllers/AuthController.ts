@@ -23,7 +23,7 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     }else{
         try {
                 const { id } = refreshToken;
-            const usuario = await Usuarios.findOne({ where: { id } });
+            const usuario = await Usuarios.findOne({ where: { id, status: 1 } });
             if (!usuario) {
                 res.status(404).json({ message: 'Usuario no encontrado' })
             }else{
@@ -55,7 +55,7 @@ const sessionValidate = async (req: Request, res: Response) => {
                 } else {
                     if (decoded) {
                         const usuario = await Usuarios.findOne({ 
-                            where: { id: decoded.id },
+                            where: { id: decoded.id, status: 1 },
                             attributes: ['id','nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'iniciales'],
                             include: [
                                 {

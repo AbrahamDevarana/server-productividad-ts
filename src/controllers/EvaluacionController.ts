@@ -330,14 +330,14 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
                     [Op.in]: evaluacionsId
                 }
             }
-                
-            
         })
         
         if (respuestas.length === 0) return res.json({ ok: true, promedio: 0, respuestas: [] })
         
-
         const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 2) / respuestas.length
+
+        console.log(promedio);
+        
         
         return res.json({
             ok: true,
