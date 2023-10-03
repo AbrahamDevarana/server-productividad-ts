@@ -50,7 +50,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                     evaluacionId: TipoEvaluacion.EvaluacionLider
                 })
 
-                console.log(`Asignado lider ${lider.nombre} a ${usuario.nombre}`);
+                // console.log(`Asignado lider ${lider.nombre} a ${usuario.nombre}`);
                 
             }
         }
@@ -67,7 +67,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                         evaluacionId: TipoEvaluacion.EvaluacionColaborador
                     })
                 }))
-                console.log(`Asignado colaboradores a ${usuario.nombre}`);
+                // console.log(`Asignado colaboradores a ${usuario.nombre}`);
                 
             }
        }
@@ -82,14 +82,9 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                 evaluacionId: TipoEvaluacion.EvaluacionPropia
             })
         }
-        console.log(`Asignado evaluacion propia a ${usuario.nombre}`);
+        // console.log(`Asignado evaluacion propia a ${usuario.nombre}`);
         
     }
-
-
-
-
-
     return res.json({
         ok: true,
         msg: 'Evaluadores asignados',
@@ -167,7 +162,6 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
             }
         ]
     })
-
 
     // encontrar a los de evaluacionId 1, 2, 3
     const lider = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionLider)?.evaluado
@@ -264,8 +258,6 @@ export const asignarPreguntasEvaluacion = async (req: Request, res: Response) =>
 export const guardarEvaluacion = async (req: Request, res: Response) => {
     const { respuestas, year, quarter, evaluacionId, usuarioId, evaluacionUsuarioId } = req.body;
 
-    console.log(evaluacionUsuarioId);
-    
 
     try {
 
@@ -294,13 +286,6 @@ export const guardarEvaluacion = async (req: Request, res: Response) => {
 
 
         await EvaluacionRespuesta.bulkCreate(respuestasPreparadas)
-
-
-        console.log('evaluacionUsuarioId', evaluacionUsuarioId);
-        console.log('usuarioId', usuarioId);
-        
-        
-
       
 
         asignacion.status = true;
@@ -353,8 +338,6 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
         
 
         const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 2) / respuestas.length
-        
-        console.log(promedio);
         
         return res.json({
             ok: true,

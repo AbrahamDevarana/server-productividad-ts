@@ -73,6 +73,12 @@ export const updateOperativo = async (req: Request, res: Response) => {
             });
         }
 
+        if (operativo.status === 'CERRADO') {
+            return res.status(400).json({
+                msg: `No se puede actualizar un objetivo cerrado`
+            });
+        }
+
         await operativo.update({
             nombre,
             meta,
@@ -169,10 +175,7 @@ export const createOperativo = async (req: Request, res: Response) => {
                 propietario: propietarioValue,
             });
         }
-        
-
-
-
+    
         // Crear resultado clave con 3 tasks
 
        if(operativo.id){
@@ -322,5 +325,36 @@ export const setPonderaciones = async (req: Request, res: Response) => {
     }
 }
 
+export const cerrarPeriodo = async (req: Request, res: Response) => {
+    const { year, quarter } = req.body;
 
+    try {
+        const operativos = await ObjetivoOperativos.findAll({
+            where: {
+                year,
+                quarter
+            }
+        });
+
+        for (const operativo of operativos) {
+            await operativo.update({
+                status: 'CERRADO'
+            });
+        }
+
+        res.json({
+            ok: true,
+            operativos
+        })
+        
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+        
+    }
+}
 

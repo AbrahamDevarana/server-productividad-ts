@@ -15,6 +15,7 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     quarter?: number;
     year?: number;
     editado?: boolean;
+    status?: 'ABIERTO' | 'CERRADO';
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -95,6 +96,10 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
         type: Sequelize.BOOLEAN,
         allowNull: true,
         defaultValue: false
+    },
+    status: {
+        type: Sequelize.CHAR(100),
+        defaultValue: 'ABIERTO'
     },
     createdAt: {
         type: Sequelize.DATE,
