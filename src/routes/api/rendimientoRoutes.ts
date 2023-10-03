@@ -6,7 +6,7 @@ const router = Router();
 
 // API url: /rendimiento
 
-router.get('/', getOrCreateRendimientoByUsuario);
+router.get('/:usuarioId', getOrCreateRendimientoByUsuario);
 
 
 export default router;

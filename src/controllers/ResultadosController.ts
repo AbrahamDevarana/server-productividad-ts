@@ -79,8 +79,6 @@ export const createResultadosClave = async (req: Request, res: Response) => {
 
     const { id: propietarioId } = req.user as UsuarioInterface
 
-
-
     try {
         const resultadoClave = await ResultadosClave.create({
             propietarioId,
@@ -118,6 +116,8 @@ export const createResultadosClave = async (req: Request, res: Response) => {
         await resultadoClave.reload({
             include: includeProps
         })
+
+        updateProgresoObjetivo({objetivoOperativoId: operativoId});
         
         res.json({ resultadoClave });
     }
@@ -133,8 +133,6 @@ export const createResultadosClave = async (req: Request, res: Response) => {
 export const updateResultadosClave = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, propietarioId, operativoId, status, progreso, tipoProgreso, fechaInicio, fechaFin, color} = req.body;
-    const { id: userId } = req.user as UsuarioInterface
-
     
     try {
         const resultadoClave = await ResultadosClave.findByPk(id,
@@ -177,7 +175,7 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
         }
         await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin, color });
 
-        await updateProgresoObjetivo({objetivoOperativoId: operativoId, responsableId: userId});
+        await updateProgresoObjetivo({objetivoOperativoId: operativoId});
 
         await resultadoClave.reload({
             include: includeProps
@@ -199,15 +197,17 @@ export const deleteResultadosClave = async (req: Request, res: Response) => {
 
     try {
         const resultadoClave = await ResultadosClave.findByPk(id);
-
+        
         if (!resultadoClave) {
             return res.status(404).json({
                 msg: 'No existe un resultado clave con el id ' + id
             });
         }
 
+        
         await resultadoClave.destroy();
 
+        await updateProgresoObjetivo({objetivoOperativoId: resultadoClave.operativoId});
         res.json({ resultadoClave });
     }
     catch (error) {

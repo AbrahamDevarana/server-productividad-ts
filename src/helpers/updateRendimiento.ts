@@ -1,10 +1,5 @@
 import { AsignacionEvaluacion, EvaluacionRespuesta, ObjetivoOperativos, PivotOpUsuario, Rendimiento } from "../models"
 
-interface Props {
-    usuarioId: string,
-    year: number,
-    quarter: number
-}
 
 export const updateRendimiento = async () => {
 
@@ -76,7 +71,8 @@ export const updateRendimiento = async () => {
         where: {
             year,
             quarter,
-            usuarioId
+            usuarioId,
+            status: 'ABIERTO'
         }
     });
 
@@ -86,7 +82,6 @@ export const updateRendimiento = async () => {
         resultadoObjetivos: totalObjetivos,
         resultadoCompetencias: totalResultados,
         resultadoFinal: total,
-        status: 'ABIERTO'
     }, {
         where: {
             id: rendimientoId
