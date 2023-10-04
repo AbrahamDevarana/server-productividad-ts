@@ -290,7 +290,7 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
                 model: Perspectivas,
                 as: 'perspectivas',
                 attributes: ['id', 'nombre', 'icono', 'color', 'status'],
-            }]
+            }],
         });
 
     
