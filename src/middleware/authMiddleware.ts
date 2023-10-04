@@ -7,26 +7,24 @@ import { UsuarioInterface } from '../interfaces';
 export default async (req: Request, res: Response, next: NextFunction) => {    
     const token = req.header('accessToken')
     if (!token) {
-        return res.status(401).json({ message: 'No has iniciado sesión' })
+        return res.status(401).json({ message: 'No has iniciado sesión 2' })
     }
     try {
         jwt.verify(token, process.env.JWT_SECRET as string, async (error: any, decoded: any) => {
             if (error) {
               return res.status(401).json({ msg: 'Token no valido' });
-            } else {
+            } else {                
                 if (decoded) {
-                    
-                    
-                    const usuario = await Usuarios.findOne({ where: { id: decoded.id, status: 1 } });
+                    const usuario = await Usuarios.findOne({ where: { id: decoded.id } });
                     if (!usuario) {
-                        return res.status(401).json({ message: 'No has iniciado sesión' })
+                        return res.status(401).json({ message: 'No has iniciado sesión 1' })
                     }else{
                         req.body.id = decoded.id;
                         req.user = usuario.dataValues as UsuarioInterface;
                         next();
                     }
                 }else{
-                    return res.status(401).json({ message: 'No has iniciado sesión' })
+                    return res.status(401).json({ message: 'No has iniciado sesión 3' })
                 }
             }
         })

@@ -130,15 +130,12 @@ export const getTacticos = async (req: Request, res: Response) => {
     }
 }
 
-export const createTactico = async (req: Request, res: Response) => {
+export const createTactico = async (req: Request, res: Response) => {    
     const { slug, year, estrategico = false} = req.body;
     const {id: propietarioId} = req.user as UsuarioInterface
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-
-    
-    
 
     try {        
 
@@ -217,9 +214,6 @@ export const updateTactico = async (req: Request, res: Response) => {
 
     const participantes = [...responsablesArray, propietarioId]
 
-    console.log({estrategicoId});
-    
-
     try {
 
         const areaArray: any[] = []
@@ -253,9 +247,6 @@ export const updateTactico = async (req: Request, res: Response) => {
 
         const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoTactico});
 
-        console.log(objetivoTactico.estrategicoId);
-        
-
         if (objetivoTactico) {
             await objetivoTactico.update({ 
                 nombre, 
@@ -268,7 +259,7 @@ export const updateTactico = async (req: Request, res: Response) => {
                 propietarioId 
             });
 
-            await updateCode({id: objetivoTactico.id, slug})
+            // await updateCode({id: objetivoTactico.id, slug})
 
 
             await objetivoTactico.setResponsables(responsablesArray);
