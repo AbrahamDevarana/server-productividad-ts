@@ -194,7 +194,7 @@ export const createOperativo = async (req: Request, res: Response) => {
 
             await resultadoClave.reload();
 
-            const nombres = ['Acción 1', 'Acción 2', 'Acción 3'];
+            const nombres = ['Acción 1', 'Acción 2'];
             if(resultadoClave.id){
                 for (const nombre of nombres) {
                     await Task.create({

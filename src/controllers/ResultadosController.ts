@@ -95,7 +95,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
 
         // Crear 3 tasks
 
-        const nombres = ['Acción 1', 'Acción 2', 'Acción 3'];
+        const nombres = ['Acción 1', 'Acción 2'];
 
         if(resultadoClave.id){
             for (const nombre of nombres) {
@@ -302,8 +302,6 @@ export const duplicateResultadoClave = async (req: Request, res: Response) => {
     const { resultadoId } = req.body;
 
     try {
-
-        console.log(req.body);
         
         const resultadoClave = await ResultadosClave.findOne({
             where: {
@@ -311,9 +309,6 @@ export const duplicateResultadoClave = async (req: Request, res: Response) => {
             },
         });
 
-        console.log(resultadoClave);
-        
-        
         if(!resultadoClave){
             return res.status(404).json({
                 msg: 'No se pudo realizar el duplicado'
