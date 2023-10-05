@@ -210,6 +210,8 @@ Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeab
     }
 });
 
+Usuarios.hasMany(Rendimiento, { as: 'rendimiento', foreignKey: 'usuarioId' });
+
 export {
     Usuarios,
     Areas,

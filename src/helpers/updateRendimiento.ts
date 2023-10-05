@@ -19,6 +19,11 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
             },
         })
 
+        let totalObjetivos = 0;
+        let subTotalResultados = 0;
+        let totalResultados = 0;
+        let total = 0;
+
         const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
         
         if(operativosArrayId.length !== 0) {
@@ -41,9 +46,10 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 return acc + resultado;
             }, 0);
 
-            console.log({resultadoObjetivosTotal});
-            
-            
+            if(resultadoObjetivosTotal && resultadoObjetivosTotal !== 0){
+                totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
+            }
+        
 
             // //  Obtener el resultado de las competencias
 
@@ -69,37 +75,47 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                         return acc + obj.resultado
                     }, 2) / resultadoCompetencias.length;
                 
+
+                    if(resultadoCompetenciasTotal && resultadoCompetenciasTotal !== 0){
+                        subTotalResultados = resultadoCompetenciasTotal * 100 / 5
+                        totalResultados = ((subTotalResultados * 10) / 100)
+                    }
                 
-                    const totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
-                    const subTotalResultados = resultadoCompetenciasTotal * 100 / 5
-                    const totalResultados = ((subTotalResultados * 10) / 100)
-                    const total = totalObjetivos + totalResultados
                     
-                    const rendimiento = await Rendimiento.findOrCreate({
-                        where: {
-                            year,
-                            quarter,
-                            usuarioId,
-                            status: 'ABIERTO'
-                        }
-                    });
-
-                    const rendimientoId = rendimiento[0].id;
-
-                    await Rendimiento.update({
-                        resultadoObjetivos: totalObjetivos,
-                        resultadoCompetencias: totalResultados,
-                        resultadoFinal: total,
-                    }, {
-                        where: {
-                            id: rendimientoId
-                        }
-                    });
+                    
+                    
+                    
+                    
+                   
                 } 
             }
             
 
         }
+
+        const rendimiento = await Rendimiento.findOrCreate({
+            where: {
+                year,
+                quarter,
+                usuarioId,
+                status: 'ABIERTO'
+            }
+        });
+
+        const rendimientoId = rendimiento[0].id;
+
+
+        total = totalObjetivos + totalResultados
+
+        await Rendimiento.update({
+            resultadoObjetivos: totalObjetivos,
+            resultadoCompetencias: totalResultados,
+            resultadoFinal: total,
+        }, {
+            where: {
+                id: rendimientoId
+            }
+        });
     
     } catch (error) {
         // console.log(error);

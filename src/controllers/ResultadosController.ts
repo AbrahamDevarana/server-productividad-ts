@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PivotOpUsuario, ResultadosClave, Usuarios } from "../models";
+import { PivotOpUsuario, Rendimiento, ResultadosClave, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
 import { Task } from "../models/Task";
@@ -247,4 +247,44 @@ export const updateProgresoObjetivo = async ({objetivoOperativoId}: any) => {
             await objetivo.save();
         })
     }
+}
+
+
+export const getRanking = async (req: Request, res: Response) => {
+
+    const { year, quarter } = req.query;
+
+    try {
+
+        const usuarios = await Usuarios.findAll({
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+            include: [
+                {
+                    model: Rendimiento,
+                    as: 'rendimiento',
+                    where: {
+                        year,
+                        quarter
+                    },
+                },
+            ],
+        });
+        
+    
+        const usuariosOrdenados = usuarios.sort((a: any, b: any) => {
+            // de mayor a menor
+            return b.rendimiento[0]?.resultadoFinal - a.rendimiento[0]?.resultadoFinal;
+        })
+        res.json({rankingUsuarios: usuariosOrdenados});
+        
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+
+
+
 }
