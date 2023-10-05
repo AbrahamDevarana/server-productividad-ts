@@ -171,6 +171,11 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
         }else{
             progresoTotal = progreso;
         }
+
+        if(!progreso){
+            progresoTotal = 0;
+        }
+
         await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin, color });
 
         await updateProgresoObjetivo({objetivoOperativoId: operativoId});
@@ -249,7 +254,6 @@ export const updateProgresoObjetivo = async ({objetivoOperativoId}: any) => {
     }
 }
 
-
 export const getRanking = async (req: Request, res: Response) => {
 
     const { year, quarter } = req.query;
@@ -275,6 +279,10 @@ export const getRanking = async (req: Request, res: Response) => {
             // de mayor a menor
             return b.rendimiento[0]?.resultadoFinal - a.rendimiento[0]?.resultadoFinal;
         })
+
+        // Limite de 10 usuarios
+        usuariosOrdenados.splice(10, usuariosOrdenados.length - 10);
+
         res.json({rankingUsuarios: usuariosOrdenados});
         
     } catch (error) {
@@ -285,6 +293,89 @@ export const getRanking = async (req: Request, res: Response) => {
         });
     }
 
+
+
+}
+
+export const duplicateResultadoClave = async (req: Request, res: Response) => {
+
+    const { resultadoId } = req.body;
+
+    try {
+
+        console.log(req.body);
+        
+        const resultadoClave = await ResultadosClave.findOne({
+            where: {
+                id: resultadoId
+            },
+        });
+
+        console.log(resultadoClave);
+        
+        
+        if(!resultadoClave){
+            return res.status(404).json({
+                msg: 'No se pudo realizar el duplicado'
+            });
+        }
+
+        const tasks = await Task.findAll({
+            where: {
+                taskeableId: resultadoClave.id,
+                taskeableType: 'RESULTADO_CLAVE'
+            }
+        })
+
+        const nuevoResultado = await ResultadosClave.create({
+            propietarioId: resultadoClave.propietarioId,
+            operativoId: resultadoClave.operativoId,
+            tipoProgreso: resultadoClave.tipoProgreso,
+            nombre: resultadoClave.nombre,
+            status: 'SIN_INICIAR',
+            progreso: 0,
+            fechaInicio: resultadoClave.fechaInicio,
+            fechaFin: resultadoClave.fechaFin,
+            color: resultadoClave.color
+        });
+
+        // buscar las Task del resultado clave
+
+        if(nuevoResultado.id){
+            if(tasks.length > 0){
+                for (const task of tasks) {
+                    await Task.create({
+                        nombre: task.nombre,
+                        propietarioId: task.propietarioId,
+                        taskeableId: nuevoResultado.id,
+                        taskeableType: task.taskeableType,
+                        prioridad: task.prioridad,
+                        status: task.status,
+                        fechaFin: task.fechaFin,
+                    })   
+    
+                }
+            }
+        }
+
+        await nuevoResultado.reload({
+            include: includeProps
+        })
+
+        await updateProgresoObjetivo({objetivoOperativoId: resultadoClave.operativoId});
+
+        res.json({ resultadoClave: nuevoResultado });
+        
+        
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+        
+    }
 
 
 }

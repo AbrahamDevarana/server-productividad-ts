@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import {createResultadosClave, deleteResultadosClave, getResultadosClave, updateResultadosClave, getResultadoClave } from '../../controllers/ResultadosController';
+import {createResultadosClave, deleteResultadosClave, getResultadosClave, updateResultadosClave, getResultadoClave, duplicateResultadoClave } from '../../controllers/ResultadosController';
 const router = Router();
 
 
@@ -18,6 +18,9 @@ router.put('/:id', [
 ], updateResultadosClave);
 
 router.delete('/:id', deleteResultadosClave);
+
+router.post('/duplicate', duplicateResultadoClave);
+
 
 
 

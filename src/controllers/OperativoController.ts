@@ -326,6 +326,60 @@ export const setPonderaciones = async (req: Request, res: Response) => {
     }
 }
 
+
+export const cerrarObjetivo = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+
+
+    try {
+        const objetivo = await ObjetivoOperativos.findByPk(id);
+
+        if(!objetivo) return res.status(404).json({ msg: 'No existe un este objetivo' });
+        if(objetivo.status === 'CERRADO') return res.status(400).json({ msg: 'Este objetivo ya esta cerrado' });
+
+        await objetivo.update({
+            status: 'CERRADO'
+        });
+
+        // buscar los pivotOpUsuario y actualizarlos a cerrado
+
+        const pivotOpUsuario = await PivotOpUsuario.findAll({
+            where: {
+                objetivoOperativoId: objetivo.id
+            }
+        });
+
+        for (const pivot of pivotOpUsuario) {
+            await pivot.update({
+                status: 'PENDIENTE_APROBACION'
+            });
+        }
+
+        await objetivo.reload({
+            include: includes
+        });
+
+        res.json({
+            ok: true,
+            objetivo: {
+                id: objetivo.id,
+                status: objetivo.status,
+            }
+        })
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+
+}
+
+// Recologar
 export const cerrarPeriodo = async (req: Request, res: Response) => {
     const { year, quarter } = req.body;
 
