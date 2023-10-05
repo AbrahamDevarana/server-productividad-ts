@@ -85,11 +85,7 @@ export const Rendimiento = database.define<RendimientoModel>('rendimiento', {
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: (rendimiento: RendimientoModel, options) => {
-         
-        },
-        afterFind: async(rendimiento:RendimientoModel, options) => {
-        }
+      
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }

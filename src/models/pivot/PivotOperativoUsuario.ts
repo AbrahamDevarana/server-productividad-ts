@@ -1,5 +1,6 @@
 import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../../config/database";
+import { updateRendimiento } from "../../helpers/updateRendimiento";
 
 export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuarioModel>, InferCreationAttributes<PivotOpUsuarioModel>> {
     id: number;
@@ -69,12 +70,5 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
     },
 }, {
     timestamps: true,
-
-    hooks: {
-
-        afterUpdate: async () => {
-   
-
-        }
-    }
+    hooks: {}
 });

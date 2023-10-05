@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { ConfiguracionUsuario, Departamentos, Direccion, GaleriaUsuarios, ObjetivoOperativos, Proyectos, ResultadosClave, Usuarios } from "../models";
 import { Op } from "sequelize";
-import { updateRendimiento } from "../helpers/updateRendimiento";
 
 
 
@@ -57,7 +56,6 @@ export const getPerfil = async (req: Request, res: Response) => {
             }
         });
 
-        updateRendimiento()
         if (usuario) {
             res.json({ usuario });
         } else {

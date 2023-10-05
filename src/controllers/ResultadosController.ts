@@ -4,7 +4,6 @@ import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
 import { Task } from "../models/Task";
 
-
 const includeProps = [
     {
         model: Usuarios,
@@ -75,7 +74,7 @@ export const getResultadoClave = async (req: Request, res: Response) => {
 }
 
 export const createResultadosClave = async (req: Request, res: Response) => {
-    const { operativoId } = req.body;
+    const { operativoId, quarter } = req.body;
 
     const { id: propietarioId } = req.user as UsuarioInterface
 
@@ -87,8 +86,8 @@ export const createResultadosClave = async (req: Request, res: Response) => {
             nombre: 'Nuevo resultado clave',
             status: 'SIN_INICIAR',
             progreso: 0,
-            fechaInicio: dayjs().startOf('quarter').toDate(),
-            fechaFin: dayjs().endOf('quarter').toDate(),
+            fechaInicio: dayjs().startOf(quarter).toDate(),
+            fechaFin: dayjs().endOf(quarter).toDate(),
             color: 'rgba(101, 106, 118, 1)'
         });
 
@@ -117,8 +116,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
             include: includeProps
         })
 
-        updateProgresoObjetivo({objetivoOperativoId: operativoId});
-        
+        await updateProgresoObjetivo({objetivoOperativoId: operativoId});
         res.json({ resultadoClave });
     }
     catch (error) {

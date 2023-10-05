@@ -1,92 +1,110 @@
 import { AsignacionEvaluacion, EvaluacionRespuesta, ObjetivoOperativos, PivotOpUsuario, Rendimiento } from "../models"
 
 
-export const updateRendimiento = async () => {
+interface Props {
+    usuarioId: string;
+    year: number;
+    quarter: number;
+}
 
-    const usuarioId = 'ebcd7a49-21f4-454a-828c-94d7ef8a5a95'
-    const year = 2023
-    const quarter = 3
+export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => {
 
-    //   Obtener usuario y objetivos operativos
-    const objetivosOperativos = await ObjetivoOperativos.findAll({
-        where: {
-            year,
-            quarter
-        },
-    })
+    try {
 
-   const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
 
-   const resultadoObjetivos = await PivotOpUsuario.findAll({
-         where: {
-              objetivoOperativoId: operativosArrayId,
-              usuarioId
-         }
-    });
+        const objetivosOperativos = await ObjetivoOperativos.findAll({
+            where: {
+                year,
+                quarter
+            },
+        })
 
-    //  Obtener el resultado del pivotOp donde progresoReal / progresoAsignado
+        const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
+        
+        if(operativosArrayId.length !== 0) {
+            const resultadoObjetivos = await PivotOpUsuario.findAll({
+                where: {
+                    objetivoOperativoId: operativosArrayId,
+                    usuarioId
+                }
+            });
 
-    const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
+            if(resultadoObjetivos.length !== 0){
 
-        if(obj.progresoAsignado === 0) return acc;
+            // //  Obtener el resultado del pivotOp donde progresoReal / progresoAsignado
 
-        const resultado = (obj.progresoAsignado / 100) *  obj.progresoReal;
-        return acc + resultado;
-    }, 0);
-    
+            const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
 
-    //  Obtener el resultado de las competencias
+                if(obj.progresoAsignado === 0) return acc;
 
-    const asignacionEvaluacion = await AsignacionEvaluacion.findAll({
-        where: {
-            evaluadoId: usuarioId,
-            year,
-            quarter
+                const resultado = (obj.progresoAsignado / 100) *  obj.progresoReal;
+                return acc + resultado;
+            }, 0);
+
+            console.log({resultadoObjetivosTotal});
+            
+            
+
+            // //  Obtener el resultado de las competencias
+
+            const asignacionEvaluacion = await AsignacionEvaluacion.findAll({
+                where: {
+                    evaluadoId: usuarioId,
+                    year,
+                    quarter
+                }
+            });
+
+            const evaluacionesId = asignacionEvaluacion.map( (obj: any) => obj.id);
+            const resultadoCompetencias = await EvaluacionRespuesta.findAll({
+                where: {
+                    evaluacionUsuarioId: evaluacionesId
+                }
+            });
+
+                if(resultadoCompetencias.length !== 0){
+                    // la sumatoria de todos los resultadoCompetencias.resultado / resultadoCompetencias.length
+
+                    const resultadoCompetenciasTotal = resultadoCompetencias.reduce((acc: any, obj: any) => {
+                        return acc + obj.resultado
+                    }, 2) / resultadoCompetencias.length;
+                
+                
+                    const totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
+                    const subTotalResultados = resultadoCompetenciasTotal * 100 / 5
+                    const totalResultados = ((subTotalResultados * 10) / 100)
+                    const total = totalObjetivos + totalResultados
+                    
+                    const rendimiento = await Rendimiento.findOrCreate({
+                        where: {
+                            year,
+                            quarter,
+                            usuarioId,
+                            status: 'ABIERTO'
+                        }
+                    });
+
+                    const rendimientoId = rendimiento[0].id;
+
+                    await Rendimiento.update({
+                        resultadoObjetivos: totalObjetivos,
+                        resultadoCompetencias: totalResultados,
+                        resultadoFinal: total,
+                    }, {
+                        where: {
+                            id: rendimientoId
+                        }
+                    });
+                } 
+            }
+            
+
         }
-    });
-
-    const evaluacionesId = asignacionEvaluacion.map( (obj: any) => obj.id);
-    const resultadoCompetencias = await EvaluacionRespuesta.findAll({
-        where: {
-            evaluacionUsuarioId: evaluacionesId
-        }
-    });
-
-    // la sumatoria de todos los resultadoCompetencias.resultado / resultadoCompetencias.length
-
-    const resultadoCompetenciasTotal = resultadoCompetencias.reduce((acc: any, obj: any) => {
-        return acc + obj.resultado
-    }, 2) / resultadoCompetencias.length;
     
-
-    //  Obtener el resultado parcial
-    
-
-    const totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
-    const subTotalResultados = resultadoCompetenciasTotal * 100 / 5
-    const totalResultados = ((subTotalResultados * 10) / 100)
-    const total = totalObjetivos + totalResultados
-    
-    const rendimiento = await Rendimiento.findOrCreate({
-        where: {
-            year,
-            quarter,
-            usuarioId,
-            status: 'ABIERTO'
-        }
-    });
-
-    const rendimientoId = rendimiento[0].id;
-
-    await Rendimiento.update({
-        resultadoObjetivos: totalObjetivos,
-        resultadoCompetencias: totalResultados,
-        resultadoFinal: total,
-    }, {
-        where: {
-            id: rendimientoId
-        }
-    });
+    } catch (error) {
+        // console.log(error);
+        throw new Error('Error al actualizar el rendimiento');
+    }
         
     
 }

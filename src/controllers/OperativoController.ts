@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 import { Op } from "sequelize";
 
 
-
 const includes = [
     {
         model: Usuarios,
@@ -61,7 +60,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , tacticoId, propietarioId } = req.body;
-
+    
     const fechaInicial = dayjs(fechaInicio).toDate();
     const fechaFinal = dayjs(fechaFin).toDate();
 
@@ -291,21 +290,23 @@ export const setPonderaciones = async (req: Request, res: Response) => {
 
     try {
 
-       ponderaciones.forEach( async (ponderacion: any) => {
-            const { objetivoId, progresoAsignado } = ponderacion;
 
-            const pivot = await PivotOpUsuario.findOne({
-                where: {
-                    usuarioId: id,
-                    objetivoOperativoId: objetivoId
-                }
-            });
 
-            if (pivot) {
-                await pivot.update({
-                    progresoAsignado
+        ponderaciones.forEach( async (ponderacion: any) => {
+                const { objetivoId, progresoAsignado } = ponderacion;
+
+                const pivot = await PivotOpUsuario.findOne({
+                    where: {
+                        usuarioId: id,
+                        objetivoOperativoId: objetivoId
+                    }
                 });
-            }
+
+                if (pivot) {
+                    await pivot.update({
+                        progresoAsignado
+                    });
+                }
         });
 
         return res.json({
