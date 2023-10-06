@@ -19,7 +19,13 @@ const includes = [
         model: ResultadosClave,
         as: 'resultadosClave',
         attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
-        required: false
+        required: false,
+        include: [{
+            model: Task,
+            as: 'task',
+            required: false,
+            attributes: ['id', 'nombre', 'status', 'taskeableId', 'taskeableType', 'propietarioId'],
+        }]
     }
 ]
 
