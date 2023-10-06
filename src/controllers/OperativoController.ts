@@ -184,10 +184,15 @@ export const createOperativo = async (req: Request, res: Response) => {
         // Crear resultado clave con 3 tasks
 
        if(operativo.id){
+
+            const { year, quarter } = operativo;
+
+            const firstDay = dayjs().year(year).quarter(quarter).startOf('quarter').toDate();
+            const lastDay = dayjs().year(year).quarter(quarter).endOf('quarter').subtract(1, 'day').toDate();
             const resultadoClave = await ResultadosClave.create({
                 nombre: operativo.nombre,
-                fechaInicio: operativo.fechaInicio,
-                fechaFin: operativo.fechaFin,
+                fechaInicio: firstDay,
+                fechaFin: lastDay,
                 operativoId: operativo.id,
                 status: 'SIN_INICIAR',
                 tipoProgreso: 'acciones',
@@ -201,6 +206,7 @@ export const createOperativo = async (req: Request, res: Response) => {
             await resultadoClave.reload();
 
             const nombres = ['Acción 1', 'Acción 2'];
+            
             if(resultadoClave.id){
                 for (const nombre of nombres) {
                     await Task.create({

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PivotOpUsuario, Rendimiento, ResultadosClave, Usuarios } from "../models";
+import { ObjetivoOperativos, PivotOpUsuario, Rendimiento, ResultadosClave, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
 import { Task } from "../models/Task";
@@ -74,50 +74,64 @@ export const getResultadoClave = async (req: Request, res: Response) => {
 }
 
 export const createResultadosClave = async (req: Request, res: Response) => {
-    const { operativoId, quarter } = req.body;
+    const { operativoId } = req.body;
 
     const { id: propietarioId } = req.user as UsuarioInterface
 
     try {
-        const resultadoClave = await ResultadosClave.create({
-            propietarioId,
-            operativoId,
-            tipoProgreso: "acciones",
-            nombre: 'Nuevo resultado clave',
-            status: 'SIN_INICIAR',
-            progreso: 0,
-            fechaInicio: dayjs().startOf(quarter).toDate(),
-            fechaFin: dayjs().endOf(quarter).toDate(),
-            color: 'rgba(101, 106, 118, 1)'
-        });
 
-    
+        const objetivo = await ObjetivoOperativos.findByPk(operativoId);
 
-        // Crear 3 tasks
+        
+        if(objetivo){
+            const { year, quarter } = objetivo;           
+            const firstDay = dayjs().year(year).quarter(quarter).startOf('quarter').toDate();
+            const lastDay = dayjs().year(year).quarter(quarter).endOf('quarter').subtract(1, 'day').toDate();
 
-        const nombres = ['Acción 1', 'Acción 2'];
 
-        if(resultadoClave.id){
-            for (const nombre of nombres) {
-                await Task.create({
-                    nombre,
-                    propietarioId,
-                    taskeableId: resultadoClave.id,
-                    taskeableType: 'RESULTADO_CLAVE',
-                    prioridad: 'NORMAL',
-                    status: 'SIN_INICIAR',
-                    fechaFin: resultadoClave.fechaFin,
-                })   
 
+            const resultadoClave = await ResultadosClave.create({
+                propietarioId,
+                operativoId,
+                tipoProgreso: "acciones",
+                nombre: 'Nuevo resultado clave',
+                status: 'SIN_INICIAR',
+                progreso: 0,
+                fechaInicio: firstDay,
+                fechaFin: lastDay,
+                color: 'rgba(101, 106, 118, 1)'
+            });
+
+            const nombres = ['Acción 1', 'Acción 2'];
+
+            if(resultadoClave.id){
+                for (const nombre of nombres) {
+                    await Task.create({
+                        nombre,
+                        propietarioId,
+                        taskeableId: resultadoClave.id,
+                        taskeableType: 'RESULTADO_CLAVE',
+                        prioridad: 'NORMAL',
+                        status: 'SIN_INICIAR',
+                        fechaFin: resultadoClave.fechaFin,
+                    })   
+
+                }
             }
+
+            await resultadoClave.reload({
+                include: includeProps
+            })
+
+            await updateProgresoObjetivo({objetivoOperativoId: operativoId});
+            res.json({ resultadoClave });
+
+        }else{
+            return res.status(404).json({
+                msg: 'No existe un objetivo'
+            });
         }
-
-        await resultadoClave.reload({
-            include: includeProps
-        })
-
-        await updateProgresoObjetivo({objetivoOperativoId: operativoId});
-        res.json({ resultadoClave });
+        
     }
     catch (error) {
         console.log(error);

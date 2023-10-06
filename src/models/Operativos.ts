@@ -12,8 +12,8 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     tacticoId?: string;
     fechaInicio: Date;
     fechaFin: Date;
-    quarter?: number;
-    year?: number;
+    quarter: number;
+    year: number;
     editado?: boolean;
     status?: 'ABIERTO' | 'CERRADO';
     createdAt?: Date;
@@ -113,16 +113,6 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
     paranoid: true,
     timestamps: true,
     hooks: {     
-        afterUpdate: async () => {
-
-            // 
-           
-        },
-        afterCreate: async () => {
-
-            // 
-           
-        },
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
