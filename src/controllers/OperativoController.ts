@@ -338,7 +338,6 @@ export const setPonderaciones = async (req: Request, res: Response) => {
     }
 }
 
-
 export const cerrarObjetivo = async (req: Request, res: Response) => {
 
     const { id } = req.params;
@@ -358,7 +357,8 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
 
         const pivotOpUsuario = await PivotOpUsuario.findAll({
             where: {
-                objetivoOperativoId: objetivo.id
+                objetivoOperativoId: objetivo.id,
+                status: 'ABIERTO'
             }
         });
 

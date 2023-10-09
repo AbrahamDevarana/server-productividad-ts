@@ -71,22 +71,18 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 if(resultadoCompetencias.length !== 0){
                     // la sumatoria de todos los resultadoCompetencias.resultado / resultadoCompetencias.length
 
-                    const resultadoCompetenciasTotal = resultadoCompetencias.reduce((acc: any, obj: any) => {
+                    const preResultadoCompetenciasTotal = resultadoCompetencias.reduce((acc: any, obj: any) => {
                         return acc + obj.resultado
-                    }, 2) / resultadoCompetencias.length;
-                
+                    }, 0)
 
+                    const resultadoCompetenciasTotal = preResultadoCompetenciasTotal / resultadoCompetencias.length
+                    
+                    
+                                
                     if(resultadoCompetenciasTotal && resultadoCompetenciasTotal !== 0){
                         subTotalResultados = resultadoCompetenciasTotal * 100 / 5
                         totalResultados = ((subTotalResultados * 10) / 100)
                     }
-                
-                    
-                    
-                    
-                    
-                    
-                   
                 } 
             }
             
@@ -118,7 +114,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         });
     
     } catch (error) {
-        // console.log(error);
+        console.log(error);
         throw new Error('Error al actualizar el rendimiento');
     }
         

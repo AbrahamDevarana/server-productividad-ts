@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 
 import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from "../models/evaluacion"
-import { Usuarios } from "../models";
-import database from "../config/database"; 
-import dayjs from "dayjs";
+import { Rendimiento, Usuarios } from "../models";
 import { Op } from "sequelize";
 
 
@@ -16,9 +14,8 @@ enum TipoEvaluacion {
 //  Por usuario asignar QUIEN lo va a evaluar
 export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => {
 
+    const { year, quarter } = req.body
 
-    const year = dayjs().year()
-    const quarter = Math.ceil((dayjs().month() + 1) / 3)
     // const MAX_EVALUACIONES = 3
 
     const usuarios = await Usuarios.findAll({})
@@ -148,6 +145,7 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
     const { year, quarter } = req.query as any;
     const { id } = req.params;
 
+
     const usuariosEvaluaciones = await AsignacionEvaluacion.findAll({
         where: {
             evaluadorId: id,
@@ -164,18 +162,16 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
     })
 
     // encontrar a los de evaluacionId 1, 2, 3
-    const lider = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionLider)?.evaluado
-    const colaboradores = usuariosEvaluaciones.filter((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionColaborador).map((usuario: any) => usuario.evaluado)
-    const propia = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionPropia)?.evaluado
-
-
+    const evaluacionLider = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionLider)?.evaluado
+    const evaluacionPropia = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionPropia)?.evaluado
+    // const colaboradores = usuariosEvaluaciones.filter((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionColaborador).map((usuario: any) => usuario.evaluado)
     
 
     return res.json({
         ok: true,
-        evaluacionColaborador: colaboradores,
-        evaluacionLider: lider,
-        evaluacionPropia: propia
+        // evaluacionColaborador: colaboradores,
+        evaluacionLider,
+        evaluacionPropia
     })
 
 }
@@ -314,6 +310,15 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
     const { year, quarter } = req.query as any;
     try {
 
+        const promedio = await Rendimiento.findOne({
+            where: {
+                usuarioId: id,
+                year,
+                quarter
+            }
+        })
+        const resultado = promedio? ((promedio.resultadoCompetencias / 10) * 5).toFixed(2) : 0
+
         const asignaciones = await AsignacionEvaluacion.findAll({
             where: {
                 evaluadoId: id,
@@ -333,16 +338,10 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
         })
         
         if (respuestas.length === 0) return res.json({ ok: true, promedio: 0, respuestas: [] })
-        
-        const promedio = respuestas.reduce((acc: any, respuesta: any) => acc + respuesta.resultado, 2) / respuestas.length
-
-        console.log(promedio);
-        
-        
         return res.json({
             ok: true,
             respuestas,
-            promedio
+            promedio: resultado
         })  
 
         
@@ -358,192 +357,4 @@ export const obtenerResultadoEvaluacion = async (req: Request, res: Response) =>
     }
 
 }
-
-
-
-// Deprecated 
-export const createEvaluacionEquipo = async (req: Request, res: Response) => {
-
-    throw new Error('Deprecated')
-    const  { usuarioId, year, quarter } = req.body;
-
-    const t = await database.transaction();
-
-    try {
-        // Obtener lider o subordinado del usuario 
-        const usuario = await Usuarios.findByPk(usuarioId, {})
-
-        if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
-
-        const lider = await usuario.getLider()
-        const subordinados = await usuario.getSubordinados()
-
-        
-        // Crear evaluacionusuario para el lider
-        const evaluacionLider = await AsignacionEvaluacion.findOrCreate({
-            where: {
-                evaluadorId: lider.id,
-                evaluadoId: usuario.id,
-                year,
-                quarter,
-                evaluacionId: TipoEvaluacion.EvaluacionLider
-            }
-        })
-
-        // Crear evaluacionusuario para cada subordinado
-        
-        const evaluacionesSubordinados = await Promise.all(subordinados.map(async (subordinado: any) => {
-            return await AsignacionEvaluacion.findOrCreate({
-                where: {
-                    evaluadorId: subordinado.id,
-                    evaluadoId: usuario.id,
-                    year,
-                    evaluacionId: TipoEvaluacion.EvaluacionColaborador,
-                    quarter
-                }
-            })
-        }))
-
-        await t.commit();
-
-        return res.json({
-            ok: true,
-            evaluacionLider,
-            evaluacionesSubordinados
-        })
-        
-    } catch (error) {
-        await t.rollback();
-        console.log(error)
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error inesperado'
-        })
-    }
-}
-
-export const createEvaluacionCoolaboradores = async (req: Request, res: Response) => {
-
-    throw new Error('Deprecated')
-    const { usuarioId, year, quarter } = req.body;
-
-    const t = await database.transaction();
-
-    try {
-
-        const usuario = await Usuarios.findByPk(usuarioId, {})
-        if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
-
-        const objetivos = await usuario.getObjetivosOperativos({
-            where: {
-                year,
-                quarter
-            },
-            include: [
-                {
-                    association: 'operativosResponsable',
-                    attributes: ['id', 'nombre']
-                }
-            ]
-        })
-        
-        
-        //  de cada Objetivo en Objetivos obtener los Usuarios Coolaboradores, quitar al usuarioId y crear evaluacionUsuario
-
-        const evaluaciones = await Promise.all(objetivos.map(async (objetivo: any) => {
-            const colaboradores = objetivo.operativosResponsable.filter((res: any) => res.id !== usuario.id)
-
-            
-            return await Promise.all(colaboradores.map(async (colaborador: any) => {
-
-                return await AsignacionEvaluacion.findOrCreate({
-                    where: {
-                        evaluadorId: colaborador.id,
-                        evaluadoId: usuario.id,
-                        year,
-                        quarter,
-                        evaluacionId: TipoEvaluacion.EvaluacionColaborador
-                    },
-                })
-            }))
-        }))
-        
-    
-        await t.commit();
-
-        return res.json({
-            ok: true,
-            evaluaciones
-        })
-        
-    } catch (error) {
-
-        t.rollback();
-        console.log(error)
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error inesperado'
-        })
-    }
-}
-
-export const getEvaluacion = async (req: Request, res: Response) => {
-    const { year, quarter } = req.query as any;
-    const { id, } = req.params;
-    
-    throw new Error('Deprecated')
-    try {
-
-        const usuario = await Usuarios.findByPk(id, {})
-
-        if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
-
-        const usuarios = await usuario.getEvaluacionesRealizadas({
-            include: [
-            {
-                model: Usuarios,
-                as: 'usuarioEvaluado',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
-            },
-            {
-                model: Usuarios,
-                as: 'usuarioEvaluador',
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
-            }
-        ],
-            where: {
-                year,
-                quarter
-            },
-            distinct: true
-        })
-
-        
-
-        const usuariosSet = new Set()
-
-        usuarios.map(
-            (usuario: any) => {
-                // si el usuario evaluado es el mismo que el usuario que hace la petición no se agrega
-                if (usuario.usuarioEvaluado.id === usuario.usuarioEvaluador.id) return
-                usuariosSet.add(usuario.usuarioEvaluado)
-            }
-        )
-
-        const usuariosArray = Array.from(usuariosSet)
-        
-        return res.json({
-            ok: true,
-            usuariosEvaluados: usuariosArray
-        })
-
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error inesperado'
-        }) 
-    } 
-}
-
 

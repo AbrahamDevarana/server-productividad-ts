@@ -1,6 +1,5 @@
 import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../../config/database";
-import { updateRendimiento } from "../../helpers/updateRendimiento";
 
 export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuarioModel>, InferCreationAttributes<PivotOpUsuarioModel>> {
     id: number;
@@ -10,7 +9,7 @@ export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuari
     progresoAsignado: number;
     progresoReal: number;
     extra: number;
-    status: 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO'
+    status: 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO' | 'CERRADO'
     createdAt?: Date;
     updatedAt?: Date;
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Rendimiento } from "../models";
+import { ObjetivoOperativos, PivotOpUsuario, Rendimiento } from "../models";
 import { updateRendimiento } from "../helpers/updateRendimiento";
 
 
@@ -22,6 +22,8 @@ export const getOrCreateRendimientoByUsuario = async (req: Request, res: Respons
         res.json({rendimiento: rendimiento[0]});
 
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({msg: 'Error al obtener el rendimiento del usuario'});
     }
 }
@@ -62,9 +64,40 @@ export const cerrarCiclo = async (req: Request, res: Response) => {
                     year
                 }
             });
+
+            const objetivos = await ObjetivoOperativos.findAll({
+                where: {
+                    quarter,
+                    year
+                }
+            });
+
+            for (const objetivo of objetivos) {
+
+                const pivot = await PivotOpUsuario.findAll({
+                    where: {
+                        objetivoOperativoId: objetivo.id,
+                        usuarioId
+                    }
+                });
+
+                for (const resultado of pivot) {
+                    await resultado.update({
+                        status: 'FINALIZADO'
+                    });
+                }
+
+
+
+                await objetivo.update({
+                    status: 'CERRADO'
+                });
+            }
+
     
-        
-            res.json({rendimiento: rendimiento[0]});
+
+        res.json({rendimiento});
+
     
         } catch (error) {
             res.status(500).json({msg: 'Error al obtener el rendimiento del usuario'});
