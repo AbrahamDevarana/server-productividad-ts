@@ -90,7 +90,7 @@ export const Task = database.define('tasks', {
 
 
 const updateProgreso = async (task: TaskModel) => {
-    
+
     const resultadoClave = await ResultadosClave.findOne({
         where: {
             id: task.taskeableId
@@ -99,7 +99,8 @@ const updateProgreso = async (task: TaskModel) => {
     
     const acciones = await Task.findAll({
         where: {
-            taskeableId: task.taskeableId
+            taskeableId: task.taskeableId,
+            status: ['FINALIZADO', 'SIN_INICIAR', 'EN_PROCESO']
         }
     });
 

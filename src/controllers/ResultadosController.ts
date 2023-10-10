@@ -3,6 +3,7 @@ import { ObjetivoOperativos, PivotOpUsuario, Rendimiento, ResultadosClave, Usuar
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
 import { Task } from "../models/Task";
+import { Op } from "sequelize";
 
 const includeProps = [
     {
@@ -164,7 +165,9 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
             const tasks = await Task.findAll({
                 where: {
                     taskeableId: resultadoClave.id,
-                    taskeableType: 'RESULTADO_CLAVE'
+                    taskeableType: 'RESULTADO_CLAVE',
+                    // not 'CANCELADO'
+                    status: ['FINALIZADO', 'SIN_INICIAR', 'EN_PROCESO']
                 }
             })
 
