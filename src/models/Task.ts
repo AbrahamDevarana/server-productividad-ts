@@ -10,7 +10,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     descripcion?: string;
     taskeableId: string;
     taskeableType: 'RESULTADO_CLAVE';
-    prioridad: 'ALTA' | 'NORMAL' | 'BAJA';
+    prioridad: 'Alta' | 'Normal' | 'Baja';
     status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADO' | 'CANCELADO'
     propietarioId: string;
     fechaFin: Date;

@@ -24,8 +24,20 @@ const includes = [
             model: Task,
             as: 'task',
             required: false,
-            attributes: ['id', 'nombre', 'status', 'taskeableId', 'taskeableType', 'propietarioId'],
-        }]
+            attributes: ['id', 'nombre', 'status', 'taskeableId', 'taskeableType', 'propietarioId', 'prioridad'],
+            include: [ {
+                model: Usuarios,
+                as: 'propietario',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+            }
+        ]
+        },
+        {
+            model: Usuarios,
+            as: 'propietario',
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+        }
+    ]
     }
 ]
 
@@ -50,7 +62,6 @@ export const getOperativos = async (req:any, res: Response) => {
         });
       
         const filteredObjetivos = filtrarObjetivosUsuario(operativos, usuarioId)
-
         res.json({ operativos: filteredObjetivos });
     
     } catch (error) {
@@ -214,7 +225,7 @@ export const createOperativo = async (req: Request, res: Response) => {
                         propietarioId,
                         taskeableId: resultadoClave.id,
                         taskeableType: 'RESULTADO_CLAVE',
-                        prioridad: 'NORMAL',
+                        prioridad: 'Normal',
                         status: 'SIN_INICIAR',
                         fechaFin: resultadoClave.fechaFin,
                     })   

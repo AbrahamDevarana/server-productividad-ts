@@ -154,7 +154,7 @@ export const getLideresByDepartamento = async (req: Request, res: Response) => {
             where: { id },
             include: [
                 { model: Areas, as: 'area', include: [{ model: Usuarios, as: 'leader', 
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno']
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
                 }] },
                 { model: Usuarios, as: 'leader', attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno'] },
               ],

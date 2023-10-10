@@ -49,7 +49,7 @@ export const createTask = async (req: Request, res: Response) => {
                 propietarioId: propietarioId,
                 fechaFin: dayjs().endOf(quarter).toDate(),
                 status: 'SIN_INICIAR',
-                prioridad: 'NORMAL',
+                prioridad: 'Normal',
                 taskeableType: 'RESULTADO_CLAVE',
             });
 
