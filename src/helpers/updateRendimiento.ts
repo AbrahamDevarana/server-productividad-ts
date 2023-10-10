@@ -23,6 +23,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         let subTotalResultados = 0;
         let totalResultados = 0;
         let total = 0;
+        let evaluacionesLength = 0
 
         const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
         
@@ -61,6 +62,8 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             });
 
+            evaluacionesLength = asignacionEvaluacion.length;
+
             const evaluacionesId = asignacionEvaluacion.map( (obj: any) => obj.id);
             const resultadoCompetencias = await EvaluacionRespuesta.findAll({
                 where: {
@@ -75,18 +78,16 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                         return acc + obj.resultado
                     }, 0)
 
-                    const resultadoCompetenciasTotal = preResultadoCompetenciasTotal / resultadoCompetencias.length
-                    
-                    
+                    const resultadoCompetenciasTotal = (preResultadoCompetenciasTotal / resultadoCompetencias.length) / evaluacionesLength
+                       
                                 
                     if(resultadoCompetenciasTotal && resultadoCompetenciasTotal !== 0){
                         subTotalResultados = resultadoCompetenciasTotal * 100 / 5
                         totalResultados = ((subTotalResultados * 10) / 100)
+                        
                     }
                 } 
             }
-            
-
         }
 
         const rendimiento = await Rendimiento.findOrCreate({
@@ -99,7 +100,6 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         });
 
         const rendimientoId = rendimiento[0].id;
-
 
         total = totalObjetivos + totalResultados
 

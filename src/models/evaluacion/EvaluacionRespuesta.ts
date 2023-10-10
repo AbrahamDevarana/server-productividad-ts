@@ -19,7 +19,7 @@ export const EvaluacionRespuesta = database.define(
             },
         },
         comentario: {
-            type: Sequelize.STRING,
+            type: Sequelize.TEXT,
             allowNull: true,
         },
         status: {
