@@ -352,32 +352,48 @@ export const setPonderaciones = async (req: Request, res: Response) => {
 
 export const cerrarObjetivo = async (req: Request, res: Response) => {
 
-    const { id } = req.params;
+    const { operativoId, checked } = req.body;
 
 
     try {
-        const objetivo = await ObjetivoOperativos.findByPk(id);
+        const objetivo = await ObjetivoOperativos.findByPk(operativoId);
 
         if(!objetivo) return res.status(404).json({ msg: 'No existe un este objetivo' });
         if(objetivo.status === 'CERRADO') return res.status(400).json({ msg: 'Este objetivo ya esta cerrado' });
 
-        await objetivo.update({
-            status: 'CERRADO'
-        });
+
+
+        if(checked){
+            await objetivo.update({
+                status: 'POR_APROBAR'
+            });
+        }else{
+            await objetivo.update({
+                status: 'ABIERTO'
+            });
+        }
+
+       
 
         // buscar los pivotOpUsuario y actualizarlos a cerrado
 
         const pivotOpUsuario = await PivotOpUsuario.findAll({
             where: {
-                objetivoOperativoId: objetivo.id,
-                status: 'ABIERTO'
+                objetivoOperativoId: objetivo.id
             }
         });
 
         for (const pivot of pivotOpUsuario) {
-            await pivot.update({
-                status: 'PENDIENTE_APROBACION'
-            });
+
+            if(checked){
+                await pivot.update({
+                    status: 'PENDIENTE_APROBACION'
+                });
+            }else{
+                await pivot.update({
+                    status: 'ABIERTO'
+                });
+            }
         }
 
         await objetivo.reload({
@@ -406,23 +422,23 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
 
 export const cierreCiclo = async (req: Request, res: Response) => {
 
-    const { usuarioId, year, quarter } = req.body;
-    const objetivos = await ObjetivoOperativos.findAll({
-        where: {
-            year,
-            quarter
-        }
-    });
+    const { usuarioId, year, quarter, objetivosId } = req.body;
+    try {
 
-    for (const objetivo of objetivos) {
-        await objetivo.update({
-            status: 'CERRADO'
+        const objetivos = await ObjetivoOperativos.findAll({
+            where: {
+                year,
+                quarter,
+                id: objetivosId
+            }
         });
+
+        const objetivoIds = objetivos.map( (obj: any) => obj.id );
 
         const pivot = await PivotOpUsuario.findAll({
             where: {
                 usuarioId,
-                objetivoOperativoId: objetivo.id
+                objetivoOperativoId: objetivoIds
             }
         });
 
@@ -432,35 +448,52 @@ export const cierreCiclo = async (req: Request, res: Response) => {
             });
         }
 
-    }
-
-    await updateRendimiento({ usuarioId, year, quarter });
-
-    const rendimiento = await Rendimiento.findOne({
-        where: {
-            usuarioId,
-            year,
-            quarter
+        for (const objetivo of objetivos) {
+            await objetivo.update({
+                status: 'CERRADO'
+            });
         }
-    });
 
-    if(rendimiento){
-        await rendimiento.update({
-            status: 'CERRADO'
+    
+        await updateRendimiento({ usuarioId, year, quarter });
+    
+        const rendimiento = await Rendimiento.findOne({
+            where: {
+                usuarioId,
+                year,
+                quarter
+            }
         });
+    
+        if(rendimiento){
+            await rendimiento.update({
+                status: 'CERRADO'
+            });
+        }
+    
+    
+        res.json({
+            ok: true,
+            msg: 'Ciclo cerrado',
+            rendimiento,
+            objetivos,
+            pivot
+        })
+        
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+        
     }
-
-
-    res.json({
-        ok: true,
-        msg: 'Ciclo cerrado',
-        rendimiento,
-        objetivos,
-    })
 }
 
 
-export const closeSingleObjetivo = async (req: Request, res: Response) => {
+export const aprovacionObjetivo = async (req: Request, res: Response) => {
 
     const { checked, objetivoId, usuarioId } = req.body;
 
@@ -477,20 +510,27 @@ export const closeSingleObjetivo = async (req: Request, res: Response) => {
         });
 
         if(!objetivo) return res.status(404).json({ msg: 'No existe este objetivo' });
-
+        
         if(objetivo.status === 'PENDIENTE_APROBACION') {
-            if(checked ){
+            if(checked){       
                 await objetivo.update({
                     status: 'APROBADO'
                 });
-            }else {
+                await objetivoOperativo.update({
+                    status: 'CERRADO'
+                })
+            }
+        }else if(objetivo.status === 'APROBADO'){
+            if(!checked){
                 await objetivo.update({
                     status: 'PENDIENTE_APROBACION'
                 });
+                await objetivoOperativo.update({
+                    status: 'POR_APROBAR'
+                })
             }
         }
         
-
         await updateRendimiento({ usuarioId, year: objetivoOperativo.year, quarter: objetivoOperativo.quarter });
 
         const rendimiento = await Rendimiento.findOne({
@@ -505,6 +545,7 @@ export const closeSingleObjetivo = async (req: Request, res: Response) => {
             ok: true,
             msg: 'Objetivo actualizado',
             objetivo,
+            objetivoOperativo,
             rendimiento
         })
     }

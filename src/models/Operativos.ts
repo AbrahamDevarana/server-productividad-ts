@@ -15,7 +15,7 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     quarter: number;
     year: number;
     editado?: boolean;
-    status?: 'ABIERTO' | 'CERRADO';
+    status?: 'ABIERTO' | 'POR_APROBAR' | 'CERRADO';
     createdAt?: Date;
     updatedAt?: Date;
 

@@ -23,7 +23,6 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         let subTotalResultados = 0;
         let totalResultados = 0;
         let total = 0;
-        let evaluacionesLength = 0
 
         const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
         
@@ -36,21 +35,21 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
             });
 
             if(resultadoObjetivos.length !== 0){
+                const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
 
-            // //  Obtener el resultado del pivotOp donde progresoReal / progresoAsignado
+                    if(obj.progresoAsignado === 0) return acc;
 
-            const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
+                    const resultado = (obj.progresoAsignado / 100) *  obj.progresoReal;
+                    return acc + resultado;
+                }, 0);
 
-                if(obj.progresoAsignado === 0) return acc;
-
-                const resultado = (obj.progresoAsignado / 100) *  obj.progresoReal;
-                return acc + resultado;
-            }, 0);
-
-            if(resultadoObjetivosTotal && resultadoObjetivosTotal !== 0){
-                totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
+                if(resultadoObjetivosTotal && resultadoObjetivosTotal !== 0){
+                    totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
+                }
             }
-        
+        }
+
+
             // Obtener Evaluaciones
             const asignacionEvaluacion = await AsignacionEvaluacion.findAll({
                 where: {
@@ -58,28 +57,47 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                     year,
                     quarter
                 }
-            });
+            });            
 
-                let acumulado = 0;
+            let acumulado = 0;
 
-                for (const asignacion of asignacionEvaluacion) {
-                    // Por cada evaluacion obtener el resultado de las respuestas
-                    const respuesta = await EvaluacionRespuesta.findAll({
-                        where: {
-                            evaluacionUsuarioId: asignacion.id
-                        }
-                    });
-                    // obtener el promedio de cada respuesta y sumarlos en acumulado siempre cuidando que no sea null o infinity o NaN sino 0
-                    const preResultado = respuesta.reduce((acc: any, obj: any) => {
-                        return acc + obj.resultado
-                    }, 0)
+            for (const asignacion of asignacionEvaluacion) {
+                // Por cada evaluacion obtener el resultado de las respuestas
+                const respuesta = await EvaluacionRespuesta.findAll({
+                    where: {
+                        evaluacionUsuarioId: asignacion.id,
+                        status: 1
+                    }
+                });                
 
+                
+                // obtener el promedio de cada respuesta y sumarlos en acumulado siempre cuidando que no sea null o infinity o NaN sino 0
+
+                const preResultado = respuesta.reduce((acc: any, obj: any) => {
+                    if (typeof obj.resultado === 'number' && !isNaN(obj.resultado)) {
+                        return acc + obj.resultado;
+                    } else {
+                        // Si obj.resultado no es un número válido, no lo sumes y devuelve el valor acumulado sin cambios
+                        return acc;
+                    }
+                }, 0)
+
+                if(preResultado === 0 && respuesta.length === 0) {
+                    acumulado = acumulado + 0
+                    continue;
+                }else{
                     const resultado = preResultado / respuesta.length
-
-                    acumulado = acumulado + resultado
+                   acumulado = acumulado + resultado
                 }
 
-                const totalPromedio = acumulado / asignacionEvaluacion.length || 0
+            }
+
+            if (acumulado === 0 && asignacionEvaluacion.length === 0) {
+                subTotalResultados = 0
+                totalResultados = 0
+            }else {
+
+                const totalPromedio = acumulado / asignacionEvaluacion.length
 
                 if(totalPromedio && totalPromedio !== 0){
                     subTotalResultados = (totalPromedio * 100) / 5
@@ -87,7 +105,9 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                     
                 }
             }
-        }
+           
+        
+        
 
         const rendimiento = await Rendimiento.findOrCreate({
             where: {
@@ -101,6 +121,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         const rendimientoId = rendimiento[0].id;
 
         total = totalObjetivos + totalResultados
+
         await Rendimiento.update({
             resultadoObjetivos: totalObjetivos,
             resultadoCompetencias: totalResultados,
