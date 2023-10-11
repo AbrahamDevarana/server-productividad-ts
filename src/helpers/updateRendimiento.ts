@@ -51,9 +51,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
             }
         
-
-            // //  Obtener el resultado de las competencias
-
+            // Obtener Evaluaciones
             const asignacionEvaluacion = await AsignacionEvaluacion.findAll({
                 where: {
                     evaluadoId: usuarioId,
@@ -62,31 +60,32 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             });
 
-            evaluacionesLength = asignacionEvaluacion.length;
+                let acumulado = 0;
 
-            const evaluacionesId = asignacionEvaluacion.map( (obj: any) => obj.id);
-            const resultadoCompetencias = await EvaluacionRespuesta.findAll({
-                where: {
-                    evaluacionUsuarioId: evaluacionesId
-                }
-            });
-
-                if(resultadoCompetencias.length !== 0){
-                    // la sumatoria de todos los resultadoCompetencias.resultado / resultadoCompetencias.length
-
-                    const preResultadoCompetenciasTotal = resultadoCompetencias.reduce((acc: any, obj: any) => {
+                for (const asignacion of asignacionEvaluacion) {
+                    // Por cada evaluacion obtener el resultado de las respuestas
+                    const respuesta = await EvaluacionRespuesta.findAll({
+                        where: {
+                            evaluacionUsuarioId: asignacion.id
+                        }
+                    });
+                    // obtener el promedio de cada respuesta y sumarlos en acumulado siempre cuidando que no sea null o infinity o NaN sino 0
+                    const preResultado = respuesta.reduce((acc: any, obj: any) => {
                         return acc + obj.resultado
                     }, 0)
 
-                    const resultadoCompetenciasTotal = (preResultadoCompetenciasTotal / resultadoCompetencias.length) / evaluacionesLength
-                       
-                                
-                    if(resultadoCompetenciasTotal && resultadoCompetenciasTotal !== 0){
-                        subTotalResultados = resultadoCompetenciasTotal * 100 / 5
-                        totalResultados = ((subTotalResultados * 10) / 100)
-                        
-                    }
-                } 
+                    const resultado = preResultado / respuesta.length
+
+                    acumulado = acumulado + resultado
+                }
+
+                const totalPromedio = acumulado / asignacionEvaluacion.length || 0
+
+                if(totalPromedio && totalPromedio !== 0){
+                    subTotalResultados = (totalPromedio * 100) / 5
+                    totalResultados = ((subTotalResultados * 10) / 100)
+                    
+                }
             }
         }
 
@@ -102,7 +101,6 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         const rendimientoId = rendimiento[0].id;
 
         total = totalObjetivos + totalResultados
-
         await Rendimiento.update({
             resultadoObjetivos: totalObjetivos,
             resultadoCompetencias: totalResultados,

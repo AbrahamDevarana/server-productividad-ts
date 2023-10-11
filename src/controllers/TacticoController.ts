@@ -210,9 +210,18 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsablesArray = [], propietarioId, estrategicoId, year, slug} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, year, slug} = req.body;
 
-    const participantes = [...responsablesArray, propietarioId]
+  
+    
+    const participantes = responsables.map((responsable: any) => {
+        if (typeof responsable === 'object') {
+            return responsable.id;
+        } else {
+            return responsable;
+        }
+    });
+    
 
     try {
 
@@ -259,10 +268,9 @@ export const updateTactico = async (req: Request, res: Response) => {
                 propietarioId 
             });
 
-            // await updateCode({id: objetivoTactico.id, slug})
 
 
-            await objetivoTactico.setResponsables(responsablesArray);
+            await objetivoTactico.setResponsables(participantes);
             
             if(areasSet.size > 0){
                 await objetivoTactico.setAreas([...areasSet]);

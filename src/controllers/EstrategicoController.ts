@@ -7,11 +7,7 @@ import { getStatusAndProgress } from '../helpers/getStatusAndProgress';
 
 
 const includeProps = [
-    // {
-    //     model: Tacticos,
-    //     as: 'tacticos',
-    //     include: ['propietario', 'responsables', 'areas']
-    // },
+
     {
         model: Usuarios,
         as: 'responsables',
@@ -150,7 +146,9 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
         }
     });
 
+    console.log('participantes', participantes);
     
+
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
@@ -173,10 +171,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 await objetivoEstrategico.setPerspectivas(perspectivaId);
             }
 
-            if (participantes.length > 0) {
-                await objetivoEstrategico.setResponsables(participantes);
-            }
-     
+            await objetivoEstrategico.setResponsables(participantes);
 
             await objetivoEstrategico.reload({
                 include: includeProps

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento } from "../models";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
+import { updateRendimiento } from "../helpers/updateRendimiento";
 
 
 const includes = [
@@ -18,7 +19,7 @@ const includes = [
     {
         model: ResultadosClave,
         as: 'resultadosClave',
-        attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status'],
+        attributes: ['id', 'nombre', 'progreso', 'tipoProgreso', 'fechaInicio', 'fechaFin', 'operativoId', 'status', 'color'],
         required: false,
         include: [{
             model: Task,
@@ -402,37 +403,112 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
 
 }
 
-// Recologar
-export const cerrarPeriodo = async (req: Request, res: Response) => {
-    const { year, quarter } = req.body;
 
-    try {
-        const operativos = await ObjetivoOperativos.findAll({
+export const cierreCiclo = async (req: Request, res: Response) => {
+
+    const { usuarioId, year, quarter } = req.body;
+    const objetivos = await ObjetivoOperativos.findAll({
+        where: {
+            year,
+            quarter
+        }
+    });
+
+    for (const objetivo of objetivos) {
+        await objetivo.update({
+            status: 'CERRADO'
+        });
+
+        const pivot = await PivotOpUsuario.findAll({
             where: {
-                year,
-                quarter
+                usuarioId,
+                objetivoOperativoId: objetivo.id
             }
         });
 
-        for (const operativo of operativos) {
-            await operativo.update({
+        for (const pivotItem of pivot) {
+            await pivotItem.update({
                 status: 'CERRADO'
             });
         }
 
-        res.json({
-            ok: true,
-            operativos
-        })
-        
-    } catch (error) {
-        console.log(error);
-
-        res.status(500).json({
-            ok: false,
-            msg: 'Hable con el administrador'
-        });
-        
     }
+
+    await updateRendimiento({ usuarioId, year, quarter });
+
+    const rendimiento = await Rendimiento.findOne({
+        where: {
+            usuarioId,
+            year,
+            quarter
+        }
+    });
+
+    if(rendimiento){
+        await rendimiento.update({
+            status: 'CERRADO'
+        });
+    }
+
+
+    res.json({
+        ok: true,
+        msg: 'Ciclo cerrado',
+        rendimiento,
+        objetivos,
+    })
+}
+
+
+export const closeSingleObjetivo = async (req: Request, res: Response) => {
+
+    const { checked, objetivoId, usuarioId } = req.body;
+
+
+    const objetivoOperativo = await ObjetivoOperativos.findByPk(objetivoId);
+    
+    if(objetivoOperativo){
+    
+        const objetivo = await PivotOpUsuario.findOne({
+            where: {
+                objetivoOperativoId: objetivoId,
+                usuarioId
+            }
+        });
+
+        if(!objetivo) return res.status(404).json({ msg: 'No existe este objetivo' });
+
+        if(objetivo.status === 'PENDIENTE_APROBACION') {
+            if(checked ){
+                await objetivo.update({
+                    status: 'APROBADO'
+                });
+            }else {
+                await objetivo.update({
+                    status: 'PENDIENTE_APROBACION'
+                });
+            }
+        }
+        
+
+        await updateRendimiento({ usuarioId, year: objetivoOperativo.year, quarter: objetivoOperativo.quarter });
+
+        const rendimiento = await Rendimiento.findOne({
+            where: {
+                usuarioId,
+                year: objetivoOperativo.year,
+                quarter: objetivoOperativo.quarter
+            }
+        });
+
+        return res.json({
+            ok: true,
+            msg: 'Objetivo actualizado',
+            objetivo,
+            rendimiento
+        })
+    }
+
+    return res.status(404).json({ msg: 'No existe este objetivo' });   
 }
 

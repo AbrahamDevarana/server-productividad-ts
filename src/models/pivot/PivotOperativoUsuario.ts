@@ -55,7 +55,7 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
         defaultValue: 0
     },
     status: {
-        type: Sequelize.ENUM('ABIERTO','PENDIENTE_APROBACION', 'APROBADO', 'SIN_APROBAR', 'CANCELADO', 'FINALIZADO' ), 
+        type: Sequelize.ENUM('ABIERTO','PENDIENTE_APROBACION', 'APROBADO', 'SIN_APROBAR', 'CANCELADO', 'FINALIZADO', 'CERRADO' ), 
         allowNull: true,
         defaultValue: 'ABIERTO'
     },
