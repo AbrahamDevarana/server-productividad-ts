@@ -15,6 +15,7 @@ import hitosRoutes from './api/hitosRoutes'
 import tareasRoutes from './api/tareasRoutes'
 import comentariosRoutes from './api/comentariosRoutes'
 import permisosRoutes from './api/permisosRoutes'
+import reportesRoutes from './api/reportesRoutes'
 
 import galeriaRoutes from "./api/galeriaRoutes";
 import uploadRoutes from "./api/uploadRoutes";
@@ -45,6 +46,7 @@ router.use('/permisos', permisosRoutes)
 router.use('/rendimiento', rendimientoRoutes)
 router.use('/evaluacion', evaluacionRoutes)
 router.use('/historial-performance', historialPerformanceRoutes)
+router.use('reportes', reportesRoutes)
 
 router.use('/galeria', galeriaRoutes)
 
