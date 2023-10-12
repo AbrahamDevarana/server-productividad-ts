@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-
 import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from "../models/evaluacion"
 import { Rendimiento, Usuarios } from "../models";
 import { Op } from "sequelize";
+import { updateRendimiento } from "../helpers/updateRendimiento";
 
 
 enum TipoEvaluacion {
@@ -282,10 +282,7 @@ export const asignarPreguntasEvaluacion = async (req: Request, res: Response) =>
 
 export const guardarEvaluacion = async (req: Request, res: Response) => {
     const { respuestas, year, quarter, evaluacionId, usuarioId, evaluacionUsuarioId } = req.body;
-
-
     try {
-
 
         const asignacion = await AsignacionEvaluacion.findOne({
             where: {
@@ -311,15 +308,27 @@ export const guardarEvaluacion = async (req: Request, res: Response) => {
 
 
         await EvaluacionRespuesta.bulkCreate(respuestasPreparadas)
-      
+
+        await updateRendimiento({ usuarioId: asignacion.evaluadoId, quarter, year })
+
+        const rendimiento = await Rendimiento.findOne({
+            where: {
+                usuarioId: asignacion.evaluadoId,
+                year,
+                quarter
+            }
+        })
+
+        const resultado = rendimiento? ((rendimiento.resultadoCompetencias / 10) * 5).toFixed(2) : 0
 
         asignacion.status = true;
         await asignacion.save()
 
         return res.json({
             ok: true,
-            msg: 'Evaluacion guardada',
-            asignacion
+            promedio: resultado,
+            isAutoevaluacion: asignacion.evaluadoId === asignacion.evaluadorId,
+            rendimiento
         })
         
     } catch (error) {
