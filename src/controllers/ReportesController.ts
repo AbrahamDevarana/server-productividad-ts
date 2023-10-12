@@ -8,12 +8,14 @@ const VALOR_COMPETENCIAS = 10
 
 export const obtenerRendimientoUsuarios = async (req: Request, res: Response) => {
     
-    const {year, quarter } = req.params
-
+    const { year, quarter } = req.query
+    
     try {
         const usuarios = await Usuarios.findAll({
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
             include: [{
                 model: Rendimiento,
+                as: 'rendimiento',
                 where: { year, quarter }
             }]
         })

@@ -46,7 +46,7 @@ router.use('/permisos', permisosRoutes)
 router.use('/rendimiento', rendimientoRoutes)
 router.use('/evaluacion', evaluacionRoutes)
 router.use('/historial-performance', historialPerformanceRoutes)
-router.use('reportes', reportesRoutes)
+router.use('/reportes', reportesRoutes)
 
 router.use('/galeria', galeriaRoutes)
 
