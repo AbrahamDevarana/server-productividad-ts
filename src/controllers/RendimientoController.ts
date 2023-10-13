@@ -46,8 +46,6 @@ export const getHistorialRendimientoThunk = async (req: Request, res: Response) 
     }
 }
 
-
-
 export const cerrarCiclo = async (req: Request, res: Response) => {
     
         const {usuarioId} = req.params as {usuarioId: string}
@@ -102,4 +100,4 @@ export const cerrarCiclo = async (req: Request, res: Response) => {
         } catch (error) {
             res.status(500).json({msg: 'Error al obtener el rendimiento del usuario'});
         }
-    }
+}
