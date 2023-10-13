@@ -102,7 +102,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
             indicador,
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
-            tacticoId,
+            // tacticoId,
         });
 
 
@@ -161,7 +161,7 @@ export const createOperativo = async (req: Request, res: Response) => {
             indicador,
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
-            tacticoId,
+            // tacticoId,
             quarter,
             year
         });
