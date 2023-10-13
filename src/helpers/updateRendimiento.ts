@@ -11,7 +11,6 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
     try {
 
-
         const objetivosOperativos = await ObjetivoOperativos.findAll({
             where: {
                 year,
@@ -106,15 +105,11 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             }
            
-        
-        
-
         const rendimiento = await Rendimiento.findOrCreate({
             where: {
                 year,
                 quarter,
                 usuarioId,
-                status: 'ABIERTO'
             }
         });
 
@@ -122,15 +117,17 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
         total = totalObjetivos + totalResultados
 
-        await Rendimiento.update({
-            resultadoObjetivos: totalObjetivos,
-            resultadoCompetencias: totalResultados,
-            resultadoFinal: total,
-        }, {
-            where: {
-                id: rendimientoId
-            }
-        });
+        if(rendimiento[0].status === 'ABIERTO'){
+            await Rendimiento.update({
+                resultadoObjetivos: totalObjetivos,
+                resultadoCompetencias: totalResultados,
+                resultadoFinal: total,
+            }, {
+                where: {
+                    id: rendimientoId
+                }
+            });
+        }
     
     } catch (error) {
         console.log(error);
