@@ -33,6 +33,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             });
 
+            
             if(resultadoObjetivos.length !== 0){
                 const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
 
