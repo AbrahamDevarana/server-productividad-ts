@@ -24,6 +24,18 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         let total = 0;
 
         const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
+
+        const rendimiento = await Rendimiento.findOrCreate({
+            where: {
+                year,
+                quarter,
+                usuarioId,
+            }
+        });
+
+
+        
+
         
         if(operativosArrayId.length !== 0) {
             const resultadoObjetivos = await PivotOpUsuario.findAll({
@@ -46,6 +58,12 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 if(resultadoObjetivosTotal && resultadoObjetivosTotal !== 0){
                     totalObjetivos = ((resultadoObjetivosTotal * 90) / 100)
                 }
+
+                const resultadoArrId = resultadoObjetivos.map( resultado => resultado.id)
+
+                await rendimiento[0].setRendimientoOperativo([])
+                await rendimiento[0].setRendimientoOperativo(resultadoArrId)
+
             }
         }
 
@@ -57,7 +75,8 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                     year,
                     quarter
                 }
-            });            
+            });
+
 
             let acumulado = 0;
 
@@ -106,13 +125,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             }
            
-        const rendimiento = await Rendimiento.findOrCreate({
-            where: {
-                year,
-                quarter,
-                usuarioId,
-            }
-        });
+       
 
         const rendimientoId = rendimiento[0].id;
 

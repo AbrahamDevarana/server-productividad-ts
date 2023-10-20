@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { Usuarios, Rendimiento} from '../models'
 import ExcelJS from 'exceljs'
 import { Op, Sequelize, literal } from 'sequelize'
+import { updateRendimiento } from '../helpers/updateRendimiento'
 
 const VALOR_OBJETIVOS = 90
 const VALOR_COMPETENCIAS = 10
@@ -18,6 +19,7 @@ export const obtenerRendimiento = async (req: Request, res: Response) => {
     }
 
     await obtenerUsuarios({year, quarter, search, status}).then( (usuarios) => {
+    
         return res.json({usuarios})
     }).catch( (error) => {
         return res.status(500).json({
@@ -42,14 +44,14 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Reporte de rendimiento');
         
-        worksheet.addRow(['Nombre', 'Apellido Paterno', 'Apellido Materno', 'Objetivos', 'Competencias', 'Resultado final', 'Bono', 'Status'])
+        worksheet.addRow(['Nombre', 'Apellido Paterno', 'Apellido Materno', 'Total Objetivos', 'Objetivos', 'Competencias', 'Resultado final', 'Bono', 'Status'])
         usuarios && usuarios.forEach( (usuario) => {
             const { nombre, apellidoPaterno, apellidoMaterno, rendimiento } = usuario
-            const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, bono, status } = rendimiento
-
+            const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, bono, status, countObjetivos } = rendimiento
+        
             // Header
 
-            worksheet.addRow([nombre, apellidoPaterno, apellidoMaterno, Number(resultadoObjetivos.toFixed(2)),  Number(resultadoCompetencias.toFixed(2)),  Number(resultadoFinal.toFixed(2)),  Number(bono), status])
+            worksheet.addRow([nombre, apellidoPaterno, apellidoMaterno, Number(countObjetivos), Number(resultadoObjetivos.toFixed(2)),  Number(resultadoCompetencias.toFixed(2)),  Number(resultadoFinal.toFixed(2)),  Number(bono), status])
         })
 
         workbook.xlsx.writeBuffer().then( (buffer) => {
@@ -117,7 +119,13 @@ export const obtenerUsuarios = async ({year, quarter, search, status}: any) => {
                         status ? { status } : {}
                     ]
                 },
-                attributes: ['resultadoObjetivos', 'resultadoCompetencias', 'resultadoFinal', 'status'],
+                attributes: [
+                    'resultadoObjetivos', 
+                    'resultadoCompetencias', 
+                    'resultadoFinal', 
+                    'status',
+                    [Sequelize.literal('(SELECT COUNT(*) FROM pivot_objetivo_rendimiento WHERE pivot_objetivo_rendimiento.rendimientoId = rendimiento.id)'), 'rendimientoOperativoCount']
+                ],
             }],
             // like nombre, apellidoPaterno o apellidoMaterno
             where: search ? {
@@ -138,11 +146,16 @@ export const obtenerUsuarios = async ({year, quarter, search, status}: any) => {
             ]
         })
 
+        usuarios.map( async usuario => {
+            await updateRendimiento({year, quarter, usuarioId: usuario.id})
+        })
+        
         const usuariosRendimiento = usuarios.map( (usuario: any) => {
-                
-            const { rendimiento } = usuario
+             
+            const { rendimiento } = usuario            
 
             const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, status } = rendimiento[0]
+            const rendimientoOperativoCount = rendimiento[0].getDataValue('rendimientoOperativoCount');
 
             return {
                 id: usuario.id,
@@ -155,6 +168,7 @@ export const obtenerUsuarios = async ({year, quarter, search, status}: any) => {
                 slug: usuario.slug,
                 leaderId: usuario.leaderId,
                 rendimiento: {
+                    countObjetivos: rendimientoOperativoCount,
                     resultadoObjetivos,
                     resultadoCompetencias,
                     resultadoFinal,
@@ -163,7 +177,7 @@ export const obtenerUsuarios = async ({year, quarter, search, status}: any) => {
                 }
             }
         })
-       return usuariosRendimiento
+        return usuariosRendimiento
 
     } catch (error) {
         console.log(error)
