@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from "../models/evaluacion"
+import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta, AsignacionPreguntaEvaluacion } from "../models/evaluacion"
 import { Rendimiento, Usuarios } from "../models";
 import { Op } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
@@ -149,9 +149,6 @@ export const obtenerEvaluadores = async (req: Request, res: Response) => {
     const colaboradores = evaluadoresColaboradores.map((evaluador: any) => evaluador.evaluador)
     const lider = evaluadorLider?.evaluador
 
-
-    // console.log(lider);
-    // console.log(colaboradores);
     
     return res.json({
         ok: true,
@@ -447,45 +444,7 @@ export const obtenerResultadoEvaluacionLider = async (req: Request, res: Respons
             evaluacionResultados: miEvaluacion,
             evaluacionResultadosColaboradores: misEvaluados
         })
-        
-
-
-
-        // const promedio = await Rendimiento.findOne({
-        //     where: {
-        //         usuarioId: id,
-        //         year,
-        //         quarter
-        //     }
-        // })
-        // const resultado = promedio? ((promedio.resultadoCompetencias / 10) * 5).toFixed(2) : 0
-
-        // const asignaciones = await AsignacionEvaluacion.findAll({
-        //     where: {
-        //         evaluadoId: id,
-        //         year,
-        //         quarter
-        //     }
-        // })
-        // const evaluacionsId = asignaciones.map((asignacion: any) => asignacion.id)
-        // if (!asignaciones) return res.status(404).json({ ok: false, msg: 'Asignacion no encontrada' })
-
-        // const respuestas = await EvaluacionRespuesta.findAll({
-        //     where: {
-        //         evaluacionUsuarioId: {
-        //             [Op.in]: evaluacionsId
-        //         }
-        //     }
-        // })
-        
-        // if (respuestas.length === 0) return res.json({ ok: true, promedio: 0, respuestas: [] })
-        // return res.json({
-        //     ok: true,
-        //     respuestas,
-        //     promedio: resultado
-        // })  
-
-
+    
         
     } catch (error) {
         console.log(error);
@@ -497,3 +456,49 @@ export const obtenerResultadoEvaluacionLider = async (req: Request, res: Respons
 
 }
 
+export const obtenerRespuestasEvaluacion = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { year, quarter } = req.query as any;
+
+    try {
+
+
+        const asignaciones = await AsignacionEvaluacion.findAll({
+            where: {
+                evaluadoId: id,
+                year,
+                quarter
+            },
+            include: [
+                {
+                    model: EvaluacionRespuesta,
+                    include: [
+                        {
+                            model: EvaluacionPregunta,
+                        },
+                        {
+                            model: Evaluacion
+                        }
+                    ]
+                },
+                
+            ]
+        })
+        
+
+        const nuevaEstructura: any[] = [];
+
+    return res.json({
+        ok: true,
+        asignaciones
+    })
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}
