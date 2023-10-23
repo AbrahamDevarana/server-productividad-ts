@@ -32,10 +32,6 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 usuarioId,
             }
         });
-
-
-        
-
         
         if(operativosArrayId.length !== 0) {
             const resultadoObjetivos = await PivotOpUsuario.findAll({
