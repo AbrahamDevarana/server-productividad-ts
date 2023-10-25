@@ -136,7 +136,14 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId, rangeDate} = req.body;
+    
+    const primeraFecha = dayjs(rangeDate[0]);
+    const ultimoDiaDelPrimerAnio = primeraFecha.startOf('year').toDate();
+    
+    const segundaFecha = dayjs(rangeDate[1]);
+    const ultimoDiaDelSegundoAnio = segundaFecha.endOf('year').toDate()
+
 
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
@@ -144,10 +151,7 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
         } else {
             return responsable;
         }
-    });
-
-    console.log('participantes', participantes);
-    
+    });    
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
@@ -158,8 +162,8 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 nombre,
                 codigo, 
                 descripcion, 
-                fechaInicio, 
-                fechaFin, 
+                fechaInicio: ultimoDiaDelPrimerAnio,
+                fechaFin: ultimoDiaDelSegundoAnio,
                 progreso: progresoFinal,
                 indicador,
                 status: statusFinal,
