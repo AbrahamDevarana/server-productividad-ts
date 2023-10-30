@@ -1,4 +1,4 @@
-import { Areas, Comentarios, Trimestre, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
@@ -8,10 +8,9 @@ import { getStatusAndProgress } from '../helpers/getStatusAndProgress'
 
 const includes = [
     {
-        model: Areas,
-        as: 'areas',
-        through: { attributes: [] },
-        attributes: ['id', 'nombre']
+        model: Departamentos,
+        as: 'departamentos',
+        attributes: ['id', 'nombre'],
     },
     {
         model: Usuarios,
@@ -48,29 +47,21 @@ const includes = [
             }
         ]
     },
-    {
-        model: Trimestre,
-        as: 'trimestres',
-        through: {
-            attributes: ['activo']
-        },
-    }
 ]
 
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
     try {
-        const objetivoTactico = await Tacticos.findByPk(id, { include: includes });
-        if (objetivoTactico) {
+        const objetivoTactico = await Tacticos.findOne({
+            where: { id },
+            include: includes
+        })
+      
+        if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
 
-            res.json({
-                objetivoTactico
-            });
-        } else {
-            res.status(404).json({
-                msg: `No existe un objetivo tactico`
-            });
-        }
+        res.json({ objetivoTactico });
+
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -80,7 +71,7 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const getTacticos = async (req: Request, res: Response) => {
-    const { year } = req.query;
+    const { year, estrategicoId } = req.query;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
@@ -97,29 +88,27 @@ export const getTacticos = async (req: Request, res: Response) => {
                     [Op.between]: [fechaInicio, fechaFin]
                 }
             }
-        ]
+        ],
+        // estrategicoId
+        estrategicoId: estrategicoId ? estrategicoId : null
     };
 
 
     try {
-
-            const tacticosGeneral = await Tacticos.findAll({
-                include: [
-                    {
-                        model: ObjetivoEstrategico,
-                        as: 'estrategico',
-                        include: [{
-                            model: Perspectivas,
-                            as: 'perspectivas',
-                            attributes: ['id', 'nombre',  'color']
-                        }],
-                    }
-                ],
-                where,
-            });
-            
-
-            res.json({ tacticosGeneral });
+        const objetivosTacticos = await Tacticos.findAll({ 
+            where,
+            include: [
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    through: {
+                        attributes: []
+                    },
+                }
+            ]
+        });
+        res.json({ objetivosTacticos });
 
     } catch (error) {
         console.log(error);
@@ -131,52 +120,16 @@ export const getTacticos = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {    
-    const { slug, year, estrategico = false} = req.body;
-    const {id: propietarioId} = req.user as UsuarioInterface
+    const { slug, year, estrategicoId, departamentoId} = req.body;
+    const { id: propietarioId } = req.user as UsuarioInterface
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
-    try {        
+    try {
 
-        let estrategicoId = null;
-
+       
         let codigo = ''
-
-        const area = await Areas.findOne({
-            where: { slug },
-            include: [
-            {
-                model: Perspectivas,
-                as: 'perspectivas',
-                attributes: ['id'],
-                include: [{
-                    model: ObjetivoEstrategico,
-                    as: 'objetivosEstrategicos',
-                    attributes: ['id'],
-                    where: {
-                        [Op.or]: [
-                            {
-                                fechaInicio: {
-                                    [Op.between]: [fechaInicio, fechaFin]
-                                }
-                            },
-                            {
-                                fechaFin: {
-                                    [Op.between]: [fechaInicio, fechaFin]
-                                }
-                            }   
-                        ]
-                    }
-                }]
-            }]
-        });
-
-        if(estrategico){
-            estrategicoId = (area?.perspectivas.objetivosEstrategicos[0].id);
-        }else {
-            codigo = area?.codigo
-        }
 
         const objetivoTactico = await Tacticos.create({
             propietarioId,
@@ -185,9 +138,8 @@ export const createTactico = async (req: Request, res: Response) => {
             nombre: 'Nuevo Objetivo Tactico',
             fechaInicio,
             fechaFin,
+            departamentoId
         });        
-
-        await objetivoTactico.setAreas([area?.id]);
 
         await updateCode({id: objetivoTactico.id, slug})
 
@@ -210,9 +162,11 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, year, slug} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, departamentoId, proyeccion} = req.body;
 
-  
+
+    const fechaInicio = dayjs(proyeccion[0]).startOf('quarter').toDate();
+    const fechaFin = dayjs(proyeccion[1]).endOf('quarter').toDate();
     
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
@@ -225,69 +179,36 @@ export const updateTactico = async (req: Request, res: Response) => {
 
     try {
 
-        const areaArray: any[] = []
-        let areasSet: Set<number> = new Set();
-        const codigoFinal = codigo;
-
-        await Promise.all(participantes.map(async (responsable: any) => {
-            const usuario = await Usuarios.findByPk(responsable, {
-                include: [{
-                    model: Departamentos,
-                    as: 'departamento',
-                    attributes: ['id', 'nombre'],
-                    include: [{
-                        model: Areas,
-                        as: 'area',
-                        attributes: ['id', 'nombre']
-                    }]
-                }],
-                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto']
-            });            
-            
-            if (usuario && usuario.departamento) {
-                areaArray.push(usuario.departamento.area.id);
-            }
-          
-            areasSet = new Set(areaArray);
-            // areasSet.add(area?.id);
-        }));        
-        
+        const codigoFinal = codigo;              
         const objetivoTactico = await Tacticos.findByPk(id);
-
         const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoTactico});
+        if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
 
-        if (objetivoTactico) {
-            await objetivoTactico.update({ 
-                nombre, 
-                codigo: codigoFinal,
-                meta, 
-                indicador,
-                estrategicoId: estrategicoId ? estrategicoId : null, 
-                status: statusFinal,
-                progreso: progresoFinal,
-                propietarioId 
-            });
+        
+        await objetivoTactico.update({ 
+            nombre, 
+            codigo: codigoFinal,
+            meta, 
+            indicador,
+            estrategicoId: estrategicoId ? estrategicoId : null, 
+            status: statusFinal,
+            progreso: progresoFinal,
+            propietarioId ,
+            departamentoId,
+            fechaInicio: fechaInicio,
+            fechaFin: fechaFin
+        });
 
+        await objetivoTactico.setResponsables(participantes);
 
+        await objetivoTactico.reload({ include: includes });
 
-            await objetivoTactico.setResponsables(participantes);
-            
-            if(areasSet.size > 0){
-                await objetivoTactico.setAreas([...areasSet]);
-            }
-
-            await objetivoTactico.reload({ include: includes });
-
-            res.json({
-                objetivoTactico
-            });
+        res.json({
+            objetivoTactico
+        });
 
 
-        } else {
-            res.status(404).json({
-                msg: `No existe un objetivo tactico con el id ${id}`
-            });
-        }
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -307,7 +228,7 @@ export const deleteTactico = async (req: Request, res: Response) => {
             });
         } else {
             res.status(404).json({
-                msg: `No existe un objetivo tactico con el id ${id}`
+                msg: `No existe un objetivo tactico`
             });
         }
     } catch (error) {
@@ -318,518 +239,184 @@ export const deleteTactico = async (req: Request, res: Response) => {
     }
 }
 
+// export const getTacticosByEquipos = async (req: Request, res: Response) => {
 
-// throw new Error('Not implemented yet');
-export const getTacticosByArea = async (req: Request, res: Response) => {
-    const { slug } = req.params;
-    const { year, search, periodos, status } = req.query;
 
-    let where = {};
-    let wherePeriodo = {};
-
-    if (status) {
-
-        where = {
-            ...where,
-            [Op.and]: [
-                {
-                    status: {
-                        [Op.in]: status
-                    }
-                }   
-            ]
-        }
-    }
-
-    if(search){        
-        where = {
-            ...where,
-            [Op.and]: [
-               {
-                     [Op.or]: [ 
-                        {
-                            nombre: {
-                                [Op.like]: `%${search}%`
-                            }
-                        },
-                        {
-                            codigo: {
-                                [Op.like]: `%${search}%`
-                            }
-                        }
-                    ]
-               }
-            ]
-        }        
-    }
+//     const { year, search, status, slug } = req.query;
+//     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+//     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     
+//     let where = {};
 
-    if(periodos){
-        wherePeriodo = {
-            ...wherePeriodo,
-            [Op.and]: [
-                {
-                    '$trimestres->pivot_tactico_trimestre.activo$': true,
-                },
-                {
-                    trimestre: {
-                        [Op.in]: periodos
-                    }
-                }
-            ]
-        }
-    }
+//     where = {
+//         ...where,
+//         [Op.or]: [
+//             {
+//                 fechaInicio: {
+//                     [Op.between]: [fechaInicio, fechaFin]
+//                 }
+//             },
+//             {
+//                 fechaFin: {
+//                     [Op.between]: [fechaInicio, fechaFin]
+//                 }
+//             }
+//         ],   
+//     }
 
-    where = {
-        ...where,
-        [Op.or]: [
-            {
-                fechaInicio: {
-                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
-                }
-            },
-            {
-                fechaFin: {
-                    [Op.between]: [`${year}-01-01 00:00:00`, `${year}-12-31 23:59:59`]
-                }
-            }
-        ],   
-    }
-     
-    const includes = [
-        {
-            model: Areas,
-            as: 'areas',
-            through: { attributes: [] },
-            attributes: ['id', 'nombre'],
-            where: {
-                slug
-            }
-        },
-        {
-            model: Usuarios,
-            as: 'responsables',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-            through: {
-                attributes: []
-            },
-        },
-        {
-            model: Usuarios,
-            as: 'propietario',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-        },
-        {
-            model: ObjetivoEstrategico,
-            as: 'estrategico',
-            include: [{
-                model: Perspectivas,
-                as: 'perspectivas',
-                attributes: ['id', 'nombre',  'color']
-            }]
-        },
-        {
-            model: Trimestre,
-            as: 'trimestres',
-            through: { attributes: ['activo'] },
-            // where: wherePeriodo,
-        }
-    ]
+//     const includes = [
+//         {
+//             model: Usuarios,
+//             as: 'responsables',
+//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+//             through: {
+//                 attributes: []
+//             },
+//             include: [
+//                 {
+//                     model: Departamentos,
+//                     as: 'departamento',
+//                     attributes: ['id', 'nombre', 'slug'],
+//                 }
+//             ]
+//         },
+//         {
+//             model: Usuarios,
+//             as: 'propietario',
+//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+//             include: [
+//                 {
+//                     model: Departamentos,
+//                     as: 'departamento',
+//                     attributes: ['id', 'nombre', 'slug'],
+//                 }
+//             ]
+//         },
+//         {
+//             model: ObjetivoEstrategico,
+//             as: 'estrategico',
+//             include: [{
+//                 model: Perspectivas,
+//                 as: 'perspectivas',
+//                 attributes: ['id', 'nombre',  'color']
+//             }]
+//         }
+//     ]
+
+//    try {
+//         const tacticos = await Tacticos.findAll({
+//             include: includes,
+//             where: {
+//                 ...where,
+//                 [Op.not]: { estrategicoId: null }
+//             },
+//         });
+
+//         res.json({ objetivosTacticos: { tacticos} });
 
     
-    try {
-        const tacticos = await Tacticos.findAll({
-            include: includes,
-            where: {
-                ...where,
-                [Op.not]: { estrategicoId: null },
-            },
-        });
+//    } catch (error) {
+//          console.log(error);
+//          res.status(500).json({
+//               msg: 'Hable con el administrador'
+//          });
+//    }
 
-        const tacticos_core = await Tacticos.findAll({
-            include: includes,
-            where: {
-                ...where,
-                estrategicoId: null
-            },
-        });
+// }
 
-                
-        res.json({ objetivosTacticos: { tacticos, tacticos_core } });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
-}
-
-///  No se usa
-export const getTacticosByEstrategia = async (req: Request, res: Response) => {
-
-    throw new Error('Not implemented yet');
-    const { estrategiaId } = req.params;
+// export const getTacticosByObjetivoEstrategico = async (req: Request, res: Response) => {
     
-    try {
-        const tacticos = await Tacticos.findAll({
-            include: [
-                {
-                    model: ObjetivoEstrategico,
-                    as: 'estrategico',
-                    where: { id: estrategiaId }
-                },
-                {
-                    model: Usuarios,
-                    as: 'responsables',
-                    through: { attributes: [] },
-                },
-                {
-                    model: Areas,
-                    as: 'areas',
-                    through: { attributes: [] },
-                },
-                {
-                    model: Usuarios,
-                    as: 'propietario',
-                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'iniciales', 'foto'],
-                }
-            ]
-        });
-        res.json({ tacticos });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
-}
+//     const { estrategicoId } = req.params;
+//     const { year, quarter, search, slug } = req.query;
 
-export const getTacticosByEquipos = async (req: Request, res: Response) => {
-
-
-    const { year, search, periodos, status, slug } = req.query;
-    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     
-    let where = {};
-    let wherePeriodo = {};
+//     let where = {};
 
-    if (status) {
-
-        where = {
-            ...where,
-            [Op.and]: [
-                {
-                    status: {
-                        [Op.in]: status
-                    }
-                }   
-            ]
-        }
-    }
-
-    if(search){        
-        where = {
-            ...where,
-            [Op.and]: [
-               {
-                     [Op.or]: [ 
-                        {
-                            nombre: {
-                                [Op.like]: `%${search}%`
-                            }
-                        },
-                        {
-                            codigo: {
-                                [Op.like]: `%${search}%`
-                            }
-                        }
-                    ]
-               }
-            ]
-        }        
-    }
+//     const includes = [
+//         {
+//             model: Usuarios,
+//             as: 'responsables',
+//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+//             through: {
+//                 attributes: []
+//             },
+//             include: [
+//                 {
+//                     model: Departamentos,
+//                     as: 'departamento',
+//                     attributes: ['id', 'nombre', 'slug'],
+//                 }
+//             ]
+//         },
+//         {
+//             model: Usuarios,
+//             as: 'propietario',
+//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+//             include: [
+//                 {
+//                     model: Departamentos,
+//                     as: 'departamento',
+//                     attributes: ['id', 'nombre', 'slug'],
+//                 }
+//             ]
+//         },
+//         {
+//             model: ObjetivoEstrategico,
+//             as: 'estrategico',
+//             include: [{
+//                 model: Perspectivas,
+//                 as: 'perspectivas',
+//                 attributes: ['id', 'nombre',  'color']
+//             }]
+//         },
+//     ]
     
+//     if(search){        
+//         where = {
+//             ...where,
+//             [Op.and]: [
+//                {
+//                      [Op.or]: [ 
+//                         {
+//                             nombre: {
+//                                 [Op.like]: `%${search}%`
+//                             }
+//                         },
+//                         {
+//                             codigo: {
+//                                 [Op.like]: `%${search}%`
+//                             }
+//                         }
+//                     ]
+//                }
+//             ]
+//         } 
+//     }
 
-    if(periodos){
-        wherePeriodo = {
-            ...wherePeriodo,
-            [Op.and]: [
-                {
-                    '$trimestres->pivot_tactico_trimestre.activo$': true,
-                },
-                {
-                    trimestre: {
-                        [Op.in]: periodos
-                    }
-                }
-            ]
-        }
-    }
 
-    where = {
-        ...where,
-        [Op.or]: [
-            {
-                fechaInicio: {
-                    [Op.between]: [fechaInicio, fechaFin]
-                }
-            },
-            {
-                fechaFin: {
-                    [Op.between]: [fechaInicio, fechaFin]
-                }
-            }
-        ],   
-    }
+//         where = {
+//             ...where,
+//             estrategicoId: null
+//         }
 
-    const includes = [
-        {
-            model: Usuarios,
-            as: 'responsables',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-            through: {
-                attributes: []
-            },
-            include: [
-                {
-                    model: Departamentos,
-                    as: 'departamento',
-                    attributes: ['id', 'nombre', 'slug'],
-                }
-            ]
-        },
-        {
-            model: Usuarios,
-            as: 'propietario',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-            include: [
-                {
-                    model: Departamentos,
-                    as: 'departamento',
-                    attributes: ['id', 'nombre', 'slug'],
-                }
-            ]
-        },
-        {
-            model: ObjetivoEstrategico,
-            as: 'estrategico',
-            include: [{
-                model: Perspectivas,
-                as: 'perspectivas',
-                attributes: ['id', 'nombre',  'color']
-            }]
-        },
-        {
-            model: Trimestre,
-            as: 'trimestres',
-            through: { attributes: ['activo'] },
-        }
-    ]
+//     try {
 
-   try {
-        const tacticos = await Tacticos.findAll({
-            include: includes,
-            where: {
-                ...where,
-                [Op.not]: { estrategicoId: null }
-            },
-        });
-
-        const tacticosFiltered = filtrarTacticos(tacticos, slug as string)
+//         let objetivosTacticos = []
         
-
-        const tacticos_core = await Tacticos.findAll({
-            include: includes,
-            where: {
-                ...where,
-                estrategicoId: null
-            },
-        });
+//         objetivosTacticos = await Tacticos.findAll({
+//             include: includes,
+//             where: where
+//         });
         
+//         res.json({ objetivosTacticos });
 
-        const tacticosCoreFiltered = filtrarTacticos(tacticos_core, slug as string)
-
-        res.json({ objetivosTacticos: {tacticos_core: tacticosCoreFiltered, tacticos: tacticosFiltered} });
-
-    
-   } catch (error) {
-         console.log(error);
-         res.status(500).json({
-              msg: 'Hable con el administrador'
-         });
-   }
-
-}
-
-export const getTacticosByObjetivoEstrategico = async (req: Request, res: Response) => {
-    
-    const { estrategicoId } = req.params;
-    const { year, quarter, search, slug } = req.query;
-
-    
-    let where = {};
-
-    const includes = [
-        {
-            model: Usuarios,
-            as: 'responsables',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-            through: {
-                attributes: []
-            },
-            include: [
-                {
-                    model: Departamentos,
-                    as: 'departamento',
-                    attributes: ['id', 'nombre', 'slug'],
-                }
-            ]
-        },
-        {
-            model: Usuarios,
-            as: 'propietario',
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-            include: [
-                {
-                    model: Departamentos,
-                    as: 'departamento',
-                    attributes: ['id', 'nombre', 'slug'],
-                }
-            ]
-        },
-        {
-            model: ObjetivoEstrategico,
-            as: 'estrategico',
-            include: [{
-                model: Perspectivas,
-                as: 'perspectivas',
-                attributes: ['id', 'nombre',  'color']
-            }]
-        },
-        {
-            model: Trimestre,
-            as: 'trimestres',
-            through: { attributes: ['activo'] },
-        }
-    ]
-    
-    if(search){        
-        where = {
-            ...where,
-            [Op.and]: [
-               {
-                     [Op.or]: [ 
-                        {
-                            nombre: {
-                                [Op.like]: `%${search}%`
-                            }
-                        },
-                        {
-                            codigo: {
-                                [Op.like]: `%${search}%`
-                            }
-                        }
-                    ]
-               }
-            ]
-        } 
-    }
-
-
-    if(estrategicoId !== 'undefined'){
-        where = {
-            ...where,
-            estrategicoId
-        }
-    }else {
-        where = {
-            ...where,
-            estrategicoId: null
-        }
-    }
-
-    try {
-
-        const area = await Areas.findOne({
-            where: {
-                slug
-            }
-        });
-
-
-        // console.log('Área', area);
-
-        let objetivosTacticos = []
-        
-            
-        if(estrategicoId === 'undefined'){
-            objetivosTacticos = await area.getTacticos({
-                include: includes,
-                where: where
-            });
-        }else {
-            objetivosTacticos = await Tacticos.findAll({
-                include: includes,
-                where: where
-            });
-        }
-
-
-        res.json({ objetivosTacticos });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });   
-    }
-}
-
-// Custom Controller
-export const updateQuarters = async (req: Request, res: Response) => {
-
-    const { id } = req.params;
-    const {trimestresActivos = [], year} = req.body;
-
-    try {
-
-    const objetivoTactico = await Tacticos.findByPk(id);
-    const trimestres = await Trimestre.findAll({ where: { year } });
-
-    for (let trimestre of trimestres) {
-        await objetivoTactico.addTrimestre(trimestre, { through: { activo: false } });
-    }
-
-    for (let trimestreActivo of trimestresActivos) {
-        // @ts-ignore
-        const trimestre = trimestres.find(t => t.trimestre === trimestreActivo);
-        if (!trimestre) {
-            throw new Error(`No se encontró Trimestre con trimestre ${trimestreActivo} para el año ${year}`);
-        }
-        await objetivoTactico.addTrimestre(trimestre, { through: { activo: true } });
-    }
-    
-    await objetivoTactico.reload({
-        include: [
-            {
-                model: Trimestre,
-                as: 'trimestres',
-                through: { attributes: ['activo'] },
-            }
-        ]
-    });
-
-    res.json({ objetivoTactico });
-    
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: 'Hable con el administrador'
-        });
-    }
-}
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             msg: 'Hable con el administrador'
+//         });   
+//     }
+// }
 
 // Actualiza el código en base a los objetivos estratégicos y área
 export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
@@ -862,26 +449,4 @@ export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
 
 
     }
-}
-
-
-
-const filtrarTacticos = (tacticos: any[], slug: string) => {    
-    // Filtra los 'Tacticos' en base al 'slug' del 'Area' al que pertenecen sus 'Usuarios'
-    const filteredTacticos = tacticos.filter(tactico => {
-        
-        // Chequea si el 'propietario' pertenece al 'Area' con el 'slug' dado
-        const isPropietarioInArea = tactico.propietario.departamento?.slug === slug;
-
-        // Chequea si alguno de los 'responsables' pertenece al 'Area' con el 'slug' dado
-        const isAnyResponsableInArea = tactico.responsables.some((responsable : any ) => {
-            return responsable.departamento?.slug === slug;
-        });
-        
-        // Retorna 'true' si el 'propietario' o algún 'responsable' pertenece al 'Area' con el 'slug' dado
-        return isPropietarioInArea || isAnyResponsableInArea;
-    })
-
-
-    return filteredTacticos;
 }
