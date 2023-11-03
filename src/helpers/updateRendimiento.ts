@@ -57,9 +57,9 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
                 const resultadoArrId = resultadoObjetivos.map( resultado => resultado.id)
 
-                await rendimiento[0].setRendimientoOperativo([])
-                await rendimiento[0].setRendimientoOperativo(resultadoArrId)
-
+                await rendimiento[0].setRendimientoOperativo([]).then( async () => {
+                    await rendimiento[0].setRendimientoOperativo(resultadoArrId)
+                })
             }
         }
 

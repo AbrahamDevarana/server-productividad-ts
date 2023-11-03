@@ -70,7 +70,7 @@ export const getTactico = async (req: Request, res: Response) => {
     }
 }
 
-export const getTacticos = async (req: Request, res: Response) => {
+export const getTacticosByEstrategia = async (req: Request, res: Response) => {
     const { year, estrategicoId } = req.query;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
@@ -105,6 +105,11 @@ export const getTacticos = async (req: Request, res: Response) => {
                     through: {
                         attributes: []
                     },
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
                 }
             ]
         });
@@ -119,13 +124,91 @@ export const getTacticos = async (req: Request, res: Response) => {
     }
 }
 
-export const createTactico = async (req: Request, res: Response) => {    
-    const { slug, year, estrategicoId, departamentoId} = req.body;
-    const { id: propietarioId } = req.user as UsuarioInterface
+export const getTacticosByEquipo = async (req: Request, res: Response) => {
+    const { year, departamentoId } = req.query as any;
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
+   
+
+    try {
+
+
+        const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
+
+        const participantes = await departamento?.getUsuario()
+        const lider = await departamento?.getLeader()
+
+        const participantesIds = participantes?.map((participante: any) => participante.id);
+
+        const where = {
+            [Op.or]: [
+                {
+                    fechaInicio: {
+                        [Op.between]: [fechaInicio, fechaFin]
+                    }
+                },
+                {
+                    fechaFin: {
+                        [Op.between]: [fechaInicio, fechaFin]
+                    }
+                },
+            ],
+            [Op.and]: [
+                {
+                    [Op.or]: [
+                        {'$propietario.id$': lider.id},
+                        {'$responsables.id$': participantesIds},
+                        // [Op.and, {'$responsables.id$': participantesIds}, {'$propietario.id$': lider.id}]
+                    ]
+                }
+            ]
+                
+        };
+        
+        
+        const objetivosTacticos = await Tacticos.findAll({ 
+            where,
+            include: [
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    through: {
+                        attributes: []
+                    }
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                }
+            ],
+            // logging: console.log
+            }
+        );
+
+        
+        res.json({ objetivosTacticos });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador',
+            error
+        });
+        
+    }
+}
+
+export const createTactico = async (req: Request, res: Response) => {    
+    const { slug, year, estrategicoId } = req.body;
+    const { id: propietarioId } = req.user as UsuarioInterface
+
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+    
     try {
 
        
@@ -138,14 +221,28 @@ export const createTactico = async (req: Request, res: Response) => {
             nombre: 'Nuevo Objetivo Tactico',
             fechaInicio,
             fechaFin,
-            departamentoId
         });        
 
         await updateCode({id: objetivoTactico.id, slug})
 
         await objetivoTactico.reload({
-            include: includes
+            include: [
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    through: {
+                        attributes: []
+                    },
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                }
+            ]
         });
+        
         
         res.json({
             objetivoTactico
@@ -162,12 +259,11 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, departamentoId, proyeccion} = req.body;
-
+    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion} = req.body;    
 
     const fechaInicio = dayjs(proyeccion[0]).startOf('quarter').toDate();
     const fechaFin = dayjs(proyeccion[1]).endOf('quarter').toDate();
-    
+
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
             return responsable.id;
@@ -178,7 +274,6 @@ export const updateTactico = async (req: Request, res: Response) => {
     
 
     try {
-
         const codigoFinal = codigo;              
         const objetivoTactico = await Tacticos.findByPk(id);
         const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoTactico});
@@ -193,8 +288,7 @@ export const updateTactico = async (req: Request, res: Response) => {
             estrategicoId: estrategicoId ? estrategicoId : null, 
             status: statusFinal,
             progreso: progresoFinal,
-            propietarioId ,
-            departamentoId,
+            propietarioId,
             fechaInicio: fechaInicio,
             fechaFin: fechaFin
         });
@@ -238,185 +332,6 @@ export const deleteTactico = async (req: Request, res: Response) => {
         });
     }
 }
-
-// export const getTacticosByEquipos = async (req: Request, res: Response) => {
-
-
-//     const { year, search, status, slug } = req.query;
-//     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-//     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-    
-//     let where = {};
-
-//     where = {
-//         ...where,
-//         [Op.or]: [
-//             {
-//                 fechaInicio: {
-//                     [Op.between]: [fechaInicio, fechaFin]
-//                 }
-//             },
-//             {
-//                 fechaFin: {
-//                     [Op.between]: [fechaInicio, fechaFin]
-//                 }
-//             }
-//         ],   
-//     }
-
-//     const includes = [
-//         {
-//             model: Usuarios,
-//             as: 'responsables',
-//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-//             through: {
-//                 attributes: []
-//             },
-//             include: [
-//                 {
-//                     model: Departamentos,
-//                     as: 'departamento',
-//                     attributes: ['id', 'nombre', 'slug'],
-//                 }
-//             ]
-//         },
-//         {
-//             model: Usuarios,
-//             as: 'propietario',
-//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-//             include: [
-//                 {
-//                     model: Departamentos,
-//                     as: 'departamento',
-//                     attributes: ['id', 'nombre', 'slug'],
-//                 }
-//             ]
-//         },
-//         {
-//             model: ObjetivoEstrategico,
-//             as: 'estrategico',
-//             include: [{
-//                 model: Perspectivas,
-//                 as: 'perspectivas',
-//                 attributes: ['id', 'nombre',  'color']
-//             }]
-//         }
-//     ]
-
-//    try {
-//         const tacticos = await Tacticos.findAll({
-//             include: includes,
-//             where: {
-//                 ...where,
-//                 [Op.not]: { estrategicoId: null }
-//             },
-//         });
-
-//         res.json({ objetivosTacticos: { tacticos} });
-
-    
-//    } catch (error) {
-//          console.log(error);
-//          res.status(500).json({
-//               msg: 'Hable con el administrador'
-//          });
-//    }
-
-// }
-
-// export const getTacticosByObjetivoEstrategico = async (req: Request, res: Response) => {
-    
-//     const { estrategicoId } = req.params;
-//     const { year, quarter, search, slug } = req.query;
-
-    
-//     let where = {};
-
-//     const includes = [
-//         {
-//             model: Usuarios,
-//             as: 'responsables',
-//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-//             through: {
-//                 attributes: []
-//             },
-//             include: [
-//                 {
-//                     model: Departamentos,
-//                     as: 'departamento',
-//                     attributes: ['id', 'nombre', 'slug'],
-//                 }
-//             ]
-//         },
-//         {
-//             model: Usuarios,
-//             as: 'propietario',
-//             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-//             include: [
-//                 {
-//                     model: Departamentos,
-//                     as: 'departamento',
-//                     attributes: ['id', 'nombre', 'slug'],
-//                 }
-//             ]
-//         },
-//         {
-//             model: ObjetivoEstrategico,
-//             as: 'estrategico',
-//             include: [{
-//                 model: Perspectivas,
-//                 as: 'perspectivas',
-//                 attributes: ['id', 'nombre',  'color']
-//             }]
-//         },
-//     ]
-    
-//     if(search){        
-//         where = {
-//             ...where,
-//             [Op.and]: [
-//                {
-//                      [Op.or]: [ 
-//                         {
-//                             nombre: {
-//                                 [Op.like]: `%${search}%`
-//                             }
-//                         },
-//                         {
-//                             codigo: {
-//                                 [Op.like]: `%${search}%`
-//                             }
-//                         }
-//                     ]
-//                }
-//             ]
-//         } 
-//     }
-
-
-//         where = {
-//             ...where,
-//             estrategicoId: null
-//         }
-
-//     try {
-
-//         let objetivosTacticos = []
-        
-//         objetivosTacticos = await Tacticos.findAll({
-//             include: includes,
-//             where: where
-//         });
-        
-//         res.json({ objetivosTacticos });
-
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             msg: 'Hable con el administrador'
-//         });   
-//     }
-// }
 
 // Actualiza el código en base a los objetivos estratégicos y área
 export const updateCode = async ({id, slug}: {id:string, slug: string}) => {

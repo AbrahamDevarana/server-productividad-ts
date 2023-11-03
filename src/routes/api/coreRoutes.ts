@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { } from '../../controllers/CoreController';
+import { createCore, deleteCore, getCore, getCores, updateCore } from '../../controllers/CoreController';
 
 const router = Router();
 
 
-router.get('/:id', () => {});
-router.get('/', () => {});
-router.post('/', () => {});
-router.put('/:id', () => {});
-router.delete('/:id', () => {});
+router.get('/:id', getCore);
+router.get('/', getCores);
+router.post('/', createCore);
+router.put('/:id', updateCore);
+router.delete('/:id', deleteCore);
 
 
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Core, Usuarios } from '../models'
+import { Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Core, Usuarios, Areas } from '../models'
 import { Op } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
@@ -7,12 +7,6 @@ import { getStatusAndProgress } from '../helpers/getStatusAndProgress'
 
 
 const includes = [
-    {
-        model: Departamentos,
-        as: 'departamentos',
-        through: { attributes: [] },
-        attributes: ['id', 'nombre']
-    },
     {
         model: Usuarios,
         as: 'responsables',
@@ -25,16 +19,6 @@ const includes = [
         model: Usuarios,
         as: 'propietario',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-    },
-    {
-        model: ObjetivoEstrategico,
-        as: 'estrategico',
-        include: [{
-            model: Perspectivas,
-            as: 'perspectivas',
-            attributes: ['id', 'nombre',  'color']
-        }]
-
     },
     {
         model: Comentarios,
@@ -64,7 +48,10 @@ export const getCore = async (req: Request, res: Response) => {
 
         if (!core) return res.status(404).json({ msg: 'No se encontró el core' })
 
+        console.log(core);
+        
         return res.status(200).json({ objetivoCore: core })
+
 
     } catch (error) {
         console.log(error)
@@ -73,35 +60,64 @@ export const getCore = async (req: Request, res: Response) => {
 }
 
 export const getCores = async (req: Request, res: Response) => {
-    const { year } = req.query
+    const { year, departamentoId } = req.query as any
 
-    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-
-    const where = {
-        [Op.or]: [
-            {
-                fechaInicio: {
-                    [Op.between]: [fechaInicio, fechaFin]
-                }
-            },
-            {
-                fechaFin: {
-                    [Op.between]: [fechaInicio, fechaFin]
-                }
-            }
-        ]
-    };
-   
+    const fechaInicio = dayjs().year(Number(year)).startOf('year').toDate();
+    const fechaFin = dayjs().year(Number(year)).endOf('year').toDate();
+       
     try {
+
+        const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
+        const participantes = await departamento?.getUsuario()
+        const lider = await departamento?.getLeader()
+        const participantesIds = participantes?.map((participante: any) => participante.id);
+
+        const where = {
+            [Op.or]: [
+                {
+                    fechaInicio: {
+                        [Op.between]: [fechaInicio, fechaFin]
+                    }
+                },
+                {
+                    fechaFin: {
+                        [Op.between]: [fechaInicio, fechaFin]
+                    }
+                }
+            ],
+            [Op.and]: [
+                {
+                    [Op.or]: [
+                        {'$propietario.id$': [...participantesIds, lider?.id]},
+                        {'$responsables.id$': [...participantesIds, lider?.id]},
+                        // [Op.and, {'$responsables.id$': participantesIds}, {'$propietario.id$': lider.id}]
+                    ]
+                }
+            ]
+        };
         
         const tacticosCore = await Core.findAll({
-            include: includes,
+            include: [
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    through: {
+                        attributes: []
+                    },
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                }
+            ],
             where
         })
 
-        if (!tacticosCore) return res.status(404).json({ msg: 'No se encontraron cores' })
 
+        if (!tacticosCore) return res.status(404).json({ msg: 'No se encontraron cores' })
+        
         return res.status(200).json({ objetivosCore: tacticosCore })
 
     } catch (error) {
@@ -111,7 +127,7 @@ export const getCores = async (req: Request, res: Response) => {
 }
 
 export const createCore = async (req: Request, res: Response) => {
-    const { year } = req.body
+    const { year, slug } = req.body
     const { id: idUsuario } = req.user as UsuarioInterface
 
     try {
@@ -127,13 +143,13 @@ export const createCore = async (req: Request, res: Response) => {
 
         // TODO: Actualizar Código
         
+        await updateCode({id: core.id, slug});
         
         // TODO: Actualizar Código
 
         await core.reload({
             include: includes
         })
-
         return res.status(201).json({ objetivoCore: core })
 
     } catch (error) {
@@ -206,4 +222,13 @@ export const deleteCore = async (req: Request, res: Response) => {
         console.log(error)
         return res.status(500).json({ msg: 'Error en el servidor' })
     }
+}
+
+export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
+    const objetivoTactico = await Core.findByPk(id);
+    const area = await Areas.findOne({where: {slug}});
+    const totalObjetivosOperativos = await Core.count({});
+    
+    const codigo = `${area?.codigo}-OTC-${totalObjetivosOperativos}`;
+    await objetivoTactico.update({codigo});    
 }
