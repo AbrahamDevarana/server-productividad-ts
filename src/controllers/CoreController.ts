@@ -34,8 +34,6 @@ const includes = [
     },
 ]
 
-
-
 export const getCore = async (req: Request, res: Response) => {
     const { id } = req.params
    
@@ -47,8 +45,6 @@ export const getCore = async (req: Request, res: Response) => {
         })
 
         if (!core) return res.status(404).json({ msg: 'No se encontró el core' })
-
-        console.log(core);
         
         return res.status(200).json({ objetivoCore: core })
 
@@ -131,6 +127,8 @@ export const createCore = async (req: Request, res: Response) => {
     const { id: idUsuario } = req.user as UsuarioInterface
 
     try {
+
+        const usuario = await Usuarios.findOne({ where: { id: idUsuario } })
       
         const core = await Core.create({
             propietarioId: idUsuario,
@@ -138,18 +136,20 @@ export const createCore = async (req: Request, res: Response) => {
             nombre: 'Nuevo Objetivo Core',
             fechaInicio: dayjs(`${year}-01-01`).startOf('year').toDate(),
             fechaFin: dayjs(`${year}-12-31`).endOf('year').toDate(),
+            departamentoId: usuario?.departamentoId,
         })
 
 
-        // TODO: Actualizar Código
         
-        await updateCode({id: core.id, slug});
+        await updateCode({id: core.id});
         
         // TODO: Actualizar Código
 
         await core.reload({
             include: includes
         })
+
+
         return res.status(201).json({ objetivoCore: core })
 
     } catch (error) {
@@ -160,8 +160,11 @@ export const createCore = async (req: Request, res: Response) => {
 
 export const updateCore = async (req: Request, res: Response) => {
     const { id } = req.params
-    const { nombre, codigo, meta, indicador, fechaInicio, fechaFin, tipoProgreso, status, progreso, responsables, propietarioId } = req.body
+    const { nombre, codigo, meta, indicador, proyeccion, tipoProgreso, status, progreso, responsables, propietarioId } = req.body
 
+
+    const fechaInicio = dayjs(proyeccion[0]).startOf('quarter').toDate();
+    const fechaFin = dayjs(proyeccion[1]).endOf('quarter').toDate();
 
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
@@ -177,6 +180,8 @@ export const updateCore = async (req: Request, res: Response) => {
             where: { id }
         })
 
+        const usuario = await Usuarios.findOne({ where: { id: propietarioId } })
+
         if (!core) return res.status(404).json({ msg: 'No se encontró el core' })
 
         const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: core});
@@ -190,7 +195,15 @@ export const updateCore = async (req: Request, res: Response) => {
             fechaFin,
             tipoProgreso,
             status: statusFinal,
-            progreso: progresoFinal
+            progreso: progresoFinal,
+            propietarioId,
+            departamentoId: usuario?.departamentoId
+        })
+
+        await core.setResponsables(participantes)
+
+        await core.reload({
+            include: includes
         })
 
         return res.status(200).json({ objetivoCore: core })
@@ -224,11 +237,30 @@ export const deleteCore = async (req: Request, res: Response) => {
     }
 }
 
-export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
+export const updateCode = async ({id}: {id:string }) => {
     const objetivoTactico = await Core.findByPk(id);
-    const area = await Areas.findOne({where: {slug}});
-    const totalObjetivosOperativos = await Core.count({});
+    const usuario = await Usuarios.findOne({where: {id: objetivoTactico?.propietarioId}});
+    const departamento = await Departamentos.findOne({
+        where: {id: usuario?.departamentoId},
+        include: [
+            {
+                model: Areas,
+                as: 'area',
+                attributes: ['codigo']
+            }
+        ]
+    });
     
-    const codigo = `${area?.codigo}-OTC-${totalObjetivosOperativos}`;
+    const totalObjetivosOperativos = await Core.count({
+        where: {
+            departamentoId: departamento?.id
+        }
+    });
+    
+    const codigo = `${departamento?.area.codigo}-OTC-${totalObjetivosOperativos}`;
     await objetivoTactico.update({codigo});    
+}
+
+export const migrateCoreToTactico = async (req: Request, res: Response) => {
+
 }

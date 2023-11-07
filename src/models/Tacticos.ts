@@ -38,6 +38,12 @@ export const Tacticos = database.define('obj_tacticos', {
     },
     estrategicoId: {
         type: Sequelize.UUID,
+        allowNull: true
+    },
+    // tipoObjetivo = enum estrategico/core
+    tipoObjetivo:{
+        type: Sequelize.ENUM('estrategico', 'core'),
+        defaultValue: 'estrategico'  
     },
     tipoProgreso: {
         type: Sequelize.INTEGER, // 1 = manual | 2 = % objetivos operativos

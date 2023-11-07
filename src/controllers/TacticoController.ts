@@ -1,6 +1,6 @@
 import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
-import { Op } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
 import { getStatusAndProgress } from '../helpers/getStatusAndProgress'
@@ -90,7 +90,8 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
             }
         ],
         // estrategicoId
-        estrategicoId: estrategicoId ? estrategicoId : null
+        estrategicoId: estrategicoId,
+        tipoObjetivo: 'estrategico'
     };
 
 
@@ -130,18 +131,13 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
-   
-
     try {
-
-
         const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
 
         const participantes = await departamento?.getUsuario()
         const lider = await departamento?.getLeader()
 
         const participantesIds = participantes?.map((participante: any) => participante.id);
-
         const where = {
             [Op.or]: [
                 {
@@ -160,11 +156,10 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
                     [Op.or]: [
                         {'$propietario.id$': lider.id},
                         {'$responsables.id$': participantesIds},
-                        // [Op.and, {'$responsables.id$': participantesIds}, {'$propietario.id$': lider.id}]
                     ]
                 }
-            ]
-                
+            ],
+            tipoObjetivo: 'estrategico'    
         };
         
         
@@ -202,28 +197,111 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
     }
 }
 
-export const createTactico = async (req: Request, res: Response) => {    
-    const { slug, year, estrategicoId } = req.body;
-    const { id: propietarioId } = req.user as UsuarioInterface
+export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
+const { year, departamentoId } = req.query as any;
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     
     try {
+        const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
 
-       
+        const participantes = await departamento?.getUsuario()
+        const lider = await departamento?.getLeader()
+
+        const participantesIds = participantes?.map((participante: any) => participante.id);
+        const where = {
+            [Op.and]: [
+                {
+                    [Op.or]: [
+                        {
+                            fechaInicio: {
+                                [Op.between]: [fechaInicio, fechaFin]
+                            }
+                        },
+                        {
+                            fechaFin: {
+                                [Op.between]: [fechaInicio, fechaFin]
+                            }
+                        },
+                    ],   
+                },
+                // si un isiario de participantesIds  esta en participantesIds o si el lider es el lider
+                {
+                    [Op.or]: [
+                        {'$propietario.id$': participantesIds },
+                        {'$responsables.id$': participantesIds },
+                    ]
+                }
+            ],
+            tipoObjetivo: 'core'   
+        };
+
+        
+        
+        const objetivosCore = await Tacticos.findAll({ 
+            where,
+            include: [
+                {
+                    model: Usuarios,
+                    as: 'responsables',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    through: {
+                        attributes: []
+                    },
+                    required: false
+                },
+                {
+                    model: Usuarios,
+                    as: 'propietario',
+                    attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
+                    required: false
+                }
+            ],
+            }
+        );
+
+        
+        res.json({ objetivosCore });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador',
+            error
+        });
+        
+    }
+
+}
+
+export const createTactico = async (req: Request, res: Response) => {    
+    const { year, estrategicoId, slug } = req.body;
+    const { id: propietarioId } = req.user as UsuarioInterface
+
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+
+    const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: slug }, { slug }] } })
+        
+    try {
+
+       const usuario = await Usuarios.findOne({ where: { id: propietarioId } })
+
         let codigo = ''
 
         const objetivoTactico = await Tacticos.create({
-            propietarioId,
+            propietarioId,  
             estrategicoId,
+            tipoObjetivo: estrategicoId ? 'estrategico' : 'core',
             codigo,
-            nombre: 'Nuevo Objetivo Tactico',
+            nombre: `Objetivo Tactico ${estrategicoId ? 'Estrategico' : 'Core'}`,
             fechaInicio,
             fechaFin,
+            departamentoId: usuario?.departamentoId
         });        
 
-        await updateCode({id: objetivoTactico.id, slug})
+        await updateCode({id: objetivoTactico.id})
 
         await objetivoTactico.reload({
             include: [
@@ -242,8 +320,8 @@ export const createTactico = async (req: Request, res: Response) => {
                 }
             ]
         });
-        
-        
+
+
         res.json({
             objetivoTactico
         });
@@ -279,7 +357,6 @@ export const updateTactico = async (req: Request, res: Response) => {
         const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoTactico});
         if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
 
-        
         await objetivoTactico.update({ 
             nombre, 
             codigo: codigoFinal,
@@ -291,6 +368,7 @@ export const updateTactico = async (req: Request, res: Response) => {
             propietarioId,
             fechaInicio: fechaInicio,
             fechaFin: fechaFin
+            
         });
 
         await objetivoTactico.setResponsables(participantes);
@@ -334,34 +412,39 @@ export const deleteTactico = async (req: Request, res: Response) => {
 }
 
 // Actualiza el código en base a los objetivos estratégicos y área
-export const updateCode = async ({id, slug}: {id:string, slug: string}) => {
-
+export const updateCode = async ({id}: {id:string}) => {
 
     const objetivoTactico = await Tacticos.findByPk(id);
-    const area = await Areas.findOne({where: {slug}});
-
-    if( objetivoTactico.estrategicoId ){
+    if(objetivoTactico.estrategicoId){
         const objetivoEstrategico = await objetivoTactico.getEstrategico()
         const objetivosOperativos = await objetivoEstrategico.getTacticos();
         const totalObjetivosOperativos = objetivosOperativos.length
         objetivoTactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
-        await objetivoTactico.save();                
-    }else {
+        await objetivoTactico.save();      
+    }else{
+        const usuario  = await Usuarios.findOne({where: {id: objetivoTactico.propietarioId}})
+        const departamento = await Departamentos.findOne({ 
+            where: {id: usuario?.departamentoId},
+            include: [
+                {
+                    model: Areas,
+                    as: 'area',
+                    attributes: ['codigo'],
+                }
+            ]
+        })
+
         const totalObjetivosOperativos = await Tacticos.count({
             where: {
-                estrategicoId: null
-            },
-            include: [{
-                model: Areas,
-                as: 'areas',
-                where: {
-                    codigo: area?.codigo
-                }
-            }]
+                departamentoId: departamento?.id
+            }
         });
-        const codigo = `${area?.codigo}-OT-${totalObjetivosOperativos}`;
-        await objetivoTactico.update({codigo});
 
-
+        objetivoTactico.codigo = `${departamento?.area.codigo}-OTC-${totalObjetivosOperativos}`;
+        await objetivoTactico.save();
     }
+
+}
+
+export const migrateCoreToTactico = async (req: Request, res: Response) => {
 }
