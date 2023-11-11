@@ -417,7 +417,9 @@ export const updateCode = async ({id}: {id:string}) => {
     const objetivoTactico = await Tacticos.findByPk(id);
     if(objetivoTactico.estrategicoId){
         const objetivoEstrategico = await objetivoTactico.getEstrategico()
-        const objetivosOperativos = await objetivoEstrategico.getTacticos();
+        const objetivosOperativos = await objetivoEstrategico.getTacticos({
+            paranoid: false,
+        });
         const totalObjetivosOperativos = objetivosOperativos.length
         objetivoTactico.codigo = `${objetivoEstrategico.codigo}-OT-${totalObjetivosOperativos}`;
         await objetivoTactico.save();      
@@ -437,7 +439,8 @@ export const updateCode = async ({id}: {id:string}) => {
         const totalObjetivosOperativos = await Tacticos.count({
             where: {
                 departamentoId: departamento?.id
-            }
+            },
+            paranoid: false
         });
 
         objetivoTactico.codigo = `${departamento?.area.codigo}-OTC-${totalObjetivosOperativos}`;
@@ -446,5 +449,38 @@ export const updateCode = async ({id}: {id:string}) => {
 
 }
 
-export const migrateCoreToTactico = async (req: Request, res: Response) => {
+export const chanteTypeTactico = async (req: Request, res: Response) => {
+
+    const { tacticoId, type, estrategicoId } = req.body;
+
+    try {
+
+        const objetivoTactico = await Tacticos.findOne({ where: { id: tacticoId } });
+        if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
+
+
+        if(type === 'estrategico'){
+            objetivoTactico.tipoObjetivo = 'estrategico';
+            objetivoTactico.estrategicoId = estrategicoId;
+        }else{
+            objetivoTactico.tipoObjetivo = 'core';
+            objetivoTactico.estrategicoId = null;
+        }
+
+
+        await objetivoTactico.save();
+
+        await objetivoTactico.reload({ include: includes });
+
+        res.json({ objetivoTactico });
+
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });        
+    }
+
 }
+

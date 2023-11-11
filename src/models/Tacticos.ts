@@ -54,6 +54,10 @@ export const Tacticos = database.define('obj_tacticos', {
         allowNull: false,
         defaultValue: 'SIN_INICIAR'
     },
+    activo: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
