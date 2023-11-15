@@ -13,13 +13,13 @@ import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
 import { Roles } from './Roles';
 import { GaleriaDevarana } from './custom/GaleriaDevarana';
+import { Core } from './Core'
 
 
 
 // Pivot tables
 import { PivotPerspEstr } from './pivot/PivotPerspectivaEstrategia';
 import { PivotRespTact } from './pivot/PivotResponsablesTactico';
-import { PivotAreaTactico } from './pivot/PivotAreaTactico';
 import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 import { PivotOpUsuario } from './pivot/PivotOperativoUsuario';
 import { PivotTareasResponsables } from './pivot/PivotTareasResponsables';
@@ -30,9 +30,9 @@ import { Permisos } from './Permisos';
 
 import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
 import GaleriaUsuarios from './custom/GaleriaUsuarios';
-import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
+// import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
 import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
-import Trimestre from './custom/Trimestre';
+// import Trimestre from './custom/Trimestre';
 
 
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
@@ -85,16 +85,20 @@ ObjetivoEstrategico.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comen
 
 
 // Tacticos
-Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 Tacticos.belongsTo(ObjetivoEstrategico, { as: 'estrategico', foreignKey: 'estrategicoId' });
+Tacticos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
     scope: {
         comentableType: 'TACTICO',
     }
 });
 
-Tacticos.belongsToMany(Trimestre, { through: PivotObjetivoTacticoTrimestre, as: 'trimestres'} );
-Trimestre.belongsToMany(Tacticos, { through: PivotObjetivoTacticoTrimestre, as: 'tacticos'} );
+Core.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+Core.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
+    scope: {
+        comentableType: 'CORE',
+    }
+});
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsTo(Tacticos, { as: 'tacticoOperativo', foreignKey: 'tacticoId', onDelete: 'SET NULL' });
@@ -134,17 +138,21 @@ ObjetivoEstrategico.belongsToMany(Usuarios, { as: 'responsables', through: Pivot
 Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico',  through: PivotPerspEstr, onDelete: 'CASCADE', foreignKey: 'perspectivaId' });
 
 
-// Tacticos - Usuarios
+// Tacticos, Core - Usuarios
 Tacticos.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
+Core.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
-// Tacticos - Áreas
-Tacticos.belongsToMany(Areas, { as: 'areas', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
+// Tacticos, Core - Departamentos
+Tacticos.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
+Core.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
 
 // Áreas - Tacticos
-Areas.belongsToMany(Tacticos, { as: 'tacticos', through: PivotAreaTactico, onDelete: 'CASCADE', foreignKey: 'areaId' });
+Departamentos.hasMany(Tacticos, { as: 'tacticos',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
+Departamentos.hasMany(Core, { as: 'core',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
 
 // Usuarios - Tacticos
 Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
+Usuarios.belongsToMany(Core, { as: 'core', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Usuarios - Objetivo Estratégico
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
@@ -229,18 +237,19 @@ export {
     Comentarios,
     Roles,
     Permisos,
-    Trimestre,
+    // Trimestre,
     Rendimiento,
     Task,
+    Core,
 
     PivotTareasResponsables,
     PivotPerspEstr,
     PivotRespTact,
-    PivotAreaTactico,
+
     PivotEstrResp,
     PivotOpUsuario,
     PivotProyectoUsuarios,
-    PivotObjetivoTacticoTrimestre,
+    // PivotObjetivoTacticoTrimestre,
 
 
     UsuarioHitosOrden,

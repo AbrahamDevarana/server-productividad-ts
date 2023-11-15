@@ -1,7 +1,7 @@
 // Path: src\models\Usuario.ts
 import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, ConfiguracionUsuario } from "../models";
 import { Request, Response } from "express";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
@@ -25,33 +25,29 @@ const perfilInclude = [
 export const getUsuarios = async (req: Request, res: Response) => {
    
 
-    const { nombre, apellidoPaterno, apellidoMaterno, email, page, size, search } = req.query;
-    
-    const { limit, offset } = getPagination(Number(page), Number(size));
-
-    const where: any = {};  
-
-    nombre && (where.nombre = { [Op.like]: `%${nombre}%` });
-    apellidoPaterno && (where.apellidoPaterno = { [Op.like]: `%${apellidoPaterno}%` });
-    apellidoMaterno && (where.apellidoMaterno = { [Op.like]: `%${apellidoMaterno}%` });
-    email && (where.email = { [Op.like]: `%${email}%` });
-    search && (where[Op.or] = [
-        { nombre: { [Op.like]: `%${search}%` } },
-        { apellidoPaterno: { [Op.like]: `%${search}%` } },
-        { apellidoMaterno: { [Op.like]: `%${search}%` } },
-    ]);
-
+    const { page, size, search } = req.query;
 
     try {
         const result = await Usuarios.findAndCountAll({
             distinct: true,
-            where,
             include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
-            limit: size ? limit: undefined,
-            offset: size ? offset: undefined,
             order: [
                 ['nombre', 'ASC'],
             ],
+            where: search ? {
+                [Op.or]: [
+                    literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
+                    literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
+                    literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
+                    literal('usuarios.nombre LIKE :search'),
+                    literal('usuarios.apellidoPaterno LIKE :search'),
+                    literal('usuarios.apellidoMaterno LIKE :search'),
+                    literal('usuarios.email LIKE :search'),
+                ],
+            } : {},
+            replacements: {
+                search: `%${search}%`
+            },
         })
 
         const usuarios = getPagingData(result, Number(page), Number(size))    

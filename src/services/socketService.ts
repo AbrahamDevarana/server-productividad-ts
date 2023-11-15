@@ -6,40 +6,45 @@ const io = new Server()
 
 const socketService = (server: any) => {
     io.attach(server, {
-        cors: {
-            origin: "*",
-        }
+        // cors: {
+        //     origin: "*",
+        // }
     });
     
     io.on('connection', (socket: any) => {
 
-        const accessToken = socket.handshake.query['token']
+        console.log('Usuario Conectado');
         
-        if(!accessToken || accessToken !== 'null') {
+
+        const accessToken = socket.handshake.query['token']
+
+
+        if(!accessToken || accessToken === 'null'){
+            socket.emit('autentication_failed')
+            socket.disconnect()
+        }else {
             jwt.verify(accessToken, process.env.JWT_SECRET as string, async (error: any, decoded: any) => {
                 if (error) {
                     const errorinfo = `${new Date(Date.now()).toLocaleString()} - ${error} \n`
                     console.log(errorinfo);
-                    fs.appendFile('src/logs/error.log', errorinfo, function (err) {
-                        if (error) throw error;
-                        process.exit(1);
-                    })
+                    socket.emit('autentication_failed')
+                    socket.disconnect()
                 } else {
                     if (decoded) {
                         socket.join(decoded.id);
                     }else{
-                        console.log('no decoded');
+                        console.log('Token no decodificado');
+                        socket.emit('authentication_failed');
+                        socket.disconnect();
                     }
                 }
             })
-        }else{
-            socket.disconnect();
         }
-
-
+        
         // Ver si el usuario esta logueado
         socket.on('disconnect', () => {
-            console.log('user disconnected');
+            console.log('Usuario desconectado:', socket.id);
+            // Realizar acciones adicionales si es necesario
         });
     });
 }

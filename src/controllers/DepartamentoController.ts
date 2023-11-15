@@ -9,14 +9,17 @@ const departamentoInclude = [
     {
         model: Areas,
         as: 'area',
+        attributes: ['id', 'nombre', 'slug'],
     },
     {
         model: Usuarios,
         as: 'leader',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
     },
     {
         model: Usuarios,
         as: 'usuario',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
     }
 ]
 
@@ -33,9 +36,10 @@ export const getDepartamentos = async (req: Request, res: Response) => {
         const result = await Departamentos.findAndCountAll({
             include: departamentoInclude,
             distinct: true,
+            attributes: ['id', 'nombre', 'areaId', 'leaderId', 'color', 'slug'],
             where,
             limit,
-            offset
+            offset,
         })
 
         const departamentos = getPagingData(result, Number(page), Number(size));

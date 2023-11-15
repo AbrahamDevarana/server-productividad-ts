@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios } from "../models";
+import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios, Areas } from "../models";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
 
@@ -19,6 +19,10 @@ export const getPerspectivas = async (req: Request, res: Response) => {
             order: [['orden', 'ASC']],
             include: [
                 {
+                    model: Areas,
+                    as: 'area',
+                },
+                {
                     model: ObjetivoEstrategico,
                     as: 'objetivosEstrategicos',
                     include: [
@@ -26,6 +30,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                             model: Usuarios,
                             as: 'responsables',
                             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+                            through: { attributes: [] }
                         },
                         {
                             model: Tacticos,

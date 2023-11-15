@@ -3,6 +3,7 @@ import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Re
 import dayjs from "dayjs";
 import { Op } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
+import { updateProgresoObjetivo } from "./ResultadosController";
 
 
 const includes = [
@@ -77,7 +78,8 @@ export const getOperativos = async (req:any, res: Response) => {
 export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , tacticoId, propietarioId } = req.body;
+    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , tacticoId, propietarioId, year, quarter } = req.body;
+    
     
     const fechaInicial = dayjs(fechaInicio).toDate();
     const fechaFinal = dayjs(fechaFin).toDate();
@@ -110,7 +112,6 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
         // si propietarioId es arrray tomar el primer valor
 
-        
         operativosResponsable.forEach( (responsable: string) => {
             setResponsables.add(responsable);
         });
@@ -132,6 +133,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
                 propietario: propietarioValue,
             });
         }
+
+
+        await updateProgresoObjetivo({objetivoOperativoId: operativo.id});
         
         await operativo.reload( { include: includes } );
 
@@ -419,7 +423,6 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
 
 }
 
-
 export const cierreCiclo = async (req: Request, res: Response) => {
 
     const { usuarioId, year, quarter, objetivosId } = req.body;
@@ -491,7 +494,6 @@ export const cierreCiclo = async (req: Request, res: Response) => {
         
     }
 }
-
 
 export const aprovacionObjetivo = async (req: Request, res: Response) => {
 

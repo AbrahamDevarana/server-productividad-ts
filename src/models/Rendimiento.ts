@@ -6,6 +6,7 @@ import database from "../config/database";
 
 
 export interface RendimientoModel extends Model<InferAttributes<RendimientoModel>, InferCreationAttributes<RendimientoModel>> {
+
     id?: string;
     year: number;
     quarter: number;
@@ -16,14 +17,12 @@ export interface RendimientoModel extends Model<InferAttributes<RendimientoModel
     extra: string;
     status: string;
     createdAt?: Date;
-    updatedAt?: Date;
+    updatedAt?: Date;    
 
-
-    
     getRendimientoOperativo: () => Promise<any>
     countRendimientoOperativo: () => Promise<any>
     hasRendimientoOperativo: () => Promise<any>
-    setRendimientoOperativo: () => Promise<any>
+    setRendimientoOperativo: ( args: unknown[] ) => Promise<any>
     addRendimientoOperativo: () => Promise<any>
     removeRendimientoOperativo: () => Promise<any>
     createRendimientoOperativo: () => Promise<any>
@@ -85,7 +84,6 @@ export const Rendimiento = database.define<RendimientoModel>('rendimiento', {
     paranoid: true,
     timestamps: true,
     hooks: {
-      
     },
     defaultScope: {
         attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
