@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createTactico, deleteTactico, getTactico, updateTactico, getTacticosByEstrategia, getTacticosByEquipo, getTacticosCoreByEquipo, chanteTypeTactico} from '../../controllers/TacticoController';
+import { createTactico, deleteTactico, getTactico, updateTactico, getTacticosByEstrategia, getTacticosByEquipo, getTacticosCoreByEquipo, changeTypeTactico, changeTypeProgress} from '../../controllers/TacticoController';
 
 const router = Router();
 
@@ -10,7 +10,8 @@ const router = Router();
 router.get('/byEstrategia', getTacticosByEstrategia);
 router.get('/byEquipo', getTacticosByEquipo);
 router.get('/byEquipoCore', getTacticosCoreByEquipo);
-router.put('/changeType', chanteTypeTactico);
+router.put('/changeType', changeTypeTactico);
+router.put('/changeTypeProgress', changeTypeProgress);
 router.get('/:id', getTactico);
 router.post('/', createTactico);
 router.put('/:id', updateTactico);

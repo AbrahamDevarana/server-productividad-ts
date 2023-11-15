@@ -1,4 +1,4 @@
-import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
+import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, ObjetivoOperativos, Perspectivas, ResultadosClave, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
 import { Op, Sequelize } from 'sequelize'
 import dayjs from 'dayjs'
@@ -59,8 +59,30 @@ export const getTactico = async (req: Request, res: Response) => {
       
         if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
 
-        res.json({ objetivoTactico });
+        let totalProgress = 0;
+        let totalResultadosClave = 0;
 
+        const objetivoOperativos = await ObjetivoOperativos.findAll({ where: { tacticoId: objetivoTactico.id } });
+
+        for (const objetivoOperativo of objetivoOperativos) {
+            const resultadosClave = await ResultadosClave.findAll({
+              where: { operativoId: objetivoOperativo.id }
+            });
+
+            // Accumulate progress and count the key results
+
+            for (const resultadoClave of resultadosClave) {
+              totalProgress += resultadoClave.progreso;
+              totalResultadosClave++;
+            }
+
+        }
+
+        const promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
+
+        objetivoTactico.suggest = 50;
+
+        res.json({ objetivoTactico });
 
     } catch (error) {
         console.log(error);
@@ -91,7 +113,7 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
         ],
         // estrategicoId
         estrategicoId: estrategicoId,
-        tipoObjetivo: 'estrategico'
+        tipoObjetivo: 'ESTRATEGICO'
     };
 
 
@@ -159,7 +181,7 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
                     ]
                 }
             ],
-            tipoObjetivo: 'estrategico'    
+            tipoObjetivo: 'ESTRATEGICO'    
         };
         
         
@@ -234,7 +256,7 @@ const { year, departamentoId } = req.query as any;
                     ]
                 }
             ],
-            tipoObjetivo: 'core'   
+            tipoObjetivo: 'CORE'   
         };
 
         
@@ -293,7 +315,7 @@ export const createTactico = async (req: Request, res: Response) => {
         const objetivoTactico = await Tacticos.create({
             propietarioId,  
             estrategicoId,
-            tipoObjetivo: estrategicoId ? 'estrategico' : 'core',
+            tipoObjetivo: estrategicoId ? 'ESTRATEGICO' : 'CORE',
             codigo,
             nombre: `Objetivo Tactico ${estrategicoId ? 'Estrategico' : 'Core'}`,
             fechaInicio,
@@ -337,7 +359,7 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion} = req.body;    
+    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;    
 
     const fechaInicio = dayjs(proyeccion[0]).startOf('quarter').toDate();
     const fechaFin = dayjs(proyeccion[1]).endOf('quarter').toDate();
@@ -362,6 +384,7 @@ export const updateTactico = async (req: Request, res: Response) => {
             codigo: codigoFinal,
             meta, 
             indicador,
+            tipoProgreso,
             estrategicoId: estrategicoId ? estrategicoId : null, 
             status: statusFinal,
             progreso: progresoFinal,
@@ -449,7 +472,7 @@ export const updateCode = async ({id}: {id:string}) => {
 
 }
 
-export const chanteTypeTactico = async (req: Request, res: Response) => {
+export const changeTypeTactico = async (req: Request, res: Response) => {
 
     const { tacticoId, type, estrategicoId } = req.body;
 
@@ -459,11 +482,11 @@ export const chanteTypeTactico = async (req: Request, res: Response) => {
         if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
 
 
-        if(type === 'estrategico'){
-            objetivoTactico.tipoObjetivo = 'estrategico';
+        if(type === 'ESTRATEGICO'){
+            objetivoTactico.tipoObjetivo = 'ESTRATEGICO';
             objetivoTactico.estrategicoId = estrategicoId;
         }else{
-            objetivoTactico.tipoObjetivo = 'core';
+            objetivoTactico.tipoObjetivo = 'CORE';
             objetivoTactico.estrategicoId = null;
         }
 
@@ -476,6 +499,55 @@ export const chanteTypeTactico = async (req: Request, res: Response) => {
 
         
     } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });        
+    }
+
+}
+
+export const changeTypeProgress = async (req: Request, res: Response) => {
+
+    const { tacticoId, type } = req.body;
+
+    try {
+        const objetivoTactico = await Tacticos.findOne({ where: { id: tacticoId } });
+        if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
+        
+        objetivoTactico.tipoProgreso = type
+
+        if(type){
+
+            // Obtener el promedio de los resultados clave y asignarselo al progreso
+            const objetivosOperativos = await ObjetivoOperativos.findAll({ where: { tacticoId } });
+
+            let totalProgress = 0;
+            let totalResultadosClave = 0;
+
+            for (const objetivoOperativo of objetivosOperativos) {
+                const resultadosClave = await ResultadosClave.findAll({
+                  where: { operativoId: objetivoOperativo.id }
+                });
+            
+                // Accumulate progress and count the key results
+                for (const resultadoClave of resultadosClave) {
+                  totalProgress += resultadoClave.progreso;
+                  totalResultadosClave++;
+                }
+              }
+
+              const promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
+
+            objetivoTactico.progreso = promedio;
+        }
+
+        await objetivoTactico.save();
+
+        res.json({ objetivoTactico });
+
+    }
+    catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Hable con el administrador'
