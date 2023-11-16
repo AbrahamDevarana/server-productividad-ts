@@ -93,9 +93,11 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const getTacticosByEstrategia = async (req: Request, res: Response) => {
-    const { year, estrategicoId } = req.query;
+    const { year, estrategicoId, showOnlyMe } = req.query;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+
+    const {id: propietarioId} = req.user as UsuarioInterface
 
 
     const where = {
@@ -113,7 +115,11 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
         ],
         // estrategicoId
         estrategicoId: estrategicoId,
-        tipoObjetivo: 'ESTRATEGICO'
+        tipoObjetivo: 'ESTRATEGICO',
+        // req.user.id in responsables or req.user.id in propietario
+        [Op.and]: [
+            showOnlyMe ?  { [Op.or]: [{'$propietario.id$': propietarioId}, {'$responsables.id$': propietarioId}] } : {}
+        ]
     };
 
 
@@ -148,10 +154,11 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
 }
 
 export const getTacticosByEquipo = async (req: Request, res: Response) => {
-    const { year, departamentoId } = req.query as any;
+    const { year, departamentoId, showOnlyMe } = req.query as any;
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+    const {id: propietarioId} = req.user as UsuarioInterface
 
     try {
         const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
@@ -220,11 +227,12 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
 }
 
 export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
-const { year, departamentoId } = req.query as any;
-
+    
+    const { year, departamentoId, showOnlyMe } = req.query as any;
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-    
+    const {id: propietarioId} = req.user as UsuarioInterface
+
     try {
         const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
 
