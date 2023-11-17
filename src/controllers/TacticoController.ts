@@ -61,6 +61,7 @@ export const getTactico = async (req: Request, res: Response) => {
 
         let totalProgress = 0;
         let totalResultadosClave = 0;
+        let promedio = 0;
 
         const objetivoOperativos = await ObjetivoOperativos.findAll({ where: { tacticoId: objetivoTactico.id } });
 
@@ -68,19 +69,24 @@ export const getTactico = async (req: Request, res: Response) => {
             const resultadosClave = await ResultadosClave.findAll({
               where: { operativoId: objetivoOperativo.id }
             });
-
             // Accumulate progress and count the key results
-
             for (const resultadoClave of resultadosClave) {
               totalProgress += resultadoClave.progreso;
               totalResultadosClave++;
             }
-
         }
 
-        const promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
+        promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
 
-        objetivoTactico.suggest = 50;
+        if(objetivoTactico.tipoProgreso === 'PROMEDIO'){
+            objetivoTactico.progreso = promedio;
+            await objetivoTactico.save();
+            await objetivoTactico.reload({ include: includes });
+        }
+         
+        
+
+        objetivoTactico.setDataValue('suggest', promedio);        
 
         res.json({ objetivoTactico });
 
@@ -121,7 +127,7 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
     if (showOnlyMe === "true") {
         where = {
             ...where,
-            [Op.and]: [
+            [Op.or]: [
                 { '$propietario.id$': propietarioId },
                 { '$responsables.id$': propietarioId }
             ]
@@ -166,9 +172,6 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     const {id: propietarioId} = req.user as UsuarioInterface
 
-    console.log('Hola');
-    
-
     try {
         const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
 
@@ -195,7 +198,13 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
                         // {'$propietario.id$': lider.id},
                         {'$responsables.id$': participantesIds},
                     ]
-                }
+                },
+                showOnlyMe === "true" ? { 
+                    [Op.or]: [
+                        { '$propietario.id$': propietarioId },
+                        { '$responsables.id$': propietarioId }
+                    ]
+                } : {}
             ],
             tipoObjetivo: 'ESTRATEGICO'    
         };
@@ -248,6 +257,7 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
         const lider = await departamento?.getLeader()
 
         const participantesIds = participantes?.map((participante: any) => participante.id);
+
         let where: WhereOptions = {
             [Op.and]: [
                 {
@@ -270,12 +280,17 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
                         {'$propietario.id$': participantesIds },
                         {'$responsables.id$': participantesIds },
                     ]
-                }
+                },
+
+                showOnlyMe === "true" ? { 
+                    [Op.or]: [
+                        { '$propietario.id$': propietarioId },
+                        { '$responsables.id$': propietarioId }
+                    ]
+                } : {}
             ],
             tipoObjetivo: 'CORE'   
         };
-
-
 
         
         const objetivosCore = await Tacticos.findAll({ 
@@ -411,9 +426,33 @@ export const updateTactico = async (req: Request, res: Response) => {
             
         });
 
+        let promedio = 0
+
         await objetivoTactico.setResponsables(participantes);
 
         await objetivoTactico.reload({ include: includes });
+
+        // Obtener el promedio de los resultados clave y asignarselo al progreso
+        const objetivosOperativos = await ObjetivoOperativos.findAll({ where: { tacticoId: objetivoTactico.id } });
+
+        let totalProgress = 0;
+        let totalResultadosClave = 0;
+
+        for (const objetivoOperativo of objetivosOperativos) {
+            const resultadosClave = await ResultadosClave.findAll({
+              where: { operativoId: objetivoOperativo.id }
+            });
+        
+            // Accumulate progress and count the key results
+            for (const resultadoClave of resultadosClave) {
+              totalProgress += resultadoClave.progreso;
+              totalResultadosClave++;
+            }
+          }
+
+        promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
+
+        objetivoTactico.setDataValue('suggest', promedio);
 
         res.json({
             objetivoTactico
@@ -509,7 +548,6 @@ export const changeTypeTactico = async (req: Request, res: Response) => {
 
 
         await objetivoTactico.save();
-
         await objetivoTactico.reload({ include: includes });
 
         res.json({ objetivoTactico });
@@ -533,8 +571,12 @@ export const changeTypeProgress = async (req: Request, res: Response) => {
         if (!objetivoTactico) return res.status(404).json({ msg: 'No se encontró el objetivo tactico' })
         
         objetivoTactico.tipoProgreso = type
+        
+   
+        let promedio = 0
+        
 
-        if(type){
+        if(type === 'PROMEDIO'){
 
             // Obtener el promedio de los resultados clave y asignarselo al progreso
             const objetivosOperativos = await ObjetivoOperativos.findAll({ where: { tacticoId } });
@@ -554,12 +596,16 @@ export const changeTypeProgress = async (req: Request, res: Response) => {
                 }
               }
 
-            const promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
+            promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
 
-            objetivoTactico.setDataValue('suggest', promedio);            
-        }
-
+            objetivoTactico.progreso = promedio;         
+        }        
+        
         await objetivoTactico.save();
+        await objetivoTactico.reload({ include: includes });
+
+        objetivoTactico.setDataValue('suggest', promedio);   
+  
 
         res.json({ objetivoTactico });
 

@@ -106,11 +106,13 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
          
             const promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
 
-            // objetivoEstrategico.suggest = promedio;
-            objetivoEstrategico.setDataValue('suggest', promedio);
+            if(objetivoEstrategico.typeProgress === 'PROMEDIO') {
+                objetivoEstrategico.progreso = promedio;
+                await objetivoEstrategico.save();
+                await objetivoEstrategico.reload({ include: includeProps });
+            }
 
-
-        
+            objetivoEstrategico.setDataValue('suggest', promedio);        
             res.json({
                 objetivoEstrategico
             });
@@ -160,6 +162,7 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId, rangeDate} = req.body;
+
     
     const primeraFecha = dayjs(rangeDate[0]);
     const ultimoDiaDelPrimerAnio = primeraFecha.startOf('year').toDate();
@@ -329,4 +332,62 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
 
     
 
+}
+
+export const changeTypeProgress:RequestHandler = async (req: Request, res: Response) => {
+
+    const  { estrategicoId, type } = req.body;
+    
+
+    try {
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(estrategicoId);
+        if (objetivoEstrategico) {
+            await objetivoEstrategico.update({ 
+                typeProgress: type
+            });
+
+
+            if(type === 'PROMEDIO') {
+
+                let totalProgress = 0;
+                let totalTacticos = 0;
+    
+    
+                const objetivosTacticos = await Tacticos.findAll({
+                    where: {
+                        estrategicoId: estrategicoId
+                    }
+                });
+    
+                for( const objetivoTactico of objetivosTacticos) {
+                    totalProgress += objetivoTactico.progreso;
+                    totalTacticos++;
+                }
+    
+             
+                const promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
+    
+                // objetivoEstrategico.suggest = promedio;
+                objetivoEstrategico.setDataValue('suggest', promedio);
+                objetivoEstrategico.progreso = promedio;
+            }
+
+            await objetivoEstrategico.save();
+            await objetivoEstrategico.reload({ include: includeProps });
+
+            res.json({
+                objetivoEstrategico
+            });
+        } else {
+            res.status(404).json({
+                msg: `No existe un objetivo estratégico ${estrategicoId}`
+            });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
 }
