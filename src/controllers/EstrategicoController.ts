@@ -1,4 +1,4 @@
-import { Areas, Comentarios, ObjetivoEstrategico, Perspectivas, Usuarios } from '../models'
+import { Areas, Comentarios, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { UsuarioInterface } from '../interfaces';
@@ -86,8 +86,31 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
         include: includeProps 
     });
 
-        if (objetivoEstrategico) {            
-       
+        if (objetivoEstrategico) {     
+            
+            let totalProgress = 0;
+            let totalTacticos = 0;
+
+
+            const objetivosTacticos = await Tacticos.findAll({
+                where: {
+                    estrategicoId: id
+                }
+            });
+
+            for( const objetivoTactico of objetivosTacticos) {
+                totalProgress += objetivoTactico.progreso;
+                totalTacticos++;
+            }
+
+         
+            const promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
+
+            // objetivoEstrategico.suggest = promedio;
+            objetivoEstrategico.setDataValue('suggest', promedio);
+
+
+        
             res.json({
                 objetivoEstrategico
             });

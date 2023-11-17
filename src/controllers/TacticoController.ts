@@ -1,6 +1,6 @@
 import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, ObjetivoOperativos, Perspectivas, ResultadosClave, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
-import { Op, Sequelize } from 'sequelize'
+import { Op, Sequelize, WhereOptions } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
 import { getStatusAndProgress } from '../helpers/getStatusAndProgress'
@@ -93,14 +93,14 @@ export const getTactico = async (req: Request, res: Response) => {
 }
 
 export const getTacticosByEstrategia = async (req: Request, res: Response) => {
-    const { year, estrategicoId, showOnlyMe } = req.query;
+    const { year, estrategicoId, showOnlyMe } = req.query
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
     const {id: propietarioId} = req.user as UsuarioInterface
+    
 
-
-    const where = {
+    let where: WhereOptions = {
         [Op.or]: [
             {
                 fechaInicio: {
@@ -116,11 +116,17 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
         // estrategicoId
         estrategicoId: estrategicoId,
         tipoObjetivo: 'ESTRATEGICO',
-        // req.user.id in responsables or req.user.id in propietario
-        [Op.and]: [
-            showOnlyMe ?  { [Op.or]: [{'$propietario.id$': propietarioId}, {'$responsables.id$': propietarioId}] } : {}
-        ]
     };
+
+    if (showOnlyMe === "true") {
+        where = {
+            ...where,
+            [Op.and]: [
+                { '$propietario.id$': propietarioId },
+                { '$responsables.id$': propietarioId }
+            ]
+        };
+    }
 
 
     try {
@@ -160,6 +166,9 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     const {id: propietarioId} = req.user as UsuarioInterface
 
+    console.log('Hola');
+    
+
     try {
         const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
 
@@ -167,7 +176,7 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
         const lider = await departamento?.getLeader()
 
         const participantesIds = participantes?.map((participante: any) => participante.id);
-        const where = {
+        let where : WhereOptions = {
             [Op.or]: [
                 {
                     fechaInicio: {
@@ -183,14 +192,14 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             [Op.and]: [
                 {
                     [Op.or]: [
-                        {'$propietario.id$': lider.id},
+                        // {'$propietario.id$': lider.id},
                         {'$responsables.id$': participantesIds},
                     ]
                 }
             ],
             tipoObjetivo: 'ESTRATEGICO'    
         };
-        
+
         
         const objetivosTacticos = await Tacticos.findAll({ 
             where,
@@ -209,7 +218,6 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
                     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
                 }
             ],
-            // logging: console.log
             }
         );
 
@@ -240,7 +248,7 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
         const lider = await departamento?.getLeader()
 
         const participantesIds = participantes?.map((participante: any) => participante.id);
-        const where = {
+        let where: WhereOptions = {
             [Op.and]: [
                 {
                     [Op.or]: [
@@ -267,7 +275,8 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
             tipoObjetivo: 'CORE'   
         };
 
-        
+
+
         
         const objetivosCore = await Tacticos.findAll({ 
             where,
@@ -545,9 +554,9 @@ export const changeTypeProgress = async (req: Request, res: Response) => {
                 }
               }
 
-              const promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
+            const promedio = totalResultadosClave > 0 ? Math.round(totalProgress / totalResultadosClave) : 0;
 
-            objetivoTactico.progreso = promedio;
+            objetivoTactico.setDataValue('suggest', promedio);            
         }
 
         await objetivoTactico.save();
