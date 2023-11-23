@@ -16,7 +16,7 @@ const GaleriaUsuarios = database.define('galeria_usuarios', {
     type: {
         type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: 'banner' //  banner, avatar
+        defaultValue: 'BANNER_PERFIL' //  banner, avatar
     },
     url: {
         type: Sequelize.STRING,
