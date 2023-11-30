@@ -30,9 +30,13 @@ interface SingleFileProps {
 const deleteFile = async (files: any[]): Promise<boolean> => {
     try {
         await Promise.all(files.map(async (item) => {
+
+            console.log(item);
+            
             const deleteParams = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: item
+                Bucket: process.env.AWS_BUCKET_NAME,
+                
+                Key: process.env.AWS_STORAGE_FOLDER + '/' + item,
             };
             await s3Client.send(new DeleteObjectCommand(deleteParams));
             console.log('deleted');
@@ -45,19 +49,57 @@ const deleteFile = async (files: any[]): Promise<boolean> => {
     }
 };
 
-const uploadFile = async ({ files, folder}: SingleFileProps): Promise<{ name: string; url: string }[]> => {
-    const galeria: { name: string; url: string }[] = [];
+// const uploadFile = async ({ files, folder}: SingleFileProps): Promise<{ name: string; url: string }[]> => {
+//     const galeria: { name: string; url: string }[] = [];
 
-    const elements = Array.isArray(files) ? files : [files];  
+//     const elements = Array.isArray(files) ? files : [files];  
 
-    await Promise.all(
-        elements.map( async (file: any) => { 
+//     await Promise.allSettled(
+//         elements.map( async (file: any) => { 
+//             let bufferedFile: any = file.filepath;
+//             if (file.mimetype.includes('image')) {
+//                 const tinified = tinify.fromFile(file.filepath);
+// 				        bufferedFile = await tinified.toBuffer();
+//             }
+//             else {
+//                 bufferedFile = await fs.promises.readFile(file.filepath);
+//             }
+//             const folderDest = `${process.env.AWS_STORAGE_FOLDER}/${folder}`;
+//             const fileName = `${Date.now()}-${file.originalFilename}`;
+//             const params = {
+//                 Bucket: process.env.AWS_BUCKET_NAME || '',
+//                 Key: `${folderDest}/${fileName}`,
+//                 Body: bufferedFile,
+//                 ACL: 'public-read',
+//                 ContentType: file.mimetype,
+//             }
+
+//             const data: PutObjectCommandOutput = await s3Client.send(new PutObjectCommand(params));
+//             if (data.$metadata.httpStatusCode === 200) {
+//                 galeria.push({
+//                     name: file.originalFilename,
+//                     url: folder + '/' + fileName
+//                 });
+//             }
+//             else {
+//                 throw new Error('Error al subir el archivo');
+//             }
+//         })
+//     );
+
+//     return galeria;
+// };
+
+const uploadFile = async ({ files, folder }: SingleFileProps): Promise<{ name: string; url: string }[]> => {
+    const elements = Array.isArray(files) ? files : [files];
+
+    const results = await Promise.allSettled(
+        elements.map(async (file: any) => {
             let bufferedFile: any = file.filepath;
             if (file.mimetype.includes('image')) {
                 const tinified = tinify.fromFile(file.filepath);
-				        bufferedFile = await tinified.toBuffer();
-            }
-            else {
+                bufferedFile = await tinified.toBuffer();
+            } else {
                 bufferedFile = await fs.promises.readFile(file.filepath);
             }
             const folderDest = `${process.env.AWS_STORAGE_FOLDER}/${folder}`;
@@ -68,22 +110,34 @@ const uploadFile = async ({ files, folder}: SingleFileProps): Promise<{ name: st
                 Body: bufferedFile,
                 ACL: 'public-read',
                 ContentType: file.mimetype,
-            }
+            };
 
             const data: PutObjectCommandOutput = await s3Client.send(new PutObjectCommand(params));
             if (data.$metadata.httpStatusCode === 200) {
-                galeria.push({
+                return {
                     name: file.originalFilename,
-                    url: folder + '/' + fileName
-                });
-            }
-            else {
+                    url: `${folder}/${fileName}`
+                };
+            } else {
                 throw new Error('Error al subir el archivo');
             }
         })
     );
+
+    const galeria: { name: string; url: string }[] = [];
+    results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value) {
+            // Si la promesa fue cumplida, agregar a la galería
+            galeria.push(result.value);
+        } else {
+            // Si la promesa fue rechazada, manejar el error
+            console.error("Error al procesar el archivo:", elements[index].originalFilename);
+        }
+    });
+
     return galeria;
 };
+
 
 export {
     uploadFile,

@@ -14,7 +14,7 @@ export const GaleriaDevarana = database.define('galeria_devarana', {
         defaultValue: 'banner' //  banner, avatar
     },
     url: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
         defaultValue: ''
     },
