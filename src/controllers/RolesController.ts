@@ -9,13 +9,7 @@ export const getRoles = async (req: Request, res: Response) => {
         const roles = await Roles.findAll({
             where: {
                 status: 1
-            },
-            include: [
-                {
-                    model: Permisos,
-                    as: 'permisos',
-                }
-            ]
+            }
         });
 
         res.json({ roles });
@@ -46,7 +40,6 @@ export const getRol = async (req: Request, res: Response) => {
         });
     }
 }
-
 
 export const createRol = async (req: Request, res: Response) => {
     
@@ -100,7 +93,6 @@ export const updateRol = async (req: Request, res: Response) => {
         });
     }   
 }
-
 
 export const deleteRol = async (req: Request, res: Response) => {
             
