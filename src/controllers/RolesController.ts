@@ -28,9 +28,9 @@ export const getRol = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const rol = await Roles.findByPk(id);
+        const role = await Roles.findByPk(id);
 
-        res.json({ rol });
+        res.json({ role });
     }
     catch (error) {
         console.log(error);
