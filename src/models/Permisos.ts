@@ -1,15 +1,14 @@
-import Sequelize, { Model }  from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model }  from "sequelize";
 import database from "../config/database";
 
-export interface PermisosAttributes {
+
+export interface PermisosModel extends Model<InferAttributes<PermisosModel>, InferCreationAttributes<PermisosModel>> {
     id?: number;
     nombre: string;
     permisos: string;
 }
 
-export interface PermisosInstance extends Model<PermisosAttributes>, PermisosAttributes {}
-
-export const Permisos = database.define<PermisosInstance>('permisos', {
+export const Permisos = database.define<PermisosModel>('permisos', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,

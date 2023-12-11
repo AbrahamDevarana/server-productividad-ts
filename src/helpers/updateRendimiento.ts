@@ -43,6 +43,8 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
             
             if(resultadoObjetivos.length !== 0){
+                await rendimiento[0].setRendimientoOperativo([])
+                
                 const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
 
                     if(obj.progresoAsignado === 0) return acc;
@@ -57,7 +59,7 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
                 const resultadoArrId = resultadoObjetivos.map( resultado => resultado.id)
 
-                await rendimiento[0].setRendimientoOperativo([])
+                
                 await rendimiento[0].setRendimientoOperativo(resultadoArrId)
             }
         }

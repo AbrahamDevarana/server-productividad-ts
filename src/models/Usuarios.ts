@@ -95,7 +95,8 @@ export const Usuarios = database.define('usuarios', {
     },
     social: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
+        defaultValue: {"otros": {"url": "mybook/", "nombre": "otros"}, "facebook": {"url": "www.facebook.com", "nombre": "facebook"}, "linkedin": {"url": "www.linkedin.com", "nombre": "linkedin"}, "instagram": {"url": "www.instagram.com/", "nombre": "instagram"}}
     }
 }, {
     paranoid: true,

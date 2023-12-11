@@ -24,6 +24,7 @@ import uploadRoutes from "./api/uploadRoutes";
 import rendimientoRoutes from "./api/rendimientoRoutes";
 import evaluacionRoutes from "./api/evaluacionRoutes";
 import historialPerformanceRoutes from "./api/historialPerformanceRoutes";
+import gestionObjetivosRoutes from "./api/gestionObjetivosRoutes";
 
 
 const router = Router();
@@ -51,10 +52,9 @@ router.use('/evaluacion', evaluacionRoutes)
 router.use('/historial-performance', historialPerformanceRoutes)
 router.use('/reportes', reportesRoutes)
 router.use('/roles', rolesRoutes)
+router.use('/gestion-objetivos', gestionObjetivosRoutes)
 
 router.use('/galeria', galeriaRoutes)
-
-
 
 
 export default router;
