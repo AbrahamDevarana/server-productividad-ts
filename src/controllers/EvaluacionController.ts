@@ -502,3 +502,60 @@ export const obtenerRespuestasEvaluacion = async (req: Request, res: Response) =
         })
     }
 }
+
+
+
+
+// A partir de aquí es la nueva funcionalidad de evaluaciones
+
+export const obtenerEvaluacionCompentencias = async (req: Request, res: Response) => {
+    
+    const { year } = req.query as any;
+
+    const quarter = 3
+
+
+    try {
+
+        const usuarios = await Usuarios.findAll({
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+            include: [
+                {
+                    model: AsignacionEvaluacion,
+                    as: 'evaluacionesEvaluado',
+                    where: {
+                        year,
+                        quarter
+                    },
+                    required: false,
+                    attributes: ['id', 'evaluadorId', 'evaluadoId', 'status', 'evaluacionId'],
+                    include: [
+                        {
+                            model: Usuarios,
+                            as: 'evaluador',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+                        },
+                    ],
+                }
+            ],
+            order: [
+                ['nombre', 'ASC'],
+            ],
+        })
+
+    
+        return res.json({
+            ok: true,
+            usuarios
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}
+        

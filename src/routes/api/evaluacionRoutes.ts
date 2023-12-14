@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { asignarPreguntasEvaluacion, obtenerEvaluadores, obtenerEvaluacion, obtenerUsuariosAEvaluar, guardarEvaluacion, obtenerResultadoEvaluacion, asignarEvaluadoresEmpresa, obtenerResultadoEvaluacionLider, obtenerRespuestasEvaluacion} from '../../controllers/EvaluacionController';
+import { asignarPreguntasEvaluacion, obtenerEvaluadores, obtenerEvaluacion, obtenerUsuariosAEvaluar, guardarEvaluacion, obtenerResultadoEvaluacion, asignarEvaluadoresEmpresa, obtenerResultadoEvaluacionLider, obtenerRespuestasEvaluacion, obtenerEvaluacionCompentencias} from '../../controllers/EvaluacionController';
 
 const router = Router();
 
@@ -10,16 +10,15 @@ router.post('/asignar', asignarEvaluadoresEmpresa);
 
 router.get('/evaluadores/:id', obtenerEvaluadores);
 router.get('/usuarios/:id', obtenerUsuariosAEvaluar);
-router.get('/:id', obtenerEvaluacion)
+
 router.post('/respuestas', guardarEvaluacion);
 router.get('/resultados/:id', obtenerResultadoEvaluacion)
 router.get('/resultados/lider/:id', obtenerResultadoEvaluacionLider)
 
 router.get('/respuestas/:id', obtenerRespuestasEvaluacion)
 
+router.get('/competencias', obtenerEvaluacionCompentencias)
 
-// router.post('/equipo', createEvaluacionEquipo);
-// router.post('/colaboradores', createEvaluacionCoolaboradores);
-// router.get('/:id', getEvaluacion)
+router.get('/:id', obtenerEvaluacion)
 
 export default router;
