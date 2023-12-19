@@ -508,12 +508,9 @@ export const obtenerRespuestasEvaluacion = async (req: Request, res: Response) =
 
 // A partir de aquí es la nueva funcionalidad de evaluaciones
 
-export const obtenerEvaluacionCompentencias = async (req: Request, res: Response) => {
+export const getEvaluaciones = async (req: Request, res: Response) => {
     
-    const { year } = req.query as any;
-
-    const quarter = 3
-
+    const { year, quarter } = req.query as any;
 
     try {
 
@@ -558,4 +555,128 @@ export const obtenerEvaluacionCompentencias = async (req: Request, res: Response
         })
     }
 }
-        
+
+export const getEvaluacion = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { year, quarter } = req.query as any;
+
+    try {
+
+        const usuario = await Usuarios.findOne({
+            where: {
+                id
+            },
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+            include: [
+                {
+                    model: AsignacionEvaluacion,
+                    as: 'evaluacionesEvaluado',
+                    where: {
+                        year,
+                        quarter
+                    },
+                    required: false,
+                    attributes: ['id', 'evaluadorId', 'evaluadoId', 'status', 'evaluacionId'],
+                    include: [
+                        {
+                            model: Usuarios,
+                            as: 'evaluador',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+                        },
+                    ],
+                }
+            ],
+            order: [
+                ['nombre', 'ASC'],
+            ],
+        })
+
+        return res.json({
+            ok: true,
+            usuario
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}
+    
+export const createAsignacionEvaluacion = async (req: Request, res: Response) => {
+
+    const { evaluadoId, evaluadorId, year, quarter, tipoEvaluacionId } = req.body;
+
+    try {
+
+        const asignacion = await AsignacionEvaluacion.findOne({
+            where: {
+                evaluadorId,
+                evaluadoId,
+                year,
+                quarter,
+                evaluacionId: tipoEvaluacionId
+            }
+        })
+
+        if (asignacion) return res.status(400).json({ ok: false, msg: 'Ya existe una asignación para este usuario' })
+
+        await AsignacionEvaluacion.create({
+            evaluadorId,
+            evaluadoId,
+            year,
+            quarter,
+            evaluacionId: tipoEvaluacionId
+        })
+
+        return res.json({
+            ok: true,
+            msg: 'Asignación creada'
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+
+}
+
+export const deleteAsignacionEvaluacion = async (req: Request, res: Response) => {
+    
+        const { id } = req.params;
+    
+        try {
+    
+            const asignacion = await AsignacionEvaluacion.findOne({
+                where: {
+                    id
+                }
+            })
+    
+            if (!asignacion) return res.status(404).json({ ok: false, msg: 'No existe la asignación' })
+    
+            await asignacion.destroy()
+    
+            return res.json({
+                ok: true,
+                msg: 'Asignación eliminada'
+            })
+    
+        } catch (error) {
+    
+            console.log(error);
+            return res.status(500).json({
+                ok: false,
+                msg: 'Error inesperado'
+            })
+        }
+    
+}

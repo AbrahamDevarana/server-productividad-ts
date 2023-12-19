@@ -1,23 +1,30 @@
 import { Router } from 'express';
-import { asignarPreguntasEvaluacion, obtenerEvaluadores, obtenerEvaluacion, obtenerUsuariosAEvaluar, guardarEvaluacion, obtenerResultadoEvaluacion, asignarEvaluadoresEmpresa, obtenerResultadoEvaluacionLider, obtenerRespuestasEvaluacion, obtenerEvaluacionCompentencias} from '../../controllers/EvaluacionController';
+import { asignarPreguntasEvaluacion, obtenerEvaluadores, obtenerEvaluacion, obtenerUsuariosAEvaluar, guardarEvaluacion, obtenerResultadoEvaluacion, asignarEvaluadoresEmpresa, obtenerResultadoEvaluacionLider, obtenerRespuestasEvaluacion, 
+    
+    getEvaluaciones, createAsignacionEvaluacion, deleteAsignacionEvaluacion, getEvaluacion} from '../../controllers/EvaluacionController';
 
 const router = Router();
 
-// API url: /evaluacion
+// API url: /evaluacion 
+
+//TODO: cambiar la url de competencias a evaluacion cuando se ajusten los demás servicios
 
 router.put('/preguntas', asignarPreguntasEvaluacion);
 router.post('/asignar', asignarEvaluadoresEmpresa);
-
 router.get('/evaluadores/:id', obtenerEvaluadores);
 router.get('/usuarios/:id', obtenerUsuariosAEvaluar);
-
 router.post('/respuestas', guardarEvaluacion);
 router.get('/resultados/:id', obtenerResultadoEvaluacion)
 router.get('/resultados/lider/:id', obtenerResultadoEvaluacionLider)
-
 router.get('/respuestas/:id', obtenerRespuestasEvaluacion)
 
-router.get('/competencias', obtenerEvaluacionCompentencias)
+
+
+router.get('/competencias', getEvaluaciones)
+router.post('/competencias', createAsignacionEvaluacion)
+router.delete('/competencias/:id', deleteAsignacionEvaluacion)
+router.get('/competencias/:id', getEvaluacion)
+
 
 router.get('/:id', obtenerEvaluacion)
 
