@@ -7,17 +7,17 @@ import { updateRendimiento } from "../helpers/updateRendimiento";
 
 enum TipoEvaluacion {
     EvaluacionLider = 1,
-    EvaluacionColaborador = 2,
+    EvaluacionColaborador = 2, //  Evaluación de colaborador a colaborador
     EvaluacionPropia = 3,
-    EvaluacionLiderColaborador = 4
+    EvaluacionLiderColaborador = 4, // Deprecated
+    EvaluacionPares = 5, //  Evaluación de pares
+
 }
 
 //  Por usuario asignar QUIEN lo va a evaluar
 export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => {
 
     const { year, quarter } = req.body
-
-    // const MAX_EVALUACIONES = 3
 
     const usuarios = await Usuarios.findAll({})
 
@@ -96,6 +96,16 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                 quarter,
                 evaluacionId: tipoEv
             });
+        }
+
+
+
+        // Colaboradores de objetivos
+
+        const operativos = await usuario.getObjetivosOperativos()
+        
+        for( const operativo of operativos ) {
+            
         }
 
     }
@@ -508,6 +518,10 @@ export const obtenerRespuestasEvaluacion = async (req: Request, res: Response) =
 
 // A partir de aquí es la nueva funcionalidad de evaluaciones
 
+export const asignarEvaluaciones = async (req: Request, res: Response) => {
+
+}
+
 export const getEvaluaciones = async (req: Request, res: Response) => {
     
     const { year, quarter } = req.query as any;
@@ -539,7 +553,6 @@ export const getEvaluaciones = async (req: Request, res: Response) => {
                 ['nombre', 'ASC'],
             ],
         })
-
     
         return res.json({
             ok: true,
@@ -651,16 +664,20 @@ export const createAsignacionEvaluacion = async (req: Request, res: Response) =>
 
 export const deleteAsignacionEvaluacion = async (req: Request, res: Response) => {
     
-        const { id } = req.params;
-    
+        const { evaluadoId, evaluadorId, year, quarter, tipoEvaluacionId } = req.body;
+        
         try {
     
             const asignacion = await AsignacionEvaluacion.findOne({
                 where: {
-                    id
+                    evaluadorId,
+                    evaluadoId,
+                    year,
+                    quarter,
+                    evaluacionId: tipoEvaluacionId
                 }
             })
-    
+                
             if (!asignacion) return res.status(404).json({ ok: false, msg: 'No existe la asignación' })
     
             await asignacion.destroy()

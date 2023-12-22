@@ -38,6 +38,7 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
 import { HistorialPerformance } from './HistorialPerformance';
 import { Task } from './Task';
+import { PivotObjetivoRendimiento } from './pivot/PivotObjetivoRendimiento';
 
 
 
@@ -158,8 +159,18 @@ Usuarios.belongsToMany(Core, { as: 'core', through: PivotRespTact, onDelete: 'CA
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Objetivo Operativo
-ObjetivoOperativos.belongsToMany(Rendimiento, { as: 'operativoRendimiento', through: 'pivot_objetivo_rendimiento', onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId', otherKey: 'rendimientoId', uniqueKey: 'unique_operativo_rendimiento' });
-Rendimiento.belongsToMany(ObjetivoOperativos, { as: 'rendimientoOperativo', through: 'pivot_objetivo_rendimiento', onDelete: 'CASCADE', foreignKey: 'rendimientoId', otherKey: 'objetivoOperativoId', uniqueKey: 'unique_rendimiento_operativo' });
+ObjetivoOperativos.belongsToMany(Rendimiento, {
+    as: 'operativoRendimiento', 
+    through: PivotObjetivoRendimiento, 
+    onDelete: 'CASCADE',
+    foreignKey: 'objOperativoId'
+});
+Rendimiento.belongsToMany(ObjetivoOperativos, { 
+    as: 'rendimientoOperativo', 
+    through: PivotObjetivoRendimiento, 
+    onDelete: 'CASCADE', 
+    foreignKey: 'rendimientoId'
+});
 
 ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId' });
 Usuarios.belongsToMany(ObjetivoOperativos, { as: 'objetivosOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
