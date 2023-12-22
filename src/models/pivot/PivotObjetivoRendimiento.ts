@@ -11,6 +11,10 @@ export const PivotObjetivoRendimiento = database.define('pivot_objetivo_rendimie
         type: Sequelize.UUID,
         allowNull: false,
     },
+    rendimientoId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+    },
     year: {
         type: Sequelize.INTEGER,
         allowNull: false
@@ -36,6 +40,7 @@ export const PivotObjetivoRendimiento = database.define('pivot_objetivo_rendimie
             fields: ['objOperativoId', 'rendimientoId', 'year', 'quarter'],
             name: 'pivot_objetivo_rendimiento_unique'
         }
-    ]
-
+    ],
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_bin',
 });

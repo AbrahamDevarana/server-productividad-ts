@@ -19,6 +19,7 @@ import { Core } from './Core'
 
 // Pivot tables
 import { PivotPerspEstr } from './pivot/PivotPerspectivaEstrategia';
+import { PivotObjetivoRendimiento } from './pivot/PivotObjetivoRendimiento';
 import { PivotRespTact } from './pivot/PivotResponsablesTactico';
 import { PivotEstrResp } from './pivot/PivotEstrategiaResponsables';
 import { PivotOpUsuario } from './pivot/PivotOperativoUsuario';
@@ -38,7 +39,6 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
 import { HistorialPerformance } from './HistorialPerformance';
 import { Task } from './Task';
-import { PivotObjetivoRendimiento } from './pivot/PivotObjetivoRendimiento';
 
 
 
@@ -158,20 +158,6 @@ Usuarios.belongsToMany(Core, { as: 'core', through: PivotRespTact, onDelete: 'CA
 // Usuarios - Objetivo Estratégico
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
-// Objetivo Operativo
-ObjetivoOperativos.belongsToMany(Rendimiento, {
-    as: 'operativoRendimiento', 
-    through: PivotObjetivoRendimiento, 
-    onDelete: 'CASCADE',
-    foreignKey: 'objOperativoId'
-});
-Rendimiento.belongsToMany(ObjetivoOperativos, { 
-    as: 'rendimientoOperativo', 
-    through: PivotObjetivoRendimiento, 
-    onDelete: 'CASCADE', 
-    foreignKey: 'rendimientoId'
-});
-
 ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId' });
 Usuarios.belongsToMany(ObjetivoOperativos, { as: 'objetivosOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
 
@@ -230,6 +216,26 @@ Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeab
 });
 
 Usuarios.hasMany(Rendimiento, { as: 'rendimiento', foreignKey: 'usuarioId' });
+
+// Objetivo Operativo
+ObjetivoOperativos.belongsToMany(Rendimiento, {
+    as: 'operativoRendimiento', 
+    through: {
+        model: PivotObjetivoRendimiento, 
+        unique: false
+    }, 
+    onDelete: 'CASCADE',
+    foreignKey: 'objOperativoId'
+});
+Rendimiento.belongsToMany(ObjetivoOperativos, { 
+    as: 'rendimientoOperativo', 
+    through: {
+        model: PivotObjetivoRendimiento, 
+        unique: false
+    }, 
+    onDelete: 'CASCADE', 
+    foreignKey: 'rendimientoId'
+});
 
 export {
     Usuarios,

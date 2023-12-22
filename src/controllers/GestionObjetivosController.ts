@@ -57,15 +57,10 @@ export const getOrCreateGestionObjetivos = async (req: Request, res: Response) =
 
 export const updateGestionObjetivos = async (req: Request, res: Response) => {
 
-    
-    
     const { id } = req.params;
     const { year, quarter, periodoDefinicionInicio, periodoDefinicionFin, ejecucionInicio, ejecucionFin, revisionIntermediaInicio, revisionIntermediaFin, cierreObjetivosInicio, cierreObjetivosFin, cierreEvaluacionCompetenciasInicio, cierreEvaluacionCompetenciasFin } = req.body;
 
-    console.log(periodoDefinicionInicio, periodoDefinicionFin, ejecucionInicio, ejecucionFin, revisionIntermediaInicio, revisionIntermediaFin, cierreObjetivosInicio, cierreObjetivosFin, cierreEvaluacionCompetenciasInicio, cierreEvaluacionCompetenciasFin);
     
-    
-    console.log(req.params);
     if (!year || !quarter) {
         res.status(400).json({ msg: 'Los parametros year y quarter son requeridos' });
         return;
