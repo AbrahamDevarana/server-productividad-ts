@@ -86,8 +86,10 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
         include: includeProps 
     });
 
-        if (objetivoEstrategico) {     
-            
+    
+    if (objetivoEstrategico) {     
+        
+            let promedio = 0;
             let totalProgress = 0;
             let totalTacticos = 0;
 
@@ -104,7 +106,7 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
             }
 
          
-            const promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
+            promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
 
             if(objetivoEstrategico.typeProgress === 'PROMEDIO') {
                 objetivoEstrategico.progreso = promedio;
@@ -112,7 +114,8 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
                 await objetivoEstrategico.reload({ include: includeProps });
             }
 
-            objetivoEstrategico.setDataValue('suggest', promedio);        
+            objetivoEstrategico.setDataValue('suggest', promedio);
+
             res.json({
                 objetivoEstrategico
             });
@@ -161,7 +164,7 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId, rangeDate} = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId, rangeDate, tipoProgreso} = req.body;
 
     
     const primeraFecha = dayjs(rangeDate[0]);
@@ -182,6 +185,11 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
+
+            let promedio = 0;
+            let totalProgress = 0;
+            let totalTacticos = 0;
+
             const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoEstrategico});
 
             await objetivoEstrategico.update({ 
@@ -192,10 +200,23 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 fechaFin: ultimoDiaDelSegundoAnio,
                 progreso: progresoFinal,
                 indicador,
+                tipoProgreso,
                 status: statusFinal,
                 propietarioId
             });
 
+            const objetivosTacticos = await Tacticos.findAll({
+                where: {
+                    estrategicoId: id
+                }
+            });
+
+            for( const objetivoTactico of objetivosTacticos) {
+                totalProgress += objetivoTactico.progreso;
+                totalTacticos++;
+            }
+
+            promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
             
             if (perspectivaId) {
                 await objetivoEstrategico.setPerspectivas(perspectivaId);
@@ -206,6 +227,9 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
             await objetivoEstrategico.reload({
                 include: includeProps
             });
+
+            
+            objetivoEstrategico.setDataValue('suggest', promedio);
 
             res.json({
                 objetivoEstrategico
@@ -336,18 +360,19 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
 
 export const changeTypeProgress:RequestHandler = async (req: Request, res: Response) => {
 
-    const  { estrategicoId, type } = req.body;
+    const  { estrategicoId, typeProgress } = req.body;
     
+    let promedio = 0
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(estrategicoId);
         if (objetivoEstrategico) {
             await objetivoEstrategico.update({ 
-                typeProgress: type
+                tipoProgreso: typeProgress
             });
 
 
-            if(type === 'PROMEDIO') {
+            if(typeProgress === 'PROMEDIO') {
 
                 let totalProgress = 0;
                 let totalTacticos = 0;
@@ -365,15 +390,17 @@ export const changeTypeProgress:RequestHandler = async (req: Request, res: Respo
                 }
     
              
-                const promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
+                promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
     
                 // objetivoEstrategico.suggest = promedio;
-                objetivoEstrategico.setDataValue('suggest', promedio);
                 objetivoEstrategico.progreso = promedio;
             }
-
+            
             await objetivoEstrategico.save();
             await objetivoEstrategico.reload({ include: includeProps });
+            
+            objetivoEstrategico.setDataValue('suggest', promedio);
+            
 
             res.json({
                 objetivoEstrategico
