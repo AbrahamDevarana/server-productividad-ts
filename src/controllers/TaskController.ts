@@ -50,6 +50,7 @@ export const createTask = async (req: Request, res: Response) => {
                 fechaFin: dayjs().endOf(quarter).toDate(),
                 status: 'SIN_INICIAR',
                 prioridad: 'Normal',
+                progreso: 0,
                 taskeableType: 'RESULTADO_CLAVE',
             });
 
@@ -69,7 +70,7 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad } = req.body;
+    const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso } = req.body;
 
     try {
         const task = await Task.findByPk(id);
@@ -79,19 +80,64 @@ export const updateTask = async (req: Request, res: Response) => {
                 msg: 'No existe una tarea'
             });
         }
+        
+        let finalProgreso = progreso;
+        let finalStatus = status;
+
+
+        if( task.progreso !== progreso ){
+            if(task.status !== 'SIN_INICIAR' && progreso > 0 && progreso < 100){
+                finalProgreso = progreso
+                finalStatus = 'EN_PROCESO';
+            } else if(task.status === 'EN_PROCESO' && progreso === 0){
+                finalProgreso = progreso
+                finalStatus = 'SIN_INICIAR';
+            } else if(task.status === 'SIN_INICIAR' && progreso > 0 && progreso < 100){
+                finalProgreso = progreso
+                finalStatus = 'EN_PROCESO';
+            } else if(( task.status === 'EN_PROCESO' || task.status === 'SIN_INICIAR' ) && progreso === 100){
+                finalProgreso = progreso
+                finalStatus = 'FINALIZADO';
+            } else if (task.status === 'FINALIZADO' && progreso === 0){
+                finalProgreso = progreso
+                finalStatus = 'SIN_INICIAR';
+            }
+        }
+
+
+        if( task.status !== status ){
+            if( task.progreso === 0  && status === 'EN_PROCESO'){
+                finalProgreso = 1
+                finalStatus = status
+            } else if (task.progreso === 100 && status === 'EN_PROCESO'){
+                finalProgreso = 99
+                finalStatus = status
+            } else if ( status === 'FINALIZADO'){
+                finalProgreso = 100
+                finalStatus = status
+            } else if ( status === 'CANCELADO' || status === 'SIN_INICIAR'){
+                finalProgreso = 0
+                finalStatus = status
+            }
+        }
+
 
         await task.update({
             nombre,
             propietarioId,
             taskeableId,
             fechaFin,
-            status,
+            progreso: finalProgreso,
+            status: finalStatus,
             prioridad
         });
+
+        
 
         await task.reload({
             include: includes
         })
+
 
         res.json({ task });
 

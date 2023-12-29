@@ -232,6 +232,7 @@ export const createOperativo = async (req: Request, res: Response) => {
                         taskeableType: 'RESULTADO_CLAVE',
                         prioridad: 'Normal',
                         status: 'SIN_INICIAR',
+                        progreso: 0,
                         fechaFin: resultadoClave.fechaFin,
                     })   
 
