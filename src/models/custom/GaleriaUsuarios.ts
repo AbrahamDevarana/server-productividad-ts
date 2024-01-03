@@ -1,8 +1,19 @@
-import Sequelize from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../../config/database";
 
 
-const GaleriaUsuarios = database.define('galeria_usuarios', {
+export interface GaleriaModel extends Model<InferAttributes<GaleriaModel>, InferCreationAttributes<GaleriaModel>> {
+
+
+    id?: number;
+    usuarioId: string;
+    type: 'BANNER_PERFIL' | 'AVATAR'
+    url: string;
+    favorito?: boolean;
+}
+
+
+const GaleriaUsuarios = database.define<GaleriaModel>('galeria_usuarios', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -16,10 +27,10 @@ const GaleriaUsuarios = database.define('galeria_usuarios', {
     type: {
         type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: 'banner' //  banner, avatar
+        defaultValue: 'BANNER_PERFIL' //  banner, avatar
     },
     url: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
         defaultValue: ''
     },

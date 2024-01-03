@@ -232,6 +232,7 @@ export const createOperativo = async (req: Request, res: Response) => {
                         taskeableType: 'RESULTADO_CLAVE',
                         prioridad: 'Normal',
                         status: 'SIN_INICIAR',
+                        progreso: 0,
                         fechaFin: resultadoClave.fechaFin,
                     })   
 
@@ -354,6 +355,8 @@ export const setPonderaciones = async (req: Request, res: Response) => {
     }
 }
 
+
+// Renombrar
 export const cerrarObjetivo = async (req: Request, res: Response) => {
 
     const { operativoId, checked } = req.body;
@@ -367,19 +370,29 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
 
 
 
+
         if(checked){
-            await objetivo.update({
-                status: 'POR_APROBAR'
-            });
+            if(objetivo.status === 'NUEVO') {
+                await objetivo.update({
+                    status: 'POR_AUTORIZAR'
+                });
+            }else{
+                await objetivo.update({
+                    status: 'POR_APROBAR'
+                });
+            }          
         }else{
-            await objetivo.update({
-                status: 'ABIERTO'
-            });
+
+            if(objetivo.status === 'POR_AUTORIZAR') {
+                await objetivo.update({
+                    status: 'NUEVO'
+                });
+            }else{
+                await objetivo.update({
+                    status: 'ABIERTO'
+                });
+            }
         }
-
-       
-
-        // buscar los pivotOpUsuario y actualizarlos a cerrado
 
         const pivotOpUsuario = await PivotOpUsuario.findAll({
             where: {
@@ -390,13 +403,26 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
         for (const pivot of pivotOpUsuario) {
 
             if(checked){
-                await pivot.update({
-                    status: 'PENDIENTE_APROBACION'
-                });
+
+                if(pivot.status === 'NUEVO') {
+                    await pivot.update({
+                        status: 'PENDIENTE_AUTORIZAR'
+                    });
+                }else{
+                    await pivot.update({
+                        status: 'PENDIENTE_APROBACION'
+                    });
+                }
             }else{
-                await pivot.update({
-                    status: 'ABIERTO'
-                });
+                if(pivot.status === 'PENDIENTE_AUTORIZAR') {
+                    await pivot.update({
+                        status: 'NUEVO'
+                    });
+                }else{
+                    await pivot.update({
+                        status: 'ABIERTO'
+                    });
+                }
             }
         }
 
@@ -495,6 +521,7 @@ export const cierreCiclo = async (req: Request, res: Response) => {
     }
 }
 
+// Renombrar
 export const aprovacionObjetivo = async (req: Request, res: Response) => {
 
     const { checked, objetivoId, usuarioId } = req.body;
@@ -513,7 +540,27 @@ export const aprovacionObjetivo = async (req: Request, res: Response) => {
 
         if(!objetivo) return res.status(404).json({ msg: 'No existe este objetivo' });
         
-        if(objetivo.status === 'PENDIENTE_APROBACION') {
+
+        if(objetivo.status === 'PENDIENTE_AUTORIZAR') {
+            if(checked){       
+                await objetivo.update({
+                    status: 'ABIERTO'
+                });
+                await objetivoOperativo.update({
+                    status: 'ABIERTO'
+                })
+            }
+        }else if(objetivo.status === 'ABIERTO'){
+            if(!checked){
+                await objetivo.update({
+                    status: 'PENDIENTE_AUTORIZAR'
+                });
+                await objetivoOperativo.update({
+                    status: 'POR_AUTORIZAR'
+                })
+            }
+        }
+        else if(objetivo.status === 'PENDIENTE_APROBACION') {
             if(checked){       
                 await objetivo.update({
                     status: 'APROBADO'
@@ -522,7 +569,7 @@ export const aprovacionObjetivo = async (req: Request, res: Response) => {
                     status: 'CERRADO'
                 })
             }
-        }else if(objetivo.status === 'APROBADO'){
+        } else if(objetivo.status === 'APROBADO'){
             if(!checked){
                 await objetivo.update({
                     status: 'PENDIENTE_APROBACION'

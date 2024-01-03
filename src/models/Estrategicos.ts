@@ -39,6 +39,10 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         type: Sequelize.UUID,
         allowNull: false
     },
+    tipoProgreso: {
+        type: Sequelize.ENUM('PROMEDIO', 'MANUAL'), // 1 = manual | 2 = % objetivos operativos
+        defaultValue: 'PROMEDIO'
+    },
     status: {
         type: Sequelize.STRING(12),
         defaultValue: 'SIN_INICIAR'

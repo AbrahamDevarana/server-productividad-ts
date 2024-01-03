@@ -9,7 +9,7 @@ export interface PivotOpUsuarioModel extends Model<InferAttributes<PivotOpUsuari
     progresoAsignado: number;
     progresoReal: number;
     extra: number;
-    status: 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO' | 'CERRADO'
+    status: 'NUEVO' | 'PENDIENTE_AUTORIZAR' | 'ABIERTO' | 'PENDIENTE_APROBACION' | 'APROBADO' | 'SIN_APROBAR' | 'CANCELADO' | 'FINALIZADO' | 'CERRADO'
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -55,9 +55,9 @@ export const PivotOpUsuario = database.define<PivotOpUsuarioModel>('pivot_operat
         defaultValue: 0
     },
     status: {
-        type: Sequelize.ENUM('ABIERTO','PENDIENTE_APROBACION', 'APROBADO', 'SIN_APROBAR', 'CANCELADO', 'FINALIZADO', 'CERRADO' ), 
+        type: Sequelize.ENUM('NUEVO', 'PENDIENTE_AUTORIZAR', 'ABIERTO', 'PENDIENTE_APROBACION', 'APROBADO', 'SIN_APROBAR', 'CANCELADO', 'FINALIZADO', 'CERRADO'),
         allowNull: true,
-        defaultValue: 'ABIERTO'
+        defaultValue: 'NUEVO'
     },
     createdAt: {
         type: Sequelize.DATE,

@@ -1,4 +1,4 @@
-import { Areas, Comentarios, ObjetivoEstrategico, Perspectivas, Usuarios } from '../models'
+import { Areas, Comentarios, ObjetivoEstrategico, Perspectivas, Tacticos, Usuarios } from '../models'
 import { Request, RequestHandler, Response } from 'express'
 import { Op } from 'sequelize'
 import { UsuarioInterface } from '../interfaces';
@@ -86,8 +86,36 @@ export const getObjetivoEstrategico:RequestHandler = async (req: Request, res: R
         include: includeProps 
     });
 
-        if (objetivoEstrategico) {            
-       
+    
+    if (objetivoEstrategico) {     
+        
+            let promedio = 0;
+            let totalProgress = 0;
+            let totalTacticos = 0;
+
+
+            const objetivosTacticos = await Tacticos.findAll({
+                where: {
+                    estrategicoId: id
+                }
+            });
+
+            for( const objetivoTactico of objetivosTacticos) {
+                totalProgress += objetivoTactico.progreso;
+                totalTacticos++;
+            }
+
+         
+            promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
+
+            if(objetivoEstrategico.typeProgress === 'PROMEDIO') {
+                objetivoEstrategico.progreso = promedio;
+                await objetivoEstrategico.save();
+                await objetivoEstrategico.reload({ include: includeProps });
+            }
+
+            objetivoEstrategico.setDataValue('suggest', promedio);
+
             res.json({
                 objetivoEstrategico
             });
@@ -136,7 +164,15 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId } = req.body;
+    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId, rangeDate, tipoProgreso} = req.body;
+
+    
+    const primeraFecha = dayjs(rangeDate[0]);
+    const ultimoDiaDelPrimerAnio = primeraFecha.startOf('year').toDate();
+    
+    const segundaFecha = dayjs(rangeDate[1]);
+    const ultimoDiaDelSegundoAnio = segundaFecha.endOf('year').toDate()
+
 
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
@@ -144,28 +180,43 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
         } else {
             return responsable;
         }
-    });
-
-    console.log('participantes', participantes);
-    
+    });    
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.findByPk(id);
         if (objetivoEstrategico) {
+
+            let promedio = 0;
+            let totalProgress = 0;
+            let totalTacticos = 0;
+
             const { progresoFinal, statusFinal } = getStatusAndProgress({progreso, status, objetivo: objetivoEstrategico});
 
             await objetivoEstrategico.update({ 
                 nombre,
                 codigo, 
                 descripcion, 
-                fechaInicio, 
-                fechaFin, 
+                fechaInicio: ultimoDiaDelPrimerAnio,
+                fechaFin: ultimoDiaDelSegundoAnio,
                 progreso: progresoFinal,
                 indicador,
+                tipoProgreso,
                 status: statusFinal,
                 propietarioId
             });
 
+            const objetivosTacticos = await Tacticos.findAll({
+                where: {
+                    estrategicoId: id
+                }
+            });
+
+            for( const objetivoTactico of objetivosTacticos) {
+                totalProgress += objetivoTactico.progreso;
+                totalTacticos++;
+            }
+
+            promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
             
             if (perspectivaId) {
                 await objetivoEstrategico.setPerspectivas(perspectivaId);
@@ -176,6 +227,9 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
             await objetivoEstrategico.reload({
                 include: includeProps
             });
+
+            
+            objetivoEstrategico.setDataValue('suggest', promedio);
 
             res.json({
                 objetivoEstrategico
@@ -302,4 +356,65 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
 
     
 
+}
+
+export const changeTypeProgress:RequestHandler = async (req: Request, res: Response) => {
+
+    const  { estrategicoId, typeProgress } = req.body;
+    
+    let promedio = 0
+
+    try {
+        const objetivoEstrategico = await ObjetivoEstrategico.findByPk(estrategicoId);
+        if (objetivoEstrategico) {
+            await objetivoEstrategico.update({ 
+                tipoProgreso: typeProgress
+            });
+
+
+            if(typeProgress === 'PROMEDIO') {
+
+                let totalProgress = 0;
+                let totalTacticos = 0;
+    
+    
+                const objetivosTacticos = await Tacticos.findAll({
+                    where: {
+                        estrategicoId: estrategicoId
+                    }
+                });
+    
+                for( const objetivoTactico of objetivosTacticos) {
+                    totalProgress += objetivoTactico.progreso;
+                    totalTacticos++;
+                }
+    
+             
+                promedio = totalTacticos > 0 ? Math.round(totalProgress / totalTacticos) : 0;
+    
+                // objetivoEstrategico.suggest = promedio;
+                objetivoEstrategico.progreso = promedio;
+            }
+            
+            await objetivoEstrategico.save();
+            await objetivoEstrategico.reload({ include: includeProps });
+            
+            objetivoEstrategico.setDataValue('suggest', promedio);
+            
+
+            res.json({
+                objetivoEstrategico
+            });
+        } else {
+            res.status(404).json({
+                msg: `No existe un objetivo estratégico ${estrategicoId}`
+            });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
 }

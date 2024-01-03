@@ -1,17 +1,28 @@
-import Sequelize, { Model }  from "sequelize";
+import Sequelize, { InferAttributes, InferCreationAttributes, Model }  from "sequelize";
 import database from "../config/database";
+import { PermisosModel } from "./Permisos";
 
-export interface RolesAttributes {
+
+export interface RoleModel extends Model<InferAttributes<RoleModel>, InferCreationAttributes<RoleModel>> {
+
     id?: number;
     nombre: string;
     descripcion?: string;
     status?: string;
-
+    permisos?: PermisosModel[];
+    getPermisos: () => Promise<any>;
+    countPermisos: () => Promise<any>
+    hasPermiso: () => Promise<any>
+    hasPermisos: () => Promise<any>
+    setPermisos:  ( args: unknown[] ) => Promise<any>
+    addPermiso: () => Promise<any>
+    addPermisos: () => Promise<any>
+    removePermiso: () => Promise<any>
+    removePermisos: () => Promise<any>
+    createPermiso: () => Promise<any>
 }
 
-export interface RolesInstance extends Model<RolesAttributes>, RolesAttributes {}
-
-export const Roles = database.define<RolesInstance>('roles', {
+export const Roles = database.define<RoleModel>('roles', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,

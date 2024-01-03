@@ -7,17 +7,17 @@ import { updateRendimiento } from "../helpers/updateRendimiento";
 
 enum TipoEvaluacion {
     EvaluacionLider = 1,
-    EvaluacionColaborador = 2,
+    EvaluacionColaborador = 2, //  Evaluación de colaborador a colaborador
     EvaluacionPropia = 3,
-    EvaluacionLiderColaborador = 4
+    EvaluacionLiderColaborador = 4, // Deprecated
+    EvaluacionPares = 5, //  Evaluación de pares
+
 }
 
 //  Por usuario asignar QUIEN lo va a evaluar
 export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => {
 
     const { year, quarter } = req.body
-
-    // const MAX_EVALUACIONES = 3
 
     const usuarios = await Usuarios.findAll({})
 
@@ -96,6 +96,16 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                 quarter,
                 evaluacionId: tipoEv
             });
+        }
+
+
+
+        // Colaboradores de objetivos
+
+        const operativos = await usuario.getObjetivosOperativos()
+        
+        for( const operativo of operativos ) {
+            
         }
 
     }
@@ -501,4 +511,189 @@ export const obtenerRespuestasEvaluacion = async (req: Request, res: Response) =
             msg: 'Error inesperado'
         })
     }
+}
+
+
+
+
+// A partir de aquí es la nueva funcionalidad de evaluaciones
+
+export const asignarEvaluaciones = async (req: Request, res: Response) => {
+
+}
+
+export const getEvaluaciones = async (req: Request, res: Response) => {
+    
+    const { year, quarter } = req.query as any;
+
+    try {
+
+        const usuarios = await Usuarios.findAll({
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+            include: [
+                {
+                    model: AsignacionEvaluacion,
+                    as: 'evaluacionesEvaluado',
+                    where: {
+                        year,
+                        quarter
+                    },
+                    required: false,
+                    attributes: ['id', 'evaluadorId', 'evaluadoId', 'status', 'evaluacionId'],
+                    include: [
+                        {
+                            model: Usuarios,
+                            as: 'evaluador',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+                        },
+                    ],
+                }
+            ],
+            order: [
+                ['nombre', 'ASC'],
+            ],
+        })
+    
+        return res.json({
+            ok: true,
+            usuarios
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}
+
+export const getEvaluacion = async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { year, quarter } = req.query as any;
+
+    try {
+
+        const usuario = await Usuarios.findOne({
+            where: {
+                id
+            },
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+            include: [
+                {
+                    model: AsignacionEvaluacion,
+                    as: 'evaluacionesEvaluado',
+                    where: {
+                        year,
+                        quarter
+                    },
+                    required: false,
+                    attributes: ['id', 'evaluadorId', 'evaluadoId', 'status', 'evaluacionId'],
+                    include: [
+                        {
+                            model: Usuarios,
+                            as: 'evaluador',
+                            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto', 'slug'],
+                        },
+                    ],
+                }
+            ],
+            order: [
+                ['nombre', 'ASC'],
+            ],
+        })
+
+        return res.json({
+            ok: true,
+            usuario
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}
+    
+export const createAsignacionEvaluacion = async (req: Request, res: Response) => {
+
+    const { evaluadoId, evaluadorId, year, quarter, tipoEvaluacionId } = req.body;
+
+    try {
+
+        const asignacion = await AsignacionEvaluacion.findOne({
+            where: {
+                evaluadorId,
+                evaluadoId,
+                year,
+                quarter,
+                evaluacionId: tipoEvaluacionId
+            }
+        })
+
+        if (asignacion) return res.status(400).json({ ok: false, msg: 'Ya existe una asignación para este usuario' })
+
+        await AsignacionEvaluacion.create({
+            evaluadorId,
+            evaluadoId,
+            year,
+            quarter,
+            evaluacionId: tipoEvaluacionId
+        })
+
+        return res.json({
+            ok: true,
+            msg: 'Asignación creada'
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+
+}
+
+export const deleteAsignacionEvaluacion = async (req: Request, res: Response) => {
+    
+        const { evaluadoId, evaluadorId, year, quarter, tipoEvaluacionId } = req.body;
+        
+        try {
+    
+            const asignacion = await AsignacionEvaluacion.findOne({
+                where: {
+                    evaluadorId,
+                    evaluadoId,
+                    year,
+                    quarter,
+                    evaluacionId: tipoEvaluacionId
+                }
+            })
+                
+            if (!asignacion) return res.status(404).json({ ok: false, msg: 'No existe la asignación' })
+    
+            await asignacion.destroy()
+    
+            return res.json({
+                ok: true,
+                msg: 'Asignación eliminada'
+            })
+    
+        } catch (error) {
+    
+            console.log(error);
+            return res.status(500).json({
+                ok: false,
+                msg: 'Error inesperado'
+            })
+        }
+    
 }

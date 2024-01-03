@@ -1,4 +1,5 @@
 import { AsignacionEvaluacion, EvaluacionRespuesta, ObjetivoOperativos, PivotOpUsuario, Rendimiento } from "../models"
+import { PivotObjetivoRendimiento } from "../models/pivot/PivotObjetivoRendimiento";
 
 
 interface Props {
@@ -25,17 +26,13 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
         const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
 
-        const rendimiento = await Rendimiento.findOrCreate({
+        const [rendimiento, created] = await Rendimiento.findOrCreate({
             where: {
                 year,
                 quarter,
                 usuarioId,
             }
         });
-
-
-        
-
         
         if(operativosArrayId.length !== 0) {
             const resultadoObjetivos = await PivotOpUsuario.findAll({
@@ -47,6 +44,17 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
             
             if(resultadoObjetivos.length !== 0){
+
+                const destroyed = await PivotObjetivoRendimiento.destroy
+                ({
+                    where: {
+                        rendimientoId: rendimiento.id,
+                        year,
+                        quarter
+                    },
+                })
+
+                
                 const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
 
                     if(obj.progresoAsignado === 0) return acc;
@@ -61,9 +69,17 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
 
                 const resultadoArrId = resultadoObjetivos.map( resultado => resultado.id)
 
-                await rendimiento[0].setRendimientoOperativo([])
-                await rendimiento[0].setRendimientoOperativo(resultadoArrId)
+                if(destroyed){
+                    for (const id of resultadoArrId) {
+                        await PivotObjetivoRendimiento.create({
+                            objOperativoId: id,
+                            rendimientoId: rendimiento.id,
+                            year,
+                            quarter
+                        })
 
+                    }
+                }
             }
         }
 
@@ -127,11 +143,11 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
            
        
 
-        const rendimientoId = rendimiento[0].id;
+        const rendimientoId = rendimiento.id;
 
         total = totalObjetivos + totalResultados
 
-        if(rendimiento[0].status === 'ABIERTO'){
+        if(rendimiento.status === 'ABIERTO'){
             await Rendimiento.update({
                 resultadoObjetivos: totalObjetivos,
                 resultadoCompetencias: totalResultados,

@@ -1,17 +1,18 @@
 import { Router } from 'express';
-import { createTactico, deleteTactico, getTactico, updateTactico, getTacticosByArea, getTacticosByEquipos, updateQuarters, getTacticos, getTacticosByObjetivoEstrategico} from '../../controllers/TacticoController';
+import { createTactico, deleteTactico, getTactico, updateTactico, getTacticosByEstrategia, getTacticosByEquipo, getTacticosCoreByEquipo, changeTypeTactico, changeTypeProgress} from '../../controllers/TacticoController';
 
 const router = Router();
 
-router.get('/equipo', getTacticosByEquipos)
-router.get('/area/:slug', getTacticosByArea)
-router.put('/quarters/:id', updateQuarters);
-// router.get('/estrategia/:estrategiaId', getTacticosByEstrategia)
-router.get('/objetivo/:estrategicoId', getTacticosByObjetivoEstrategico)
+// router.get('/equipo', getTacticosByEquipos)
+// router.get('/objetivo/:estrategicoId', getTacticosByObjetivoEstrategico)
 
 
+router.get('/byEstrategia', getTacticosByEstrategia);
+router.get('/byEquipo', getTacticosByEquipo);
+router.get('/byEquipoCore', getTacticosCoreByEquipo);
+router.put('/changeType', changeTypeTactico);
+router.put('/changeTypeProgress', changeTypeProgress);
 router.get('/:id', getTactico);
-router.get('/', getTacticos);
 router.post('/', createTactico);
 router.put('/:id', updateTactico);
 router.delete('/:id', deleteTactico);

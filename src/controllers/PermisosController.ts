@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Permisos } from "../models";
-import { PermisosAttributes } from "../models/Permisos";
+import { PermisosModel } from "../models/Permisos";
 
 
 export const getPermisos = async (req: Request, res: Response) => {
@@ -39,7 +39,7 @@ export const getPermiso = async (req: Request, res: Response) => {
 
 export const createPermiso = async (req: Request, res: Response) => {
             
-    const { nombre, permisos } = req.body as PermisosAttributes
+    const { nombre, permisos } = req.body as PermisosModel
 
     try {
         const permiso = await Permisos.create({
@@ -63,7 +63,7 @@ export const updatePermiso = async (req: Request, res: Response) => {
             
     const { id } = req.params;
 
-    const { nombre, permisos } = req.body as PermisosAttributes;
+    const { nombre, permisos } = req.body as PermisosModel;
 
     try {
         const permiso = await Permisos.findByPk(id);

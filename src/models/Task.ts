@@ -12,6 +12,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     taskeableType: 'RESULTADO_CLAVE';
     prioridad: 'Alta' | 'Normal' | 'Baja';
     status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADO' | 'CANCELADO'
+    progreso: number;
     propietarioId: string;
     fechaFin: Date;
     createdAt?: Date;
@@ -44,6 +45,10 @@ export const Task = database.define('tasks', {
     status: {
         type: Sequelize.STRING(12),
         defaultValue: 'SIN_INICIAR'
+    },
+    progreso: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
     },
     propietarioId: {
         type: Sequelize.UUID,
@@ -107,20 +112,27 @@ const updateProgreso = async (task: TaskModel) => {
 
     if(resultadoClave){
         if(resultadoClave.tipoProgreso === 'acciones'){
-           
-            let accionesCompletadas = 0;
+        
             let accionesTotales = 0;
+            let accionesProgreso = 0;
 
             acciones.forEach(accion => {
-                if(accion.status === 'FINALIZADO'){
-                    accionesCompletadas++;
+                if(accion.status !== 'CANCELADO'){
+                    accionesProgreso += accion.progreso;
+                    
                 }
                 accionesTotales++;
             })
 
-            const progresoTotal = accionesCompletadas/accionesTotales * 100
+            console.log({accionesProgreso, accionesTotales});
+            
 
-            await resultadoClave.update({ progreso: progresoTotal });
+            const progresoTotal = (accionesProgreso / accionesTotales).toFixed(2)
+
+            console.log({progresoTotal});
+            
+
+            await resultadoClave.update({ progreso: Number(progresoTotal) });
 
         }
 

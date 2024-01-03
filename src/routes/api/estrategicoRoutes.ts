@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { createObjetivoEstrategico, deleteObjetivoEstrategico, getObjetivoEstrategico, getObjetivosEstrategicos, updateObjetivoEstrategico, getObjetivosEstrategicoByArea } from '../../controllers/EstrategicoController'
+import { createObjetivoEstrategico, deleteObjetivoEstrategico, getObjetivoEstrategico, getObjetivosEstrategicos, updateObjetivoEstrategico, getObjetivosEstrategicoByArea, changeTypeProgress } from '../../controllers/EstrategicoController'
 const router = Router();
 
 // API url: /estrategicos
@@ -16,6 +16,8 @@ router.get('/', getObjetivosEstrategicos);
 router.get('/:id', getObjetivoEstrategico);
 
 router.post('/', [ validarCampos ], createObjetivoEstrategico);
+
+router.put('/changeTypeProgress', changeTypeProgress);
 
 router.put('/:id', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),

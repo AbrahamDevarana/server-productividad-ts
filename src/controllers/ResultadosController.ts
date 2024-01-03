@@ -15,7 +15,7 @@ const includeProps = [
     {
         model: Task,
         as: 'task',
-        attributes: ['id', 'nombre', 'descripcion', 'prioridad', 'propietarioId', 'fechaFin', 'status', 'taskeableId'],
+        attributes: ['id', 'nombre', 'descripcion', 'prioridad', 'propietarioId', 'fechaFin', 'status', 'taskeableId', 'progreso'],
         include: [
             {
                 model: Usuarios,
@@ -114,6 +114,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
                         taskeableType: 'RESULTADO_CLAVE',
                         prioridad: 'Normal',
                         status: 'SIN_INICIAR',
+                        progreso: 0,
                         fechaFin: resultadoClave.fechaFin,
                     })   
 
@@ -166,7 +167,6 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
                 where: {
                     taskeableId: resultadoClave.id,
                     taskeableType: 'RESULTADO_CLAVE',
-                    // not 'CANCELADO'
                     status: ['FINALIZADO', 'SIN_INICIAR', 'EN_PROCESO']
                 }
             })
@@ -363,6 +363,7 @@ export const duplicateResultadoClave = async (req: Request, res: Response) => {
                         taskeableType: task.taskeableType,
                         prioridad: task.prioridad,
                         status: task.status,
+                        progreso: task.progreso,
                         fechaFin: task.fechaFin,
                     })   
     

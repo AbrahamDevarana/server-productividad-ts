@@ -1,8 +1,7 @@
 import Sequelize from "sequelize";
 import database from "../config/database";
-import { ObjetivoOperativos } from "./Operativos";
 
-export const Tacticos = database.define('obj_tacticos', {
+export const Core = database.define('obj_core', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -35,27 +34,14 @@ export const Tacticos = database.define('obj_tacticos', {
     propietarioId: {
         type: Sequelize.UUID,
     },
-    estrategicoId: {
-        type: Sequelize.UUID,
-        allowNull: true
-    },
-    // tipoObjetivo = enum estrategico/core
-    tipoObjetivo:{
-        type: Sequelize.ENUM('ESTRATEGICO', 'CORE'),
-        defaultValue: 'ESTRATEGICO'  
-    },
     tipoProgreso: {
-        type: Sequelize.ENUM('PROMEDIO', 'MANUAL'), // 1 = manual | 2 = % objetivos operativos
-        defaultValue: 'PROMEDIO'
+        type: Sequelize.INTEGER, // 1 = manual | 2 = % objetivos operativos
+        defaultValue: 1
     },
     status: {
         type: Sequelize.STRING(12),
         allowNull: false,
         defaultValue: 'SIN_INICIAR'
-    },
-    activo: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true
     },
     createdAt: {
         type: Sequelize.DATE,
@@ -66,16 +52,15 @@ export const Tacticos = database.define('obj_tacticos', {
         defaultValue: Sequelize.NOW
     }
 },{
+    tableName: 'obj_core',
     paranoid: true,
     timestamps: true,
     hooks: {
-        afterUpdate: async (tactico: any) => {            
+        beforeUpdate: async (tactico: any) => {
             tactico.updatedAt = new Date();
-            if(tactico.tipoObjetivo == 'CORE') tactico.tipoProgreso = 1;
         },
         afterCreate: async (tactico: any) => {
-            if(tactico.tipoObjetivo == 'CORE') tactico.tipoProgreso = 1;
-            await tactico.save();
+   
         },
     },
     defaultScope: {

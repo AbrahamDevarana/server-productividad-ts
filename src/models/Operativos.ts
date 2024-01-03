@@ -15,11 +15,11 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     quarter: number;
     year: number;
     editado?: boolean;
-    status?: 'ABIERTO' | 'POR_APROBAR' | 'CERRADO';
+    status?: 'NUEVO' | 'POR_AUTORIZAR' | 'ABIERTO' | 'POR_APROBAR' | 'CERRADO';
     createdAt?: Date;
     updatedAt?: Date;
 
-
+    // __associations__
     getTactico_operativo: () => Promise<any>
     setTactico_operativo: () => Promise<any>
     createTactico_operativo: () => Promise<any>
