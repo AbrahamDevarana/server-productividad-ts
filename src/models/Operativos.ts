@@ -99,7 +99,7 @@ export const ObjetivoOperativos = database.define<ObjetivosOperativosModel>('obj
     },
     status: {
         type: Sequelize.CHAR(100),
-        defaultValue: 'ABIERTO'
+        defaultValue: 'NUEVO'
     },
     createdAt: {
         type: Sequelize.DATE,
