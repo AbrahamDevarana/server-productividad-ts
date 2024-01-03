@@ -7,7 +7,6 @@ import departamentoRoutes from "./api/departamentosRoutes";
 import perspectivaRoutes from "./api/perspectivasRoutes";
 import estrategicoRoutes from './api/estrategicoRoutes'
 import tacticoRoutes from './api/tacticoRoutes'
-import coreRoutes from './api/coreRoutes'
 import operativoRoutes from './api/operativosRoutes'
 import taskRoutes from './api/taskRoutes'
 import resultadosRoutes from './api/resultadosRoutes'
@@ -38,7 +37,6 @@ router.use('/departamentos', departamentoRoutes)
 router.use('/perspectivas', perspectivaRoutes)
 router.use('/estrategicos', estrategicoRoutes)
 router.use('/tacticos', tacticoRoutes)
-router.use('/core', coreRoutes)
 router.use('/operativos', operativoRoutes)
 router.use('/tasks', taskRoutes)
 router.use('/tareas', tareasRoutes)

@@ -13,7 +13,7 @@ import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
 import { Roles } from './Roles';
 import { GaleriaDevarana } from './custom/GaleriaDevarana';
-import { Core } from './Core'
+// import { Core } from './Core'
 
 
 
@@ -94,12 +94,12 @@ Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', c
     }
 });
 
-Core.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-Core.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
-    scope: {
-        comentableType: 'CORE',
-    }
-});
+// Core.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+// Core.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
+//     scope: {
+//         comentableType: 'CORE',
+//     }
+// });
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsTo(Tacticos, { as: 'tacticoOperativo', foreignKey: 'tacticoId', onDelete: 'SET NULL' });
@@ -141,19 +141,19 @@ Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico',  th
 
 // Tacticos, Core - Usuarios
 Tacticos.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
-Core.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
+// Core.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
 // Tacticos, Core - Departamentos
 Tacticos.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
-Core.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
+// Core.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
 
 // Áreas - Tacticos
 Departamentos.hasMany(Tacticos, { as: 'tacticos',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
-Departamentos.hasMany(Core, { as: 'core',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
+// Departamentos.hasMany(Core, { as: 'core',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
 
 // Usuarios - Tacticos
 Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
-Usuarios.belongsToMany(Core, { as: 'core', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
+// Usuarios.belongsToMany(Core, { as: 'core', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Usuarios - Objetivo Estratégico
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
@@ -257,7 +257,7 @@ export {
     // Trimestre,
     Rendimiento,
     Task,
-    Core,
+    // Core,
 
     PivotTareasResponsables,
     PivotPerspEstr,

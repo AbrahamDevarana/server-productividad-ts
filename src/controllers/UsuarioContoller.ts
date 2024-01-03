@@ -34,17 +34,22 @@ export const getUsuarios = async (req: Request, res: Response) => {
             order: [
                 ['nombre', 'ASC'],
             ],
-            where: search ? {
-                [Op.or]: [
-                    literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
-                    literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
-                    literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
-                    literal('usuarios.nombre LIKE :search'),
-                    literal('usuarios.apellidoPaterno LIKE :search'),
-                    literal('usuarios.apellidoMaterno LIKE :search'),
-                    literal('usuarios.email LIKE :search'),
-                ],
-            } : {},
+            where: {
+                [Op.and]: [
+                    search ? {
+                        [Op.or]: [
+                            literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
+                            literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
+                            literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
+                            literal('usuarios.nombre LIKE :search'),
+                            literal('usuarios.apellidoPaterno LIKE :search'),
+                            literal('usuarios.apellidoMaterno LIKE :search'),
+                            literal('usuarios.email LIKE :search'),
+                        ],
+                    } : {},
+                    { status: true}
+                ]
+            },
             replacements: {
                 search: `%${search}%`
             },
