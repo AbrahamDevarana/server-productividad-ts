@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, PivotOpUsuario, Rendimiento } from "../models";
+import { ObjetivoOperativos, PivotOpUsuario, Rendimiento, Usuarios } from "../models";
 import { updateRendimiento } from "../helpers/updateRendimiento";
+import { Op } from "sequelize";
 
 
 export const getOrCreateRendimientoByUsuario = async (req: Request, res: Response) => {
@@ -9,11 +10,21 @@ export const getOrCreateRendimientoByUsuario = async (req: Request, res: Respons
 
     try {        
 
-        await updateRendimiento({usuarioId, quarter: Number(quarter), year: Number(year)});
+        const usuario = await Usuarios.findOne({
+            // OP.Or id or slug
+            where: {
+                [Op.or]: [
+                    { id: usuarioId },
+                    { slug: usuarioId }
+                ]
+            }
+        });
+
+        await updateRendimiento({usuarioId: usuario.id, quarter: Number(quarter), year: Number(year)});
         
         const rendimiento = await Rendimiento.findOrCreate({
             where: {
-                usuarioId,
+                usuarioId: usuario.id,
                 quarter: Number(quarter),
                 year: Number(year)
             }
