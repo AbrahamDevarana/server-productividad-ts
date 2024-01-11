@@ -51,7 +51,17 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
         
             // Header
 
-            worksheet.addRow([nombre, apellidoPaterno, apellidoMaterno, Number(countObjetivos), Number(resultadoObjetivos.toFixed(2)),  Number(resultadoCompetencias.toFixed(2)),  Number(resultadoFinal.toFixed(2)),  Number(bono), status])
+            worksheet.addRow( 
+                [ 
+                    nombre, 
+                    apellidoPaterno, 
+                    apellidoMaterno, 
+                    Number(countObjetivos), 
+                    Math.trunc(Number(resultadoObjetivos) * 100) / 100,
+                    Math.trunc(Number(resultadoCompetencias) * 100) / 100,
+                    Math.trunc(Number(resultadoFinal) * 100) / 100,
+                    Number(bono), status]
+                )
         })
 
         workbook.xlsx.writeBuffer().then( (buffer) => {
