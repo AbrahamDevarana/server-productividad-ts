@@ -355,6 +355,77 @@ export const setPonderaciones = async (req: Request, res: Response) => {
     }
 }
 
+export const cierreCiclo = async (req: Request, res: Response) => {
+
+    const { usuarioId, year, quarter, objetivosId } = req.body;
+    try {
+
+        const objetivos = await ObjetivoOperativos.findAll({
+            where: {
+                year,
+                quarter,
+                id: objetivosId
+            }
+        });
+
+        const objetivoIds = objetivos.map( (obj: any) => obj.id );
+
+        const pivot = await PivotOpUsuario.findAll({
+            where: {
+                usuarioId,
+                objetivoOperativoId: objetivoIds
+            }
+        });
+
+        for (const pivotItem of pivot) {
+            await pivotItem.update({
+                status: 'CERRADO'
+            });
+        }
+
+        for (const objetivo of objetivos) {
+            await objetivo.update({
+                status: 'CERRADO'
+            });
+        }
+
+    
+        await updateRendimiento({ usuarioId, year, quarter });
+    
+        const rendimiento = await Rendimiento.findOne({
+            where: {
+                usuarioId,
+                year,
+                quarter
+            }
+        });
+    
+        if(rendimiento){
+            await rendimiento.update({
+                status: 'CERRADO'
+            });
+        }
+    
+    
+        res.json({
+            ok: true,
+            msg: 'Ciclo cerrado',
+            rendimiento,
+            objetivos,
+            pivot
+        })
+        
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+        
+    }
+}
 
 // Renombrar
 export const cerrarObjetivo = async (req: Request, res: Response) => {
@@ -449,78 +520,6 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
 
 }
 
-export const cierreCiclo = async (req: Request, res: Response) => {
-
-    const { usuarioId, year, quarter, objetivosId } = req.body;
-    try {
-
-        const objetivos = await ObjetivoOperativos.findAll({
-            where: {
-                year,
-                quarter,
-                id: objetivosId
-            }
-        });
-
-        const objetivoIds = objetivos.map( (obj: any) => obj.id );
-
-        const pivot = await PivotOpUsuario.findAll({
-            where: {
-                usuarioId,
-                objetivoOperativoId: objetivoIds
-            }
-        });
-
-        for (const pivotItem of pivot) {
-            await pivotItem.update({
-                status: 'CERRADO'
-            });
-        }
-
-        for (const objetivo of objetivos) {
-            await objetivo.update({
-                status: 'CERRADO'
-            });
-        }
-
-    
-        await updateRendimiento({ usuarioId, year, quarter });
-    
-        const rendimiento = await Rendimiento.findOne({
-            where: {
-                usuarioId,
-                year,
-                quarter
-            }
-        });
-    
-        if(rendimiento){
-            await rendimiento.update({
-                status: 'CERRADO'
-            });
-        }
-    
-    
-        res.json({
-            ok: true,
-            msg: 'Ciclo cerrado',
-            rendimiento,
-            objetivos,
-            pivot
-        })
-        
-    } catch (error) {
-
-        console.log(error);
-
-        res.status(500).json({
-            ok: false,
-            msg: 'Hable con el administrador'
-        });
-        
-    }
-}
-
 // Renombrar
 export const aprovacionObjetivo = async (req: Request, res: Response) => {
 
@@ -549,6 +548,22 @@ export const aprovacionObjetivo = async (req: Request, res: Response) => {
                 await objetivoOperativo.update({
                     status: 'ABIERTO'
                 })
+
+                if(objetivo.propietario){
+                    const pivot = await PivotOpUsuario.findAll({
+                        where: {
+                            objetivoOperativoId: objetivoOperativo.id
+                        }
+                    });
+
+                    // abrir todos los objetivos
+                    for (const pivotItem of pivot) {
+                        await pivotItem.update({
+                            status: 'ABIERTO'
+                        });
+                    }
+                }
+                
             }
         }else if(objetivo.status === 'ABIERTO'){
             if(!checked){
@@ -558,6 +573,21 @@ export const aprovacionObjetivo = async (req: Request, res: Response) => {
                 await objetivoOperativo.update({
                     status: 'POR_AUTORIZAR'
                 })
+
+                if(objetivo.propietario){
+                    const pivot = await PivotOpUsuario.findAll({
+                    where: {
+                        objetivoOperativoId: objetivoOperativo.id
+                    }
+                });
+
+                // nuevo todos los objetivos
+                for (const pivotItem of pivot) {
+                    await pivotItem.update({
+                        status: 'PENDIENTE_AUTORIZAR'
+                    });
+                }
+                }
             }
         }
         else if(objetivo.status === 'PENDIENTE_APROBACION') {
