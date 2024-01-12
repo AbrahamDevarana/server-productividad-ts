@@ -1,16 +1,10 @@
 import { Request, Response } from "express";
 import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios, Areas } from "../models";
-import dayjs from "dayjs";
-import { Op } from "sequelize";
+
 
 export const getPerspectivas = async (req: Request, res: Response) => {
    
     const { year } = req.query;
-
-    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-    
-
     const where: any = {};
     try {
 
@@ -56,18 +50,7 @@ export const getPerspectivas = async (req: Request, res: Response) => {
                     ],
                     required: false,
                     where: {
-                        [Op.or]: [
-                            {
-                                fechaInicio: {
-                                    [Op.between]: [fechaInicio, fechaFin]
-                                }
-                            },
-                            {
-                                fechaFin: {
-                                    [Op.between]: [fechaInicio, fechaFin]
-                                }
-                            }   
-                        ]
+                       year
                     }
                 }
             ],

@@ -29,11 +29,9 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         type: Sequelize.UUID,
         allowNull: false
     },
-    fechaInicio: {
-        type: Sequelize.DATE,
-    },
-    fechaFin: {
-        type: Sequelize.DATE,
+    year: {
+        type: Sequelize.INTEGER,
+        defaultValue: new Date().getFullYear(),
     },
     perspectivaId: {
         type: Sequelize.UUID,
