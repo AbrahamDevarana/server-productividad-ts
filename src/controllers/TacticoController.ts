@@ -400,8 +400,8 @@ export const updateTactico = async (req: Request, res: Response) => {
     const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;
     
 //  at 6am
-    const fechaInicio = dayjs(proyeccion[0])
-    const fechaFin = dayjs(proyeccion[1])
+    const fechaInicio = dayjs(proyeccion[0]).toISOString()
+    const fechaFin = dayjs(proyeccion[1]).toISOString()
 
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
