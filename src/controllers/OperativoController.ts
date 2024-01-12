@@ -84,6 +84,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
     const fechaInicial = dayjs(fechaInicio).toDate();
     const fechaFinal = dayjs(fechaFin).toDate();
 
+    console.log(fechaInicial, fechaFinal);
+    
+
     try {
         const operativo = await ObjetivoOperativos.findByPk(id);
         if (!operativo) {
