@@ -403,6 +403,10 @@ export const updateTactico = async (req: Request, res: Response) => {
     const fechaInicio = dayjs(proyeccion[0]).toDate()
     const fechaFin = dayjs(proyeccion[1]).toDate()
 
+    console.log('fechaInicio', fechaInicio);
+    console.log('fechaFin', fechaFin);
+    
+
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
             return responsable.id;
