@@ -195,8 +195,8 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             [Op.and]: [
                 {
                     [Op.or]: [
-                        // {'$propietario.id$': lider.id},
-                        {'$responsables.id$': participantesIds},
+                        
+                        {'$responsables.id$': participantesIds },
                     ]
                 },
                 showOnlyMe === "true" ? { 
@@ -230,8 +230,14 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             }
         );
 
+        const finalTacticos = await Tacticos.findAll({
+            where: {
+                id: [objetivosTacticos.map((tactico: any) => tactico.id)],
+            },
+            include: includes
+        });
         
-        res.json({ objetivosTacticos });
+        res.json({ objetivosTacticos:finalTacticos });
         
     } catch (error) {
         console.log(error);
@@ -391,7 +397,10 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;    
+    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;
+    
+    console.log(proyeccion);
+    
 
     const fechaInicio = dayjs(proyeccion[0]).startOf('quarter').toDate();
     const fechaFin = dayjs(proyeccion[1]).endOf('quarter').toDate();
