@@ -19,7 +19,11 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
     const { year, quarter } = req.body
 
-    const usuarios = await Usuarios.findAll({})
+    const usuarios = await Usuarios.findAll({
+        where: {
+            status: true
+        }
+    })
 
     for(const usuario of usuarios) {
         const { id: evaluadoId } = usuario;
@@ -27,7 +31,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
         const subordinados = await usuario.getSubordinados()
 
 
-        if(lider){
+        if(lider && lider.status){
             const evaluadorId = usuario.id;
             const existingEvaluacion = await AsignacionEvaluacion.findOne({
                 where: {
@@ -38,7 +42,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                 }
             });
                     
-            if(!existingEvaluacion) {
+            if(!existingEvaluacion && lider.status) {
                 await AsignacionEvaluacion.create({
                     evaluadorId,
                     evaluadoId: lider.id,
@@ -51,7 +55,6 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
         if(subordinados.length > 0) {
             await Promise.all(subordinados.map(async (subordinado: any) => {
-                // Verificar si ya existe una evaluación por este evaluador
                 const existingEvaluacion = await AsignacionEvaluacion.findOne({
                     where: {
                         evaluadorId: usuario.id,
@@ -62,7 +65,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                     }
                 });
         
-                if(!existingEvaluacion) {
+                if(!existingEvaluacion && subordinado.status) {
                     await AsignacionEvaluacion.create({
                         evaluadorId: usuario.id,
                         evaluadoId: subordinado.id,
@@ -70,8 +73,6 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
                         quarter,
                         evaluacionId: TipoEvaluacion.EvaluacionColaborador
                     });
-        
-                    // console.log(`  ${usuario.nombre} Evalua a Subordinado: ${subordinado.nombre} ${subordinado.apellidoPaterno} ${subordinado.apellidoMaterno} `);
                 }
             }))
         }
@@ -88,7 +89,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
             }
         });
 
-        if(!existingEvaluacion) {
+        if(!existingEvaluacion && usuario.status) {
             await AsignacionEvaluacion.create({
                 evaluadorId: usuario.id,
                 evaluadoId: usuario.id,

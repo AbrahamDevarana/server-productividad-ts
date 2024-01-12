@@ -46,7 +46,7 @@ export const Tacticos = database.define('obj_tacticos', {
     },
     tipoProgreso: {
         type: Sequelize.ENUM('PROMEDIO', 'MANUAL'), // 1 = manual | 2 = % objetivos operativos
-        defaultValue: 'PROMEDIO'
+        defaultValue: 'MANUAL'
     },
     status: {
         type: Sequelize.STRING(12),
