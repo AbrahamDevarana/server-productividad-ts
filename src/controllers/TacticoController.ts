@@ -398,14 +398,10 @@ export const createTactico = async (req: Request, res: Response) => {
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;
-    
+
 //  at 6am
     const fechaInicio = dayjs(proyeccion[0]).toDate()
-    const fechaFin = dayjs(proyeccion[1]).toDate()
-
-    console.log('fechaInicio', fechaInicio);
-    console.log('fechaFin', fechaFin);
-    
+    const fechaFin = dayjs(proyeccion[1]).toDate()    
 
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
