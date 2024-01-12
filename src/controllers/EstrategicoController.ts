@@ -40,9 +40,6 @@ const includeProps = [
 
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
     const { year } = req.query;
-    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-    
     try {
         const objetivosEstrategicos = await ObjetivoEstrategico.findAll({
             include: [{
@@ -52,18 +49,7 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
                 'responsables'
         ],
             where: {
-                [Op.or]: [
-                    {
-                        fechaInicio: {
-                            [Op.between]: [fechaInicio, fechaFin]
-                        }
-                    },
-                    {
-                        fechaFin: {
-                            [Op.between]: [fechaInicio, fechaFin]
-                        }
-                    }   
-                ]
+                year,
             }
         });        
         res.json({
@@ -136,13 +122,12 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
     const { perspectivaId, year } = req.body;
 
     const { id: propietarioId} = req.user as UsuarioInterface
-        // Primer dia del año actual
-        const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-        const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-        
+
+    console.log(req.body);
+    
 
     try {
-        const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId, fechaInicio, fechaFin });
+        const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId, year });
         await objetivoEstrategico.reload({
             include: includeProps
         });
@@ -164,16 +149,9 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, descripcion, indicador, fechaInicio, fechaFin, responsables = [], progreso, perspectivaId, status, propietarioId, rangeDate, tipoProgreso} = req.body;
-
+    const { nombre, codigo, descripcion, indicador, responsables = [], progreso, perspectivaId, status, propietarioId, tipoProgreso, year} = req.body;
     
-    const primeraFecha = dayjs(rangeDate[0]);
-    const ultimoDiaDelPrimerAnio = primeraFecha.startOf('year').toDate();
     
-    const segundaFecha = dayjs(rangeDate[1]);
-    const ultimoDiaDelSegundoAnio = segundaFecha.endOf('year').toDate()
-
-
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
             return responsable.id;
@@ -196,18 +174,17 @@ export const updateObjetivoEstrategico:RequestHandler = async (req: Request, res
                 nombre,
                 codigo, 
                 descripcion, 
-                fechaInicio: ultimoDiaDelPrimerAnio,
-                fechaFin: ultimoDiaDelSegundoAnio,
                 progreso: progresoFinal,
                 indicador,
                 tipoProgreso,
                 status: statusFinal,
-                propietarioId
+                propietarioId,
+                year
             });
 
             const objetivosTacticos = await Tacticos.findAll({
                 where: {
-                    estrategicoId: id
+                    estrategicoId: id,
                 }
             });
 
@@ -306,11 +283,7 @@ export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: R
 }
 
 export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request, res: Response) => {
-
     const { year, slug } = req.query;
-
-    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
 
     try {
         const area = await Areas.findOne({
@@ -321,18 +294,7 @@ export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request,
 
         const objetivosEstrategicos = await ObjetivoEstrategico.findAll({
             where: {
-                [Op.or]: [
-                    {
-                        fechaInicio: {
-                            [Op.between]: [fechaInicio, fechaFin]
-                        }
-                    },
-                    {
-                        fechaFin: {
-                            [Op.between]: [fechaInicio, fechaFin]
-                        }
-                    }   
-                ],
+                year,
                 perspectivaId: perspectiva.id
             },
             include: [{
