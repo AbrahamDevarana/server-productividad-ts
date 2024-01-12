@@ -399,11 +399,9 @@ export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;
     
-    console.log(proyeccion);
-    
-
-    const fechaInicio = dayjs(proyeccion[0]).startOf('quarter').toDate();
-    const fechaFin = dayjs(proyeccion[1]).endOf('quarter').toDate();
+//  at 6am
+    const fechaInicio = dayjs(proyeccion[0])
+    const fechaFin = dayjs(proyeccion[1])
 
     const participantes = responsables.map((responsable: any) => {
         if (typeof responsable === 'object') {
