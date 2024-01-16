@@ -79,13 +79,9 @@ export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , tacticoId, propietarioId, year, quarter } = req.body;
-    
-    
+
     const fechaInicial = dayjs(fechaInicio).toDate();
     const fechaFinal = dayjs(fechaFin).toDate();
-
-    console.log(fechaInicial, fechaFinal);
-    
 
     try {
         const operativo = await ObjetivoOperativos.findByPk(id);
