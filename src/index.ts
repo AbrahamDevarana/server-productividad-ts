@@ -11,9 +11,19 @@ import {socketService} from './services/socketService';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
 import tz from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+
 dayjs.extend(tz)
-dayjs.extend(quarterOfYear)
+dayjs.extend(utc)
 dayjs.tz.setDefault("America/Mexico_City")
+
+console.log(dayjs().tz().format());
+console.log(dayjs().utc().format());
+
+
+dayjs.extend(quarterOfYear)
+
+// const FileStore = require('session-file-store')(cookieSession);
 
 require('dotenv').config();
 

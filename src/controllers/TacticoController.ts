@@ -168,8 +168,8 @@ export const getTacticosByEstrategia = async (req: Request, res: Response) => {
 export const getTacticosByEquipo = async (req: Request, res: Response) => {
     const { year, departamentoId, showOnlyMe } = req.query as any;
 
-    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
+    const fechaInicio = dayjs(`${year}-01-01`).startOf('year').hour(6).minute(0).second(0).millisecond(0).toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').hour(23).minute(59).second(59).millisecond(999).toDate();
     const {id: propietarioId} = req.user as UsuarioInterface
 
     try {
