@@ -10,9 +10,10 @@ import router from './routes';
 import {socketService} from './services/socketService';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
+import tz from 'dayjs/plugin/timezone'
+dayjs.extend(tz)
 dayjs.extend(quarterOfYear)
-
-// const FileStore = require('session-file-store')(cookieSession);
+dayjs.tz.setDefault("America/Mexico_City")
 
 require('dotenv').config();
 
