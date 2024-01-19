@@ -19,6 +19,8 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     createdAt?: Date;
     updatedAt?: Date;
 
+    operativosResponsable?: any[];
+
     // __associations__
     getTactico_operativo: () => Promise<any>
     setTactico_operativo: () => Promise<any>
@@ -47,7 +49,10 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     removeOperativosResponsable: () => Promise<any>
     createOperativosResponsable: () => Promise<any>
 
+    // operativosResponsable
+
     // __proto__
+    
 
 
 
