@@ -427,7 +427,7 @@ export const cierreCiclo = async (req: Request, res: Response) => {
 }
 
 // Renombrar
-export const cerrarObjetivo = async (req: Request, res: Response) => {
+export const statusObjetivo = async (req: Request, res: Response) => {
 
     const { operativoId, checked } = req.body;
 
@@ -505,6 +505,12 @@ export const cerrarObjetivo = async (req: Request, res: Response) => {
             objetivo: {
                 id: objetivo.id,
                 status: objetivo.status,
+                operativosResponsable: objetivo.operativosResponsable?.map( (res: any) => {
+                    return {
+                        id: res.id,
+                        scoreCard: res.scoreCard,
+                    }
+                })
             }
         })
 
@@ -618,6 +624,7 @@ export const aprovacionObjetivo = async (req: Request, res: Response) => {
                 quarter: objetivoOperativo.quarter
             }
         });
+        
 
         return res.json({
             ok: true,

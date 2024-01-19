@@ -87,10 +87,7 @@ export const updateGestionObjetivos = async (req: Request, res: Response) => {
             cierreObjetivosFin: dayjs(cierreObjetivosFin).toDate(),
             cierreEvaluacionCompetenciasInicio: dayjs(cierreEvaluacionCompetenciasInicio).toDate(),
             cierreEvaluacionCompetenciasFin: dayjs(cierreEvaluacionCompetenciasFin).toDate(),
-        })
-
-        console.log(gestionObjetivo);
-        
+        })        
 
         res.status(200).json({ gestionObjetivo })
 

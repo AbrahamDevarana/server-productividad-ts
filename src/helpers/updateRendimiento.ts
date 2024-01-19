@@ -24,6 +24,17 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         let totalResultados = 0;
         let total = 0;
 
+        
+        const statusMapping = {
+            'NUEVO': 'NUEVO',
+            'PENDIENTE_AUTORIZAR': 'PENDIENTE_AUTORIZAR',
+            'ABIERTO': 'ABIERTO',
+            'PENDIENTE_APROBACION': 'PENDIENTE_APROBACION',
+            'APROBADO': 'APROBADO'
+        };
+
+        let statusFinal = 'NUEVO';
+
         const operativosArrayId = objetivosOperativos.map( (obj: any) => obj.id);
 
         const [rendimiento, created] = await Rendimiento.findOrCreate({
@@ -42,17 +53,25 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             });
 
+            statusFinal = resultadoObjetivos.every(obj => obj.status === statusMapping['NUEVO']) ? 'NUEVO' :
+                  resultadoObjetivos.some(obj => obj.status === statusMapping['PENDIENTE_AUTORIZAR']) ? 'PENDIENTE_AUTORIZAR' :
+                  resultadoObjetivos.every(obj => obj.status === statusMapping['ABIERTO']) ? 'ABIERTO' :
+                  resultadoObjetivos.some(obj => obj.status === statusMapping['PENDIENTE_APROBACION']) ? 'PENDIENTE_APROBACION' :
+                  resultadoObjetivos.every(obj => obj.status === statusMapping['APROBADO']) ? 'APROBADO' : statusFinal;
+
+        
             
+        
             if(resultadoObjetivos.length !== 0){
 
                 const destroyed = await PivotObjetivoRendimiento.destroy
-                ({
-                    where: {
-                        rendimientoId: rendimiento.id,
-                        year,
-                        quarter
-                    },
-                })
+                    ({
+                        where: {
+                            rendimientoId: rendimiento.id,
+                            year,
+                            quarter
+                        },
+                    })
 
                 
                 const resultadoObjetivosTotal = resultadoObjetivos.reduce((acc: any, obj: any) => {
@@ -146,12 +165,15 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
         const rendimientoId = rendimiento.id;
 
         total = totalObjetivos + totalResultados
+        
 
-        if(rendimiento.status === 'ABIERTO'){
+        if(rendimiento.status !== 'CERRADO'){
+
             await Rendimiento.update({
                 resultadoObjetivos: totalObjetivos,
                 resultadoCompetencias: totalResultados,
                 resultadoFinal: total,
+                status: statusFinal
             }, {
                 where: {
                     id: rendimientoId
