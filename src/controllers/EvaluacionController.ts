@@ -21,7 +21,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
     const usuarios = await Usuarios.findAll({
         where: {
-            status: true
+            status: 'ACTIVO'
         }
     })
 
