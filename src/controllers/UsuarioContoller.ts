@@ -23,12 +23,11 @@ const perfilInclude = [
 ]
 
 export const getUsuarios = async (req: Request, res: Response) => {
-   
 
-    const { page, size, search } = req.query;
+    const { search, status } = req.query
 
     try {
-        const result = await Usuarios.findAndCountAll({
+        const usuarios = await Usuarios.findAndCountAll({
             distinct: true,
             include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
             order: [
@@ -47,15 +46,21 @@ export const getUsuarios = async (req: Request, res: Response) => {
                             literal('usuarios.email LIKE :search'),
                         ],
                     } : {},
-                    { status: true}
+                    status === 'ACTIVO' ? {
+                        status: 'ACTIVO'
+                    } : {},
+                    status === 'INACTIVO' ? {
+                        status: 'INACTIVO'
+                    } : {},
+                    status === 'ALL' ? {} : {}
                 ]
             },
             replacements: {
-                search: `%${search}%`
+                search: `%${ search }%`
             },
         })
 
-        const usuarios = getPagingData(result, Number(page), Number(size))    
+        // const usuarios = getPagingData(result, Number(page), Number(size))    
         
         res.json({ usuarios });
 
@@ -165,7 +170,7 @@ export const createUsuario = async (req: Request, res: Response) => {
 export const updateUsuario = async (req: Request, res: Response) => {
         
         const { id } = req.params;
-        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId , puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId} = req.body;
+        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId , puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId, status} = req.body;
         
         try {
             const usuario = await Usuarios.findByPk(id,
@@ -194,7 +199,8 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 fechaIngreso: formatedFechaIngreso ? formatedFechaIngreso : usuario.fechaIngreso,
                 descripcionPerfil: descripcionPerfil ? descripcionPerfil : usuario.descripcionPerfil,
                 leaderId: leaderId ? leaderId : usuario.leaderId,
-                departamentoId: departamentoId ? departamentoId : usuario.departamentoId
+                departamentoId: departamentoId ? departamentoId : usuario.departamentoId,
+                status: status ? status : usuario.status
             });            
 
             if(direccion){
@@ -248,6 +254,7 @@ export const deleteUsuario = async (req: Request, res: Response) => {
             });
         }
 
+        await usuario.update({ status: 'ELIMINADO' });
         await usuario.destroy();
 
         res.json({usuario});

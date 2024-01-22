@@ -63,9 +63,9 @@ export const Usuarios = database.define('usuarios', {
         type: Sequelize.TEXT,
     },
     status: {
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.ENUM('ACTIVO', 'INACTIVO', 'ELIMINADO'),
         allowNull: false,
-        defaultValue: true
+        defaultValue: 'ACTIVO'
     },
     leaderId: {
         type: Sequelize.UUID,
