@@ -98,6 +98,19 @@ export const getTactico = async (req: Request, res: Response) => {
     }
 }
 
+export const getTacticos = async (req: Request, res: Response) => {
+
+    const { estrategicoId }  = req.query
+
+    const objetivosTacticos = await Tacticos.findAll({
+        where: {
+            ...(estrategicoId ? { estrategicoId } : {})
+        }
+    })
+    
+    res.json({ objetivosTacticos });
+}
+
 export const getTacticosByEstrategia = async (req: Request, res: Response) => {
     const { year, estrategicoId, showOnlyMe } = req.query
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();

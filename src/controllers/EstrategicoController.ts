@@ -39,17 +39,17 @@ const includeProps = [
 ]
 
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
-    const { year } = req.query;
+    const { year, perspectivaId } = req.query;
+
+    console.log('getObjetivosEstrategicos', req.query);
+    
+
     try {
         const objetivosEstrategicos = await ObjetivoEstrategico.findAll({
-            include: [{
-                    model: Perspectivas,
-                    as: 'perspectivas',
-                },
-                'responsables'
-        ],
             where: {
                 year,
+                // si no se envia perspectivaId, se obtienen todos los objetivos estrategicos
+                ...(perspectivaId && { perspectivaId })
             }
         });        
         res.json({

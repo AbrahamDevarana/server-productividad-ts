@@ -16,6 +16,10 @@ export const EvaluacionPregunta = database.define(
         descripcion: {
             type: Sequelize.TEXT,
         },
+        categoriaPreguntaId: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+        },
         createdAt: {
             type: Sequelize.DATE,
             defaultValue: Sequelize.NOW,
@@ -31,7 +35,7 @@ export const EvaluacionPregunta = database.define(
         timestamps: true,
         hooks: {},
         defaultScope: {
-            attributes: { exclude: ["createdAt", "updatedAt, deletedAt"] },
+            attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
         },
     },
 );

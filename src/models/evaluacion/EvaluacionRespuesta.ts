@@ -50,7 +50,7 @@ export const EvaluacionRespuesta = database.define(
         timestamps: true,
         hooks: {},
         defaultScope: {
-            attributes: { exclude: ["createdAt", "updatedAt, deletedAt"] },
+            attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
         },
     },
 );

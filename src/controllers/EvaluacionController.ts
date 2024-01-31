@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import {  Evaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta, AsignacionPreguntaEvaluacion } from "../models/evaluacion"
 import { Rendimiento, Usuarios } from "../models";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
+import { CategoriaPreguntas } from "../models/evaluacion/CategoriaPreguntas";
+import { EvaluacionPreguntaProps, EvaluacionResultadoProps } from "../interfaces";
+
 
 
 enum TipoEvaluacion {
@@ -21,7 +24,7 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
     const usuarios = await Usuarios.findAll({
         where: {
-            status: true
+            status: 'ACTIVO'
         }
     })
 
@@ -520,7 +523,6 @@ export const obtenerRespuestasEvaluacion = async (req: Request, res: Response) =
 // A partir de aquí es la nueva funcionalidad de evaluaciones
 
 export const asignarEvaluaciones = async (req: Request, res: Response) => {
-
 }
 
 export const getEvaluaciones = async (req: Request, res: Response) => {
@@ -697,4 +699,147 @@ export const deleteAsignacionEvaluacion = async (req: Request, res: Response) =>
             })
         }
     
+}
+
+export const getEvaluacionResultadosCategoria = async (req: Request, res: Response) => {
+
+    const { categoriaId, usuarioId, quarter, year } = req.query as any;
+
+    try {
+
+        const categoria = await CategoriaPreguntas.findOne({
+            where: {
+                id: categoriaId
+            },
+            include: [
+                {
+                    as: 'preguntas',
+                    model: EvaluacionPregunta,
+                    include: [
+                        {
+                            model: EvaluacionRespuesta,
+                            attributes: ['resultado', 'comentario'],
+                            where: {
+                                status: true
+                            },
+                            include: [
+                                {
+                                    model: AsignacionEvaluacion,
+                                    where: {
+                                        year,
+                                        quarter,
+                                        evaluadoId: usuarioId
+                                    },
+                                    attributes: ['evaluadorId'],
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        })
+
+    
+        const resultadoPromedio = categoria?.preguntas?.flatMap((pregunta: any) => 
+                pregunta.evaluacion_respuesta.map((respuesta: any) => respuesta.resultado)
+        );
+
+        const promedioTotal =  (resultadoPromedio && resultadoPromedio?.length > 0) ? (
+            resultadoPromedio ? (resultadoPromedio.reduce((a: any, b: any) => a + b, 0) / resultadoPromedio.length) : 0
+        ).toFixed(2) : 0;
+
+        let usuarioRespuestas: string[] = [];
+        let otrasRespuestas: string[] = [];
+
+        categoria?.preguntas?.forEach((pregunta: EvaluacionPreguntaProps) => {            
+            pregunta.evaluacion_respuesta.forEach((respuesta: any) => {
+                if (respuesta.pivot_evaluacion_usuario.evaluadorId === usuarioId) {
+                    usuarioRespuestas.push(respuesta.comentario);
+                } else {
+                    otrasRespuestas.push(respuesta.comentario);
+                }
+            });
+        });
+
+        const evaluacion: { categoria: string | undefined; resultado: EvaluacionResultadoProps | undefined } = {
+            categoria: categoria?.nombre,
+            resultado: {
+                promedio: promedioTotal,
+                respuestas: {
+                    usuario: usuarioRespuestas,
+                    otras: otrasRespuestas
+                }
+            }
+        };
+
+      
+        return res.json({
+            ok: true,
+            evaluacion
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
+}
+
+export const getCategoriasResultados = async (req: Request, res: Response) => {
+
+    const { usuarioId, year, quarter } = req.query as any;    
+
+    try {
+
+        const result = await CategoriaPreguntas.findAll({
+            include: [
+                {
+                    as: 'preguntas',
+                    model: EvaluacionPregunta,
+                    required: true,
+                    include: [
+                        {
+                            model: EvaluacionRespuesta,
+                            attributes: ['resultado', 'comentario'],
+                            where: {
+                                status: true
+                            },
+                            include: [
+                                {
+                                    model: AsignacionEvaluacion,
+                                    where: {
+                                        year,
+                                        quarter,
+                                        evaluadoId: usuarioId
+                                    },
+                                    attributes: ['evaluadorId'],
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        })
+
+        const categorias = result.map((categoria: any) =>  ( {
+            id: categoria.id,
+            nombre: categoria.nombre,
+        }))
+
+        return res.json({
+            ok: true,
+            categorias
+        })
+
+    } catch (error) {
+
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
 }

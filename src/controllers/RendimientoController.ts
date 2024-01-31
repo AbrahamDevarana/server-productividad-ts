@@ -45,7 +45,8 @@ export const getHistorialRendimientoThunk = async (req: Request, res: Response) 
     try {
         const rendimientos = await Rendimiento.findAll({
             where: {
-                year: Number(year),
+                // sino se especifica el año, se obtiene el historial completo
+                year: year ? Number(year) : {[Op.gte]: 0},
                 usuarioId
             }
         });

@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento } from "../models";
 import dayjs from "dayjs";
-import { Op } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
 import { updateProgresoObjetivo } from "./ResultadosController";
+import { UsuarioInterface } from "../interfaces";
+
+import database from "../config/database";
 
 
 const includes = [
@@ -426,7 +429,6 @@ export const cierreCiclo = async (req: Request, res: Response) => {
     }
 }
 
-// Renombrar
 export const statusObjetivo = async (req: Request, res: Response) => {
 
     const { operativoId, checked } = req.body;
@@ -525,7 +527,6 @@ export const statusObjetivo = async (req: Request, res: Response) => {
 
 }
 
-// Renombrar
 export const aprovacionObjetivo = async (req: Request, res: Response) => {
 
     const { checked, objetivoId, usuarioId } = req.body;
@@ -637,4 +638,137 @@ export const aprovacionObjetivo = async (req: Request, res: Response) => {
 
     return res.status(404).json({ msg: 'No existe este objetivo' });   
 }
+
+export const copyOperativo = async (req: Request, res: Response) => {
+
+    const { nombre, newYear, newQuarter, objetivoOperativoId, resultadosClave } = req.body;
+    const { id } = req.user as UsuarioInterface
+
+    const t: Transaction = await database.transaction();
+    
+    try {
+        const operativo = await ObjetivoOperativos.findByPk(objetivoOperativoId, {
+            include: includes,
+        });
+
+        if(!operativo) return res.status(404).json({ msg: 'No existe este objetivo' });
+
+        const fechaInicial = dayjs().year(newYear).quarter(newQuarter).startOf('quarter').toDate();
+        const fechaFinal = dayjs().year(newYear).quarter(newQuarter).endOf('quarter').subtract(1, 'day').toDate();
+
+        // Crear Objetivo
+        const operativoCopy = await ObjetivoOperativos.create({
+            nombre: nombre,
+            meta: operativo.meta,
+            indicador: operativo.indicador,
+            fechaInicio: fechaInicial,
+            fechaFin: fechaFinal,
+            quarter: newQuarter,
+            year: newYear,
+            status: 'NUEVO'
+        }, { transaction: t });
+
+        await t.commit();
+
+        if(!operativoCopy){
+            await t.rollback();
+            return res.status(400).json({ msg: 'No se pudo crear el operativo' });
+        }
+    
+        const setResponsables = new Set();
+        
+        // Asignar Responsables
+        operativo.operativosResponsable?.forEach( (responsable: any) => {
+            setResponsables.add(responsable.id);
+        });
+
+        await operativoCopy.setOperativosResponsable(Array.from(setResponsables));
+        
+        const responsablesLista = await PivotOpUsuario.findAll({
+            where: {
+                objetivoOperativoId: operativoCopy.id
+            }
+        });
+
+        for (const responsable of responsablesLista) {
+            const propietarioValue = responsable.usuarioId === id;
+        
+            await responsable.update({
+                propietario: propietarioValue,
+            });
+        }
+
+        await operativoCopy.reload();
+
+        // Copiar Resultados Clave
+
+        if(operativoCopy && operativoCopy.id){
+            const resultadosArray = resultadosClave.map( (resultado: any) => resultado.id );
+
+            const resultadosClaveCopy = await ResultadosClave.findAll({
+                where: {
+                    id: resultadosArray
+                }
+            });
+
+            for (const resultado of resultadosClaveCopy) {
+                
+                await ResultadosClave.create({
+                    nombre: resultado.nombre,
+                    fechaInicio: resultado.fechaInicio,
+                    fechaFin: resultado.fechaFin,
+                    operativoId: operativoCopy.id,
+                    status: 'SIN_INICIAR',
+                    tipoProgreso: 'acciones',
+                    progreso: 0,
+                    propietarioId: id,
+                    color: resultado.color
+                }).then( async (resultadoClave) => {
+                
+                    const resultadoClaveTasks = resultadosClave.find( (res: any) => res.id === resultado?.id)?.tasks;    
+                    await resultadoClave.reload();
+
+                    console.log(resultadoClaveTasks);
+                    
+
+                    const tasks = await Task.findAll({
+                        where: {
+                            id: resultadoClaveTasks,
+                            taskeableType: 'RESULTADO_CLAVE'
+                        }
+                    });
+
+                   if(resultadoClave && resultadoClave.id){
+                        for (const task of tasks) {   
+                            await Task.create({
+                                nombre: task.nombre,
+                                propietarioId: id,
+                                taskeableId: resultadoClave.id,
+                                taskeableType: 'RESULTADO_CLAVE',
+                                prioridad: 'Normal',
+                                status: 'SIN_INICIAR',
+                                progreso: 0,
+                                fechaFin: resultadoClave.fechaFin,
+                            })   
+                        }
+                   }
+                })
+            }
+        }
+
+        await operativoCopy.reload( { include: includes });
+
+        res.json({operativo: operativoCopy});
+      
+    } catch (error) {
+        console.log(error);
+        
+        await t.rollback();
+        
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
 
