@@ -53,10 +53,10 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             });
 
-            statusFinal = resultadoObjetivos.every(obj => obj.status === statusMapping['NUEVO']) ? 'NUEVO' :
-                  resultadoObjetivos.some(obj => obj.status === statusMapping['PENDIENTE_AUTORIZAR']) ? 'PENDIENTE_AUTORIZAR' :
+            statusFinal = resultadoObjetivos.some(obj => obj.status === statusMapping['NUEVO']) ? 'NUEVO' :
+                  resultadoObjetivos.every(obj => obj.status === statusMapping['PENDIENTE_AUTORIZAR']) ? 'PENDIENTE_AUTORIZAR' :
                   resultadoObjetivos.every(obj => obj.status === statusMapping['ABIERTO']) ? 'ABIERTO' :
-                  resultadoObjetivos.some(obj => obj.status === statusMapping['PENDIENTE_APROBACION']) ? 'PENDIENTE_APROBACION' :
+                  resultadoObjetivos.every(obj => obj.status === statusMapping['PENDIENTE_APROBACION']) ? 'PENDIENTE_APROBACION' :
                   resultadoObjetivos.every(obj => obj.status === statusMapping['APROBADO']) ? 'APROBADO' : statusFinal;
 
         

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getOperativos, createOperativo, updateOperativo, getOperativo, setPonderaciones, deleteOperativo, statusObjetivo, cierreCiclo, aprovacionObjetivo } from '../../controllers/OperativoController'
+import { getOperativos, createOperativo, updateOperativo, getOperativo, setPonderaciones, deleteOperativo, statusObjetivo, cierreCiclo, aprovacionObjetivo, copyOperativo} from '../../controllers/OperativoController'
 
 const router = Router();
 
@@ -17,6 +17,7 @@ router.post('/cierre-objetivo-lider', aprovacionObjetivo);
 
 router.put('/set-ponderaciones/:id', setPonderaciones);
 
+router.post('/copy', copyOperativo)
 
 
 

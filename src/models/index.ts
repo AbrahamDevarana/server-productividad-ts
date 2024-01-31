@@ -13,9 +13,7 @@ import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
 import { Roles } from './Roles';
 import { GaleriaDevarana } from './custom/GaleriaDevarana';
-// import { Core } from './Core'
-
-
+import { CategoriaPreguntas } from './evaluacion/CategoriaPreguntas';
 
 // Pivot tables
 import { PivotPerspEstr } from './pivot/PivotPerspectivaEstrategia';
@@ -170,6 +168,9 @@ Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos',
 Permisos.belongsToMany(Roles, { through: 'pivot_permisos_roles', as: 'roles', foreignKey: 'permisoId' });
 
 
+
+CategoriaPreguntas.hasMany(EvaluacionPregunta, { as: 'preguntas', foreignKey: 'categoriaPreguntaId' });
+EvaluacionPregunta.belongsTo(CategoriaPreguntas, { as: 'categoria', foreignKey: 'categoriaPreguntaId' });
 
 Evaluacion.belongsToMany(EvaluacionPregunta, { through: {model: AsignacionPreguntaEvaluacion, unique: false}, foreignKey: 'evaluacionId', otherKey:'preguntaId', as: 'preguntasEvaluacion', });
 EvaluacionPregunta.belongsToMany(Evaluacion, { through: {model: AsignacionPreguntaEvaluacion, unique: false}, foreignKey: 'preguntaId', otherKey:'evaluacionId', as: 'evaluacionesPregunta' });

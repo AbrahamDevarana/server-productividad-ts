@@ -292,15 +292,19 @@ export const getRanking = async (req: Request, res: Response) => {
         });
         
     
-        const usuariosOrdenados = usuarios.sort((a: any, b: any) => {
-            // de mayor a menor
+        const rankingUsuarios = usuarios.sort((a: any, b: any) => {
             return b.rendimiento[0]?.resultadoFinal - a.rendimiento[0]?.resultadoFinal;
-        })
+        }).splice(0, 10);
 
-        // Limite de 10 usuarios
-        usuariosOrdenados.splice(10, usuariosOrdenados.length - 10);
+        const rankingCompetencias = usuarios.sort((a: any, b: any) => {
+            return b.rendimiento[0]?.resultadoCompetencias - a.rendimiento[0]?.resultadoCompetencias;
+        }).splice(0, 10);
+    
 
-        res.json({rankingUsuarios: usuariosOrdenados});
+        res.json({ 
+            rankingUsuarios,
+            rankingCompetencias
+        });
         
     } catch (error) {
         console.log(error);
