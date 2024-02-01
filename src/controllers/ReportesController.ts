@@ -34,9 +34,6 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
     const { year, quarter, search, status } = req.query
 
 
-    console.log(year, quarter, search, status);
-    
-
     if( !year || !quarter ) {
         return res.status(400).json({
             msg: 'Los campos year y quarter son obligatorios'

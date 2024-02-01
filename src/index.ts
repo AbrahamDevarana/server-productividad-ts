@@ -17,10 +17,6 @@ dayjs.extend(tz)
 dayjs.extend(utc)
 dayjs.tz.setDefault("America/Mexico_City")
 
-console.log(dayjs().tz().format());
-console.log(dayjs().utc().format());
-
-
 dayjs.extend(quarterOfYear)
 
 // const FileStore = require('session-file-store')(cookieSession);
