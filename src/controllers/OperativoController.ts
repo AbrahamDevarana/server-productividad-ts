@@ -728,9 +728,6 @@ export const copyOperativo = async (req: Request, res: Response) => {
                     const resultadoClaveTasks = resultadosClave.find( (res: any) => res.id === resultado?.id)?.tasks;    
                     await resultadoClave.reload();
 
-                    console.log(resultadoClaveTasks);
-                    
-
                     const tasks = await Task.findAll({
                         where: {
                             id: resultadoClaveTasks,

@@ -40,8 +40,6 @@ const includeProps = [
 
 export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res: Response) => {
     const { year, perspectivaId } = req.query;
-
-    console.log('getObjetivosEstrategicos', req.query);
     
 
     try {
@@ -250,8 +248,6 @@ export const deleteObjetivoEstrategico:RequestHandler = async (req: Request, res
 
 export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    console.log('getObjetivosEstrategicoByPerspectiva');
     
     throw new Error('No implementado');
     

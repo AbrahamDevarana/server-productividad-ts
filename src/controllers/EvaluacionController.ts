@@ -193,19 +193,12 @@ export const obtenerUsuariosAEvaluar = async (req: Request, res: Response) => {
         ]
     })
 
-    // console.log(usuariosEvaluaciones);
-    
-
     // encontrar a los de evaluacionId 1, 2, 3
     const evaluacionLider = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionLider)?.evaluado || null
     // Evaluación propia valida 2 cosas que sea tipoevaluacion.EvaluacionPropia o que el evaluadorId sea igual al evaluadoId
     const evaluacionPropia = usuariosEvaluaciones.find((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionPropia || usuario.evaluadorId === usuario.evaluadoId)?.evaluado || null
     const evaluacionColaborador = usuariosEvaluaciones.filter((usuario: any) => usuario.evaluacionId === TipoEvaluacion.EvaluacionColaborador).map((usuario: any) => usuario.evaluado)
-    
-    // console.log('Evaluacion Lider',  evaluacionLider);
-    // console.log('Evaluacion Propia', evaluacionPropia);
-    // console.log('Evaluacion Colaborador', evaluacionColaborador.map((usuario: any) => usuario.nombre));
-    
+
 
     return res.json({
         ok: true,

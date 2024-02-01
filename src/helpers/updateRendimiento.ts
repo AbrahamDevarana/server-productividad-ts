@@ -53,14 +53,18 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             });
 
-            statusFinal = resultadoObjetivos.some(obj => obj.status === statusMapping['NUEVO']) ? 'NUEVO' :
-                  resultadoObjetivos.every(obj => obj.status === statusMapping['PENDIENTE_AUTORIZAR']) ? 'PENDIENTE_AUTORIZAR' :
-                  resultadoObjetivos.every(obj => obj.status === statusMapping['ABIERTO']) ? 'ABIERTO' :
-                  resultadoObjetivos.every(obj => obj.status === statusMapping['PENDIENTE_APROBACION']) ? 'PENDIENTE_APROBACION' :
-                  resultadoObjetivos.every(obj => obj.status === statusMapping['APROBADO']) ? 'APROBADO' : statusFinal;
+            if(resultadoObjetivos.length === 0){
+                statusFinal = 'NUEVO'
+            }else {
+                statusFinal = resultadoObjetivos.some(obj => obj.status === statusMapping['NUEVO']) ? 'NUEVO' :
+                resultadoObjetivos.every(obj => obj.status === statusMapping['PENDIENTE_AUTORIZAR']) ? 'PENDIENTE_AUTORIZAR' :
+                resultadoObjetivos.every(obj => obj.status === statusMapping['ABIERTO']) ? 'ABIERTO' :
+                resultadoObjetivos.every(obj => obj.status === statusMapping['PENDIENTE_APROBACION']) ? 'PENDIENTE_APROBACION' :
+                resultadoObjetivos.every(obj => obj.status === statusMapping['APROBADO']) ? 'APROBADO' : statusFinal;
 
-        
-            
+            }
+
+           
         
             if(resultadoObjetivos.length !== 0){
 
@@ -101,8 +105,6 @@ export const updateRendimiento = async ({ usuarioId, quarter, year }: Props) => 
                 }
             }
         }
-
-
             // Obtener Evaluaciones
             const asignacionEvaluacion = await AsignacionEvaluacion.findAll({
                 where: {

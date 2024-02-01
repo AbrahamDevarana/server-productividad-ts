@@ -42,11 +42,7 @@ export const getRol = async (req: Request, res: Response) => {
                 }
             }]
         });
-
-        console.log(role?.permisos?.map(permiso => permiso.nombre));
-        
-
-        
+    
         res.json({ role });
     }
     catch (error) {
