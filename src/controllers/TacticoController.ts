@@ -1,6 +1,6 @@
 import { Areas, Comentarios, Departamentos, ObjetivoEstrategico, ObjetivoOperativos, Perspectivas, ResultadosClave, Tacticos, Usuarios } from '../models'
 import { Request, Response } from 'express'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { Op, WhereOptions } from 'sequelize'
 import dayjs from 'dayjs'
 import { UsuarioInterface } from '../interfaces'
 import { getStatusAndProgress } from '../helpers/getStatusAndProgress'
@@ -101,7 +101,6 @@ export const getTactico = async (req: Request, res: Response) => {
 export const getTacticos = async (req: Request, res: Response) => {
 
     const { estrategicoId }  = req.query
-
     const objetivosTacticos = await Tacticos.findAll({
         where: {
             ...(estrategicoId ? { estrategicoId } : {})
@@ -182,7 +181,7 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
     const { year, departamentoId, showOnlyMe } = req.query as any;
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').hour(6).minute(0).second(0).millisecond(0).toDate();
-    const fechaFin = dayjs(`${year}-12-31`).endOf('year').hour(23).minute(59).second(59).millisecond(999).toDate();
+    const fechaFin = dayjs(`${year}-12-31`).endOf('year').hour(23).minute(59).second(59).millisecond(99).toDate();
     const {id: propietarioId} = req.user as UsuarioInterface
 
     try {
@@ -190,8 +189,10 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
 
         const participantes = await departamento?.getUsuario()
         const lider = await departamento?.getLeader()
-
         const participantesIds = participantes?.map((participante: any) => participante.id);
+           
+
+        
         let where : WhereOptions = {
             [Op.or]: [
                 {
@@ -207,10 +208,11 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             ],
             [Op.and]: [
                 {
-                    [Op.or]: [
-                        
+                    [Op.or]: participantesIds.length > 0 ?
+                    [
+                        {'$propietario.id$': participantesIds },
                         {'$responsables.id$': participantesIds },
-                    ]
+                    ]: {},
                 },
                 showOnlyMe === "true" ? { 
                     [Op.or]: [
@@ -221,7 +223,6 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             ],
             tipoObjetivo: 'ESTRATEGICO'    
         };
-
         
         const objetivosTacticos = await Tacticos.findAll({ 
             where,
@@ -232,7 +233,7 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
                     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
                     through: {
                         attributes: []
-                    }
+                    },
                 },
                 {
                     model: Usuarios,
@@ -242,6 +243,11 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             ],
             }
         );
+        
+
+        if(objetivosTacticos.length === 0){
+            return res.json({ objetivosTacticos: [] });
+        }
 
         const finalTacticos = await Tacticos.findAll({
             where: {
@@ -250,11 +256,12 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
             include: includes
         });
         
-        res.json({ objetivosTacticos:finalTacticos });
+        
+        return res.json({ objetivosTacticos: finalTacticos });
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             msg: 'Hable con el administrador',
             error
         });
@@ -269,13 +276,14 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
     const {id: propietarioId} = req.user as UsuarioInterface
 
+
     try {
+        if(!departamentoId) return res.status(400).json({msg: 'El departamentoId es requerido'})
         const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
-
         const participantes = await departamento?.getUsuario()
-        const lider = await departamento?.getLeader()
-
         const participantesIds = participantes?.map((participante: any) => participante.id);
+
+        
 
         let where: WhereOptions = {
             [Op.and]: [
@@ -293,12 +301,13 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
                         },
                     ],   
                 },
-                // si un isiario de participantesIds  esta en participantesIds o si el lider es el lider
+
                 {
-                    [Op.or]: [
+                    [Op.or]: participantesIds.length > 0 ?
+                    [
                         {'$propietario.id$': participantesIds },
                         {'$responsables.id$': participantesIds },
-                    ]
+                    ]: {},
                 },
 
                 showOnlyMe === "true" ? { 
@@ -322,7 +331,7 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
                     through: {
                         attributes: []
                     },
-                    required: false
+                    required: false,
                 },
                 {
                     model: Usuarios,
@@ -333,8 +342,6 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
             ],
             }
         );
-
-        
         res.json({ objetivosCore });
         
     } catch (error) {
@@ -349,22 +356,23 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {    
-    const { year, estrategicoId, slug } = req.body;
-    const { id: propietarioId } = req.user as UsuarioInterface
+    const { year, estrategicoId, slug, propietarioId } = req.body;
+    const { id } = req.user as UsuarioInterface
 
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
-
-    const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: slug }, { slug }] } })
         
     try {
 
-       const usuario = await Usuarios.findOne({ where: { id: propietarioId } })
+
+        const usuarioId = propietarioId ? propietarioId : id
+        
+        const usuario = await Usuarios.findOne({ where: { id: usuarioId } })
 
         let codigo = ''
 
         const objetivoTactico = await Tacticos.create({
-            propietarioId,  
+            propietarioId: usuario.id,
             estrategicoId,
             tipoObjetivo: estrategicoId ? 'ESTRATEGICO' : 'CORE',
             codigo,
@@ -394,7 +402,7 @@ export const createTactico = async (req: Request, res: Response) => {
             ]
         });
 
-
+      
         res.json({
             objetivoTactico
         });

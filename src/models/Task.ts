@@ -123,14 +123,9 @@ const updateProgreso = async (task: TaskModel) => {
                 }
                 accionesTotales++;
             })
-
-            console.log({accionesProgreso, accionesTotales});
             
 
             const progresoTotal = (accionesProgreso / accionesTotales).toFixed(2)
-
-            console.log({progresoTotal});
-            
 
             await resultadoClave.update({ progreso: Number(progresoTotal) });
 

@@ -36,9 +36,6 @@ export const willExpireToken = (token: any) => {
     
     const now = moment().unix();
 
-    // Expira en...
-    // console.log('Expira en: ', moment.unix(expiresIn).format('DD/MM/YYYY HH:mm:ss')); 
-
     if (now > expiresIn) {
         return true;
     }else{

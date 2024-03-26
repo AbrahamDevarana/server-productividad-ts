@@ -93,8 +93,6 @@ export const Hitos = database.define('hitos', {
         //     }
         // },
         afterCreate: async (hito: any) => {
-            // console.log('afterCreate', Proyectos.prototype);
-            // console.log('afterCreate', Usuarios.prototype);
             const proyecto = await hito.getHitosProyecto();
             // Obtener la lista de usuarios que participan en el proyecto
             const usuarios = await proyecto.getUsuariosProyecto();                    
