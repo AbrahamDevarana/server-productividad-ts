@@ -13,8 +13,6 @@ const socketService = (server: any) => {
     
     io.on('connection', (socket: any) => {
 
-        console.log('Usuario Conectado');
-        
 
         const accessToken = socket.handshake.query['token']
 
@@ -26,14 +24,12 @@ const socketService = (server: any) => {
             jwt.verify(accessToken, process.env.JWT_SECRET as string, async (error: any, decoded: any) => {
                 if (error) {
                     const errorinfo = `${new Date(Date.now()).toLocaleString()} - ${error} \n`
-                    console.log(errorinfo);
                     socket.emit('autentication_failed')
                     socket.disconnect()
                 } else {
                     if (decoded) {
                         socket.join(decoded.id);
                     }else{
-                        console.log('Token no decodificado');
                         socket.emit('authentication_failed');
                         socket.disconnect();
                     }
