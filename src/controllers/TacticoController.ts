@@ -10,7 +10,7 @@ const includes = [
     {
         model: Departamentos,
         as: 'departamentos',
-        attributes: ['id', 'nombre'],
+        attributes: ['id', 'nombre', 'areaId', 'slug'],
     },
     {
         model: Usuarios,
@@ -51,6 +51,7 @@ const includes = [
 
 export const getTactico = async (req: Request, res: Response) => {
     const { id } = req.params;    
+    
     try {
         const objetivoTactico = await Tacticos.findOne({
             where: { id },
@@ -86,7 +87,12 @@ export const getTactico = async (req: Request, res: Response) => {
          
         
 
-        objetivoTactico.setDataValue('suggest', promedio);        
+        objetivoTactico.setDataValue('suggest', promedio);      
+
+        console.log({
+            objetivoTactico
+        });
+        
 
         res.json({ objetivoTactico });
 
@@ -221,7 +227,8 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
                     ]
                 } : {}
             ],
-            tipoObjetivo: 'ESTRATEGICO'    
+            tipoObjetivo: 'ESTRATEGICO',
+            departamentoId: departamento?.id
         };
         
         const objetivosTacticos = await Tacticos.findAll({ 
@@ -307,7 +314,12 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
                     [
                         {'$propietario.id$': participantesIds },
                         {'$responsables.id$': participantesIds },
-                    ]: {},
+                        { 
+                            departamentoId: departamento?.id
+                        }
+                    ]: {
+                        departamentoId: departamento?.id
+                    },
                 },
 
                 showOnlyMe === "true" ? { 
@@ -315,9 +327,9 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
                         { '$propietario.id$': propietarioId },
                         { '$responsables.id$': propietarioId }
                     ]
-                } : {}
+                } : {},
             ],
-            tipoObjetivo: 'CORE'   
+            tipoObjetivo: 'CORE',
         };
 
         
@@ -337,12 +349,22 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
                     model: Usuarios,
                     as: 'propietario',
                     attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'email', 'foto'],
-                    required: false
+                    required: false,
                 }
             ],
             }
         );
-        res.json({ objetivosCore });
+
+        const tacitcosCoreIds = objetivosCore.map((core: any) => core.id)
+
+        const finalTacticos = tacitcosCoreIds.length > 0 ? await Tacticos.findAll({
+            where: {
+                id: tacitcosCoreIds,
+            },
+            include: includes
+        }): [];
+
+        res.json({ objetivosCore:finalTacticos });
         
     } catch (error) {
         console.log(error);
@@ -356,17 +378,14 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
 }
 
 export const createTactico = async (req: Request, res: Response) => {    
-    const { year, estrategicoId, slug, propietarioId } = req.body;
+    const { year, estrategicoId, slug, propietarioId, departamentoId } = req.body;    
     const { id } = req.user as UsuarioInterface
-
     const fechaInicio = dayjs(`${year}-01-01`).startOf('year').toDate();
     const fechaFin = dayjs(`${year}-12-31`).endOf('year').toDate();
         
     try {
-
-
         const usuarioId = propietarioId ? propietarioId : id
-        
+
         const usuario = await Usuarios.findOne({ where: { id: usuarioId } })
 
         let codigo = ''
@@ -379,7 +398,7 @@ export const createTactico = async (req: Request, res: Response) => {
             nombre: `Objetivo Tactico ${estrategicoId ? 'Estrategico' : 'Core'}`,
             fechaInicio,
             fechaFin,
-            departamentoId: usuario?.departamentoId
+            departamentoId: departamentoId ? departamentoId : usuario.departamentoId
         });        
 
         await updateCode({id: objetivoTactico.id})
@@ -418,9 +437,8 @@ export const createTactico = async (req: Request, res: Response) => {
 
 export const updateTactico = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso} = req.body;
+    const { nombre, codigo, meta, indicador, status, progreso, responsables , propietarioId, estrategicoId, proyeccion, tipoProgreso, departamentoId} = req.body;
 
-//  at 6am
     const fechaInicio = dayjs(proyeccion[0]).toDate()
     const fechaFin = dayjs(proyeccion[1]).toDate()    
 
@@ -431,7 +449,6 @@ export const updateTactico = async (req: Request, res: Response) => {
             return responsable;
         }
     });
-    
 
     try {
         const codigoFinal = codigo;              
@@ -450,8 +467,8 @@ export const updateTactico = async (req: Request, res: Response) => {
             progreso: progresoFinal,
             propietarioId,
             fechaInicio: fechaInicio,
-            fechaFin: fechaFin
-            
+            fechaFin: fechaFin,
+            departamentoId
         });
 
         let promedio = 0
