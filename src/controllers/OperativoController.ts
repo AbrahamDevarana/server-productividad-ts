@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento, Tacticos, ObjetivoEstrategico, Departamentos } from "../models";
 import dayjs from "dayjs";
 import { Op, Transaction } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
@@ -18,7 +18,26 @@ const includes = [
             attributes: ['propietario', 'progresoAsignado', 'progresoReal', 'extra', 'status'],
             as: 'scoreCard'
         },
-        required: false
+        required: false,
+        include: [ {
+            model: Departamentos,
+            as: 'departamento',
+            attributes: ['id', 'nombre', 'areaId'],   
+        }]
+    },
+    {
+        model: Tacticos,
+        as: 'tacticoOperativo',
+        attributes: ['id', 'estrategicoId', 'tipoObjetivo', 'departamentoId'],
+        include: [{
+            model: ObjetivoEstrategico,
+            as: 'estrategico',
+            attributes: ['id', 'perspectivaId']
+        }, {
+            model: Departamentos,
+            as: 'departamentos',
+            attributes: ['id', 'nombre', 'areaId'],
+        }]
     },
     {
         model: ResultadosClave,
@@ -41,7 +60,8 @@ const includes = [
             model: Usuarios,
             as: 'propietario',
             attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
-        }
+        },
+       
     ]
     }
 ]
@@ -49,7 +69,7 @@ const includes = [
 
 export const getOperativos = async (req:any, res: Response) => {
     
-    const { year, quarter, usuarioId } = req.query;
+    const { year, quarter, usuarioId, isCore } = req.query;
     try {
         const operativos = await ObjetivoOperativos.findAll({
             order: [['createdAt', 'ASC']],
@@ -62,6 +82,7 @@ export const getOperativos = async (req:any, res: Response) => {
                     {
                         quarter
                     },
+                    
                 ]
             }
         });
@@ -106,7 +127,7 @@ export const updateOperativo = async (req: Request, res: Response) => {
             indicador,
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
-            // tacticoId,
+            tacticoId,
         });
 
 

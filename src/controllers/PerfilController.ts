@@ -108,7 +108,7 @@ export const getEquipo = async (req: Request, res: Response) => {
     const {id} = req.params;
 
     const usuario = await Usuarios.findOne({
-        where: { id },
+        where: { id, status: 'ACTIVO' },
     })
 
     if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })

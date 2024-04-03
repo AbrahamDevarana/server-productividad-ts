@@ -30,8 +30,16 @@ export const asignarEvaluadoresEmpresa = async (req: Request, res: Response) => 
 
     for(const usuario of usuarios) {
         const { id: evaluadoId } = usuario;
-        const lider = await usuario.getLider()
-        const subordinados = await usuario.getSubordinados()
+        const lider = await usuario.getLider({
+            where: {
+                status: 'ACTIVO'
+            }
+        })
+        const subordinados = await usuario.getSubordinados({
+            where: {
+                status: 'ACTIVO'
+            }
+        })
 
 
         if(lider && lider.status){

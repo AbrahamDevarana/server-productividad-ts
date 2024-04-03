@@ -26,6 +26,28 @@ export const getUsuarios = async (req: Request, res: Response) => {
 
     const { search, status } = req.query
 
+    console.log(search, status);
+    
+    let whereClause: any = {};
+
+    if (search) {
+        whereClause = {
+            [Op.or]: [
+                // literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
+                // literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
+                // literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
+                literal('usuarios.nombre LIKE :search'),
+                literal('usuarios.apellidoPaterno LIKE :search'),
+                literal('usuarios.apellidoMaterno LIKE :search'),
+                literal('usuarios.email LIKE :search'),
+            ]
+        };
+    }
+
+    if (status === 'ACTIVO' || status === 'INACTIVO') {
+        whereClause.status = status;
+    }
+
     try {
         const usuarios = await Usuarios.findAndCountAll({
             distinct: true,
@@ -33,28 +55,29 @@ export const getUsuarios = async (req: Request, res: Response) => {
             order: [
                 ['nombre', 'ASC'],
             ],
-            where: {
-                [Op.and]: [
-                    search ? {
-                        [Op.or]: [
-                            literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
-                            literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
-                            literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
-                            literal('usuarios.nombre LIKE :search'),
-                            literal('usuarios.apellidoPaterno LIKE :search'),
-                            literal('usuarios.apellidoMaterno LIKE :search'),
-                            literal('usuarios.email LIKE :search'),
-                        ],
-                    } : {},
-                    status === 'ACTIVO' ? {
-                        status: 'ACTIVO'
-                    } : {},
-                    status === 'INACTIVO' ? {
-                        status: 'INACTIVO'
-                    } : {},
-                    status === 'ALL' ? {} : {}
-                ]
-            },
+            where: whereClause,
+            // where: {
+            //     [Op.and]: [
+            //         search ? {
+            //             [Op.or]: [
+            //                 literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
+            //                 literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
+            //                 literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
+            //                 literal('usuarios.nombre LIKE :search'),
+            //                 literal('usuarios.apellidoPaterno LIKE :search'),
+            //                 literal('usuarios.apellidoMaterno LIKE :search'),
+            //                 literal('usuarios.email LIKE :search'),
+            //             ],
+            //         } : {},
+            //         status === 'ACTIVO' ? {
+            //             status: 'ACTIVO'
+            //         } : {},
+            //         status === 'INACTIVO' ? {
+            //             status: 'INACTIVO'
+            //         } : {},
+            //         status === 'ALL' ? {} : {}
+            //     ]
+            // },
             replacements: {
                 search: `%${ search }%`
             },
