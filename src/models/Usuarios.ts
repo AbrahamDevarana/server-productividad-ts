@@ -118,6 +118,12 @@ export const Usuarios = database.define('usuarios', {
 
             usuario.slug = slugName + '-' + uuidv4().slice(0, 3);
 
+            if(!usuario.fechaIngreso){
+                usuario.fechaIngreso = new Date();
+            }
+            if(!usuario.fechaNacimiento){
+                usuario.fechaNacimiento = new Date();
+            }
             
         },
         beforeSave: async (usuario: any) => {
@@ -139,6 +145,13 @@ export const Usuarios = database.define('usuarios', {
             });
 
             usuario.slug = slugName + '-' + uuidv4().slice(0, 3);
+
+            if(!usuario.fechaIngreso){
+                usuario.fechaIngreso = new Date();
+            }
+            if(!usuario.fechaNacimiento){
+                usuario.fechaNacimiento = new Date();
+            }
         },
         afterCreate: async (usuario: any) => {
             await ConfiguracionUsuario.create({

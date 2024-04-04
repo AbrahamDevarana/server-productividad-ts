@@ -121,8 +121,6 @@ export const createObjetivoEstrategico:RequestHandler = async (req: Request, res
 
     const { id: propietarioId} = req.user as UsuarioInterface
 
-    console.log(req.body);
-    
 
     try {
         const objetivoEstrategico = await ObjetivoEstrategico.create({ propietarioId,  perspectivaId, year });

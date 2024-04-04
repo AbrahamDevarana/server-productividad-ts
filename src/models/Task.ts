@@ -101,6 +101,9 @@ const updateProgreso = async (task: TaskModel) => {
             id: task.taskeableId
         }
     });
+
+   
+    
     
     const acciones = await Task.findAll({
         where: {
@@ -117,16 +120,15 @@ const updateProgreso = async (task: TaskModel) => {
             let accionesProgreso = 0;
 
             acciones.forEach(accion => {
+                
                 if(accion.status !== 'CANCELADO'){
                     accionesProgreso += accion.progreso;
                     
                 }
                 accionesTotales++;
             })
-            
-
+        
             const progresoTotal = (accionesProgreso / accionesTotales).toFixed(2)
-
             await resultadoClave.update({ progreso: Number(progresoTotal) });
 
         }
