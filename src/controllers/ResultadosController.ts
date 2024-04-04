@@ -171,27 +171,41 @@ export const updateResultadosClave = async (req: Request, res: Response) => {
                 }
             })
 
-            let accionesCompletadas = 0;
-            let accionesTotales = 0;
+        //     let accionesCompletadas = 0;
+        //     let accionesTotales = 0;
 
-           if(tasks.length > 0){
-                tasks.forEach(task => {
-                    if(task.status === 'FINALIZADO'){
-                        accionesCompletadas++;
-                    }
-                    accionesTotales++;
-                })
+        //    if(tasks.length > 0){
+        //         tasks.forEach(task => {
+        //             if(task.status === 'FINALIZADO'){
+        //                 accionesCompletadas++;
+        //             }
+        //             accionesTotales++;
+        //         })
 
-                progresoTotal = accionesCompletadas/accionesTotales * 100
+        //         progresoTotal = accionesCompletadas/accionesTotales * 100
+        //     }
+
+            let progresioAcciones = 0;
+            tasks.forEach(task => {
+                progresioAcciones += task.progreso;
+            });
+
+            // Calculamos el promedio del progreso dividiendo el progreso total entre el número total de tareas que cumplen con la condición de estado
+            let promedioProgreso = 0;
+            if (tasks.length > 0) {
+                promedioProgreso = progresioAcciones / tasks.length;
             }
+
+            progresoTotal = promedioProgreso;            
 
         }else{
             progresoTotal = progreso;
         }
 
-        if(!progreso){
+        if(!progreso && tipoProgreso !== 'acciones'){
             progresoTotal = 0;
         }
+
 
         await resultadoClave.update({ nombre, propietarioId, operativoId, status, progreso: progresoTotal, tipoProgreso, fechaInicio, fechaFin, color });
 
