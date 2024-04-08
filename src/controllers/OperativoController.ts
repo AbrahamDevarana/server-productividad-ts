@@ -181,14 +181,13 @@ export const createOperativo = async (req: Request, res: Response) => {
     const fechaFinal = dayjs(fechaFin).toDate();
 
     try {
-
         const operativo = await ObjetivoOperativos.create({
             nombre,
             meta,
             indicador,
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
-            // tacticoId,
+            tacticoId,
             quarter,
             year
         });
