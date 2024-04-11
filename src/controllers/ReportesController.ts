@@ -10,7 +10,7 @@ const VALOR_COMPETENCIAS = 10
 
 export const obtenerRendimiento = async (req: Request, res: Response) => {
     
-    const { year, quarter, search, status } = req.query
+    const { year, quarter, search, status, statusUsuario = 'ALL'} = req.query
 
     if( !year || !quarter ) {
         return res.status(400).json({
@@ -18,7 +18,7 @@ export const obtenerRendimiento = async (req: Request, res: Response) => {
         })
     }
 
-    await obtenerUsuarios({year, quarter, search, status}).then( (usuarios) => {
+    await obtenerUsuarios({year, quarter, search, status, statusUsuario}).then( (usuarios) => {
     
         return res.json({usuarios})
     }).catch( (error) => {
@@ -116,10 +116,27 @@ export const calcularBono = (total: number) => {
 } 
 
 
-export const obtenerUsuarios = async ({year, quarter, search, status}: any) => {
+export const obtenerUsuarios = async ({year, quarter, search, status, statusUsuario}: any) => {
+    let where = {}
+    
+    let statusUsuarios = statusUsuario === '' ? ['ACTIVO', 'INACTIVO'] : [statusUsuario]
+
+    if (search) {
+        where = {
+            [Op.or]: [
+                literal('CONCAT(nombre, " ", apellidoPaterno) LIKE :search'),
+                literal('CONCAT(nombre, " ", apellidoMaterno) LIKE :search'),
+                literal('CONCAT(nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
+                literal('nombre LIKE :search'),
+                literal('apellidoPaterno LIKE :search'),
+                literal('apellidoMaterno LIKE :search'),
+            ],
+        }
+    }
+
     try {
         const usuarios = await Usuarios.findAll({
-            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+            attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId', 'status'],
             include: [{
                 model: Rendimiento,
                 as: 'rendimiento',
@@ -138,17 +155,12 @@ export const obtenerUsuarios = async ({year, quarter, search, status}: any) => {
                     [Sequelize.literal('(SELECT COUNT(*) FROM pivot_objetivo_rendimiento WHERE pivot_objetivo_rendimiento.rendimientoId = rendimiento.id)'), 'rendimientoOperativoCount']
                 ],
             }],
-            // like nombre, apellidoPaterno o apellidoMaterno
-            where: search ? {
-                [Op.or]: [
-                    literal('CONCAT(nombre, " ", apellidoPaterno) LIKE :search'),
-                    literal('CONCAT(nombre, " ", apellidoMaterno) LIKE :search'),
-                    literal('CONCAT(nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
-                    literal('nombre LIKE :search'),
-                    literal('apellidoPaterno LIKE :search'),
-                    literal('apellidoMaterno LIKE :search'),
+            where: {
+                [Op.and]: [
+                    { status: statusUsuarios },
+                    where
                 ],
-            } : {},
+            },
             replacements: {
                 search: `%${search}%`
             },

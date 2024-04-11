@@ -187,7 +187,7 @@ export const createOperativo = async (req: Request, res: Response) => {
             indicador,
             fechaInicio: fechaInicial,
             fechaFin: fechaFinal,
-            tacticoId,
+            tacticoId: tacticoId ? tacticoId : null,
             quarter,
             year
         });
