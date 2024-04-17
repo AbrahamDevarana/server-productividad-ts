@@ -31,8 +31,7 @@ export const obtenerRendimiento = async (req: Request, res: Response) => {
 
 export const generarReporteRendimiento = async (req: Request, res: Response) => {
 
-    const { year, quarter, search, status } = req.query
-
+    const { year, quarter, search, status, statusUsuario} = req.query
 
     if( !year || !quarter ) {
         return res.status(400).json({
@@ -40,7 +39,7 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
         })
     }
 
-    await obtenerUsuarios({year, quarter, search, status}).then( (usuarios) => {
+    await obtenerUsuarios({year, quarter, search, status, statusUsuario}).then( (usuarios) => {
 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Reporte de rendimiento');
@@ -50,8 +49,6 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
             const { nombre, apellidoPaterno, apellidoMaterno, rendimiento } = usuario
             const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, bono, status, countObjetivos } = rendimiento
         
-            // Header
-
             worksheet.addRow( 
                 [ 
                     nombre, 
