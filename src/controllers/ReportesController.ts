@@ -48,6 +48,8 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
         usuarios && usuarios.forEach( (usuario) => {
             const { nombre, apellidoPaterno, apellidoMaterno, rendimiento } = usuario
             const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, bono, status, countObjetivos } = rendimiento
+
+            let statusObjetivos = status === 'ABIERTO' ? 'EN EJECUCIÓN' : status
         
             worksheet.addRow( 
                 [ 
@@ -58,7 +60,9 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
                     Math.trunc(Number(resultadoObjetivos) * 100) / 100,
                     Math.trunc(Number(resultadoCompetencias) * 100) / 100,
                     Math.trunc(Number(resultadoFinal) * 100) / 100,
-                    Number(bono), status]
+                    Number(bono), 
+                    statusObjetivos
+                ]
                 )
         })
 
