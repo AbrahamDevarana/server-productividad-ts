@@ -62,9 +62,11 @@ export const ObjetivoEstrategico = database.define('obj_estrategico', {
         },
         afterCreate: async (objetivoEstrategico: any) => {
             const perspectiva = await objetivoEstrategico.getPerspectivas();
-
             // contar las estrategias de la perspectiva
-            const estrategias = await perspectiva.getObjetivosEstrategicos();
+            const estrategias = await perspectiva.getObjetivosEstrategicos({
+                where: { year: objetivoEstrategico.year }
+            });
+
             const estrategiasCount = estrategias.length;
             objetivoEstrategico.codigo = `${perspectiva.codigo}${estrategiasCount}`;
             await objetivoEstrategico.save();
