@@ -44,6 +44,7 @@ export const getObjetivosEstrategicos:RequestHandler = async (req: Request, res:
 
     try {
         const objetivosEstrategicos = await ObjetivoEstrategico.findAll({
+            include: includeProps,
             where: {
                 year,
                 // si no se envia perspectivaId, se obtienen todos los objetivos estrategicos
