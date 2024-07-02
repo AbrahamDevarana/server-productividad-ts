@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ConfiguracionUsuario, Departamentos, Direccion, GaleriaUsuarios, ObjetivoOperativos, Proyectos, ResultadosClave, Usuarios } from "../models";
 import { Op } from "sequelize";
+import { Creditos } from "../models/Creditos";
 
 
 
@@ -22,6 +23,7 @@ const getIncludes = (year: any, quarter: any) => {
         },
         { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
         { model: GaleriaUsuarios, as: 'galeria'},
+        { model: Creditos, as: 'creditos'},
         { model: ConfiguracionUsuario, as: 'configuracion'},
     ]
 }
@@ -39,6 +41,7 @@ const perfilInclude = [
     },
     { model: Proyectos, as: 'proyectos', through: { attributes: [] } },
     { model: GaleriaUsuarios, as: 'galeria'},
+    { model: Creditos, as: 'creditos'},
     { model: ConfiguracionUsuario, as: 'configuracion'},
 ]
 

@@ -15,6 +15,11 @@ export default async (req: Request, res: Response, next: NextFunction) => {
               return res.status(401).json({ msg: 'Token no valido' });
             } else {                
                 if (decoded) {
+
+                    if(decoded.id === 'system'){
+                        return next();
+                    }
+
                     const usuario = await Usuarios.findOne({ where: { id: decoded.id } });
                     if (!usuario) {
                         return res.status(401).json({ message: 'No has iniciado sesión 1' })
