@@ -13,6 +13,8 @@ import quarterOfYear from 'dayjs/plugin/quarterOfYear'
 import tz from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 
+import './jobs/CreditosJob';
+
 dayjs.extend(tz)
 dayjs.extend(utc)
 dayjs.tz.setDefault("America/Mexico_City")
@@ -91,10 +93,13 @@ process.on('unhandledRejection', (err) => {
 const PORT = process.env.PORT || 5000 as unknown as number;
 const HOST = process.env.HOST || "127.0.0.1" as unknown as string;
 
+
+
+
 app.set('port', PORT);
 
 const server =  app.listen(app.get('port'), HOST, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on http://${HOST}:${PORT}`);
     console.log(server.address())
 });
 

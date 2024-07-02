@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import slugify from "slugify";
 import ConfiguracionUsuario from "./custom/ConfiguracionUsuario";
+import { Creditos } from "./Creditos";
 
 
 export const Usuarios = database.define('usuarios', {
@@ -164,7 +165,16 @@ export const Usuarios = database.define('usuarios', {
                 notificacionesEmailTrimestral: false,
                 portadaPerfil: '',
             });
-        },            
+
+            const transaction = await database.transaction();
+            try {
+                await Creditos.create({ usuarioId: usuario.id, saldo: 0 }, { transaction });
+                await transaction.commit();
+            } catch (error) {
+                await transaction.rollback();
+                throw error;
+            }
+        },
     },
     defaultScope: {
         attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt' , 'googleId'] }

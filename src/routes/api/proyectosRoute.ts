@@ -9,7 +9,7 @@ const router = Router();
 
 // API url: /proyectos
 
-router.get('/', checkAccess('ver proyectos') ,getProyectos);
+router.get('/', getProyectos);
 router.get('/:id', getProyecto);
 router.post('/', createProyecto);
 

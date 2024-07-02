@@ -37,6 +37,7 @@ import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
 import { HistorialPerformance } from './HistorialPerformance';
 import { Task } from './Task';
+import { Creditos } from './Creditos';
 
 
 
@@ -55,6 +56,8 @@ Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', for
 Usuarios.hasMany(GaleriaUsuarios, { as: 'galeria', foreignKey: 'usuarioId' });
 Usuarios.hasOne(ConfiguracionUsuario, { as: 'configuracion', foreignKey: 'usuarioId' });
 Usuarios.belongsTo(Roles, { as: 'rol', foreignKey: 'rolId' });
+
+Usuarios.hasOne(Creditos, { as: 'creditos', foreignKey: 'usuarioId' });
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -248,6 +251,7 @@ export {
     Tacticos,
     ObjetivoOperativos,
     ResultadosClave,
+    Creditos,
 
     Tareas,
     Proyectos,
