@@ -35,6 +35,8 @@ export const getProyectos = async (req: Request, res: Response) => {
             }],
         });               
 
+        console.log(proyectos);
+        
         res.json({ proyectos });
 
     } catch (error) {
