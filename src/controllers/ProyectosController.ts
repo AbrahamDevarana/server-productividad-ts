@@ -33,10 +33,7 @@ export const getProyectos = async (req: Request, res: Response) => {
                 },
                 attributes: userSingleAttr,
             }],
-        });               
-
-        console.log(proyectos);
-        
+        });
         res.json({ proyectos });
 
     } catch (error) {
@@ -148,7 +145,6 @@ export const updateProyecto = async (req: Request, res: Response) => {
         const { titulo, descripcion, icono, fechaInicio, fechaFin, status } = fields
         
         const { id } = req.params;
-
         const participantes = fields.participantes.toString().split(',');
             
         const [galeria] = Object.values(files) as any

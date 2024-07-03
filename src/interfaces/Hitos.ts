@@ -5,5 +5,7 @@ export interface HitosProps {
     fechaInicio: Date;
     fechaFin: Date;
     status: number;
+    color: string;
+    progreso?: number;
     proyectoId: string;
 }

@@ -36,9 +36,30 @@ export const getTask = async (req: Request, res: Response) => {
     }
 }
 
+export const getTasks = async (req: Request, res: Response) => {
+    const { taskeableId } = req.query as { taskeableId: string};
+
+    try {
+        const tasks = await Task.findAll({
+            where: {
+                taskeableId
+            },
+            include: includes
+        });
+
+        res.json({ tasks });
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
 export const createTask = async (req: Request, res: Response) => {
 
-    const { nombre, taskeableId, quarter } = req.body;
+    const { nombre, taskeableId, quarter, taskeableType } = req.body
     const {id: propietarioId} = req.user as UsuarioInterface
 
     try {
@@ -51,7 +72,7 @@ export const createTask = async (req: Request, res: Response) => {
                 status: 'SIN_INICIAR',
                 prioridad: 'Normal',
                 progreso: 0,
-                taskeableType: 'RESULTADO_CLAVE',
+                taskeableType: taskeableType 
             });
 
             await task.reload({

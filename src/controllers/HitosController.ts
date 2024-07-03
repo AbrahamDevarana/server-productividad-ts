@@ -1,11 +1,35 @@
 
 import { Request, Response } from "express";
-import { Hitos, Tareas, Usuarios } from "../models";
+import { Hitos, Task, Usuarios } from "../models";
 import { HitosProps, UsuarioInterface } from "../interfaces";
 import { io } from "../services/socketService";
 
 
 const userSingleAttr = ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'];
+
+const getInclues = ({id} : any) => {
+    return [
+        {
+            model: Usuarios,
+            attributes: ['id'],
+            through: {
+                attributes: ['orden'],
+            },
+            as: 'ordenHito',
+        }, {
+            model: Task,
+            as: 'task',
+            attributes: ['id', 'nombre', 'descripcion', 'prioridad', 'propietarioId', 'fechaFin', 'status', 'taskeableId', 'progreso'],
+            include: [
+            {
+                model: Usuarios,
+                as: 'propietario',
+                attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+            }
+        ]
+        }
+    ]
+}
 
 export const getHitos = async (req: Request, res: Response) => {
 
@@ -22,34 +46,9 @@ export const getHitos = async (req: Request, res: Response) => {
     
         const hitos = await Hitos.findAll({
         where,
-        include: [{
-                model: Usuarios,
-                attributes: ['id'],
-                through: {
-                    attributes: ['orden'],
-                },
-                as: 'ordenHito',
-                where: { id },
-            }, {
-                model: Tareas,
-                as: 'tareas',
-                include: [{
-                    model: Usuarios,
-                    attributes : userSingleAttr,
-                    as: 'usuariosTarea',
-                    through: {
-                        attributes: []
-                    },
-                },
-                {
-                    model: Usuarios,
-                    attributes : userSingleAttr,
-                    as: 'propietario',
-                }]
-            }]
+        include: getInclues({id})
         });
         
-
         res.json({ hitos });
 
     } catch (error) {
@@ -63,35 +62,11 @@ export const getHitos = async (req: Request, res: Response) => {
 export const createHito = async (req: Request, res: Response) => {
 
     const { proyectoId } = req.body as HitosProps;
-
     try {
         const hito = await Hitos.create({proyectoId});
 
         await hito.reload({
-            include: [{
-                model: Usuarios,
-                attributes: ['id'],
-                through: {
-                    attributes: ['orden'],
-                },
-                as: 'ordenHito',
-            }, {
-                model: Tareas,
-                as: 'tareas',
-                include: [{
-                    model: Usuarios,
-                    attributes: userSingleAttr,
-                    as: 'usuariosTarea',
-                    through: {
-                        attributes: []
-                    },
-                },
-                {
-                    model: Usuarios,
-                    attributes: userSingleAttr,
-                    as: 'propietario',
-                }]
-            }]
+            include: getInclues({id: hito.id})
         });
 
         // Obtener array de UsuariosTarea
@@ -109,53 +84,28 @@ export const createHito = async (req: Request, res: Response) => {
 export const updateHito = async (req: Request, res: Response) => {
     
         const { id } = req.params;
-        const { titulo, descripcion, fechaInicio, fechaFin, status, proyectoId } = req.body as HitosProps;
-       
-
-        // const where = { id };
+        const { titulo, descripcion, fechaInicio, fechaFin, status, proyectoId, color } = req.body as HitosProps;
         try {                      
 
             const hito = await Hitos.findByPk(id);
 
             await hito.update({
-                titulo,
-                descripcion,
-                fechaInicio,
-                fechaFin,
-                status,
-                proyectoId,
+                titulo: titulo ? titulo : hito.titulo,
+                descripcion: descripcion ? descripcion : hito.descripcion,
+                fechaInicio: fechaInicio? fechaInicio : hito.fechaInicio,
+                fechaFin: fechaFin ? fechaFin : hito.fechaFin,
+                status: status ? status : hito.status,
+                proyectoId: proyectoId ? proyectoId : hito.proyectoId,
+                color: color ? color : hito.color,
             });
 
             await hito.reload({
-                include: [{
-                    model: Usuarios,
-                    attributes: ['id'],
-                    through: {
-                        attributes: ['orden'],
-                    },
-                    as: 'ordenHito',
-                }, {
-                    model: Tareas,
-                    as: 'tareas',
-                    include: [{
-                        model: Usuarios,
-                        attributes: userSingleAttr,
-                        as: 'usuariosTarea',
-                        through: {
-                            attributes: []
-                        },
-                    },
-                    {
-                        model: Usuarios,
-                        attributes: userSingleAttr,
-                        as: 'propietario',
-                    }]
-                }]
+                include: getInclues({id})
             });
 
-            const [usuarioObject] = hito.tareas.map((tarea: any) => tarea.usuariosTarea)
-            const usuariosTarea = usuarioObject.map((usuario: any) => usuario.id);
-            io.to(usuariosTarea).emit('hitos:updated', hito);
+            // const [usuarioObject] = hito.task?.map((task: any) => task.usuariosTarea)
+            // const usuariosTarea = usuarioObject?.map((usuario: any) => usuario.id);
+            // io.to(usuariosTarea).emit('hitos:updated', hito);
 
             res.json({ hito });
     

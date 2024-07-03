@@ -119,12 +119,12 @@ Proyectos.belongsToMany(Usuarios, { through: PivotProyectoUsuarios, as: 'usuario
 
 // Hitos
 Hitos.belongsTo(Proyectos, { as: 'hitosProyecto', foreignKey: 'proyectoId', onDelete: 'CASCADE' });
-Hitos.hasMany(Tareas, { as: 'tareas', foreignKey: 'hitoId' });
+// Hitos.hasMany(Tareas, { as: 'tareas', foreignKey: 'hitoId' });
 Hitos.belongsToMany(Usuarios, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'hitoId' })
 
-// Tareas 
-Tareas.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-Tareas.belongsTo(Hitos, { as: 'tareas', foreignKey: 'hitoId' });
+// // Tareas 
+// Tareas.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+// Tareas.belongsTo(Hitos, { as: 'tareas', foreignKey: 'hitoId' });
 
 
 Comentarios.belongsTo(Usuarios, { as: 'autor', foreignKey: 'autorId' });
@@ -163,8 +163,8 @@ ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', throug
 Usuarios.belongsToMany(ObjetivoOperativos, { as: 'objetivosOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
 
 
-Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });
-Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
+// Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });
+// Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 
 Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos', foreignKey: 'rolId' });
@@ -210,12 +210,24 @@ ResultadosClave.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constrain
     }
 });
 
+Hitos.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constraints: false,
+    scope: {
+        taskeableType: 'HITO',
+    }
+});
+
 
 Task.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 
 Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeableId', constraints: false,
     scope: {
         taskeableType: 'RESULTADO_CLAVE',
+    }
+});
+
+Task.belongsTo(Hitos, { as: 'taskHito', foreignKey: 'taskeableId', constraints: false,
+    scope: {
+        taskeableType: 'HITO',
     }
 });
 
