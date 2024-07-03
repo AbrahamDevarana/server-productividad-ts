@@ -29,6 +29,10 @@ export const Hitos = database.define('hitos', {
         type: Sequelize.UUID,
         allowNull: false
     },
+    color: {
+        type: Sequelize.STRING(7),
+        defaultValue: '#656A76'
+    },
     status: {
         type: Sequelize.STRING(12),
         defaultValue: 'SIN_INICIAR'
@@ -116,6 +120,6 @@ export const Hitos = database.define('hitos', {
 
     },
     defaultScope: {
-        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+        attributes: { exclude: ['updatedAt', 'deletedAt'] }
     },
 });

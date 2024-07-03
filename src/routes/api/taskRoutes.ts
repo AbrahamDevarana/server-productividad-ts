@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { validarCampos } from '../../middleware/validateFields';
-import { createTask, deleteTask, getTask, updateTask} from '../../controllers/TaskController';
+import { createTask, deleteTask, getTask, updateTask, getTasks} from '../../controllers/TaskController';
 const router = Router();
 
 
-router.get('/', getTask)
+router.get('/', getTasks)
+
+router.get('/:id', getTask)
 
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
