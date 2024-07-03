@@ -9,7 +9,9 @@ const router = Router();
 
 
 router.get('/', passport.authenticate('google', {
-    scope: ['profile', 'email']
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+    accessType: 'online'
 }));
 
 router.get('/callback', passport.authenticate('google', {

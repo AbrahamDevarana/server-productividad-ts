@@ -68,4 +68,4 @@ async function inicializarCreditos() {
     }
 }
 
-// inicializarCreditos();
+inicializarCreditos();
