@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProyecto, getProyecto, getProyectos, updateProyecto, } from '../../controllers/ProyectosController'
+import { createProyecto, getProyecto, getProyectos, updateProyecto, deleteProyecto} from '../../controllers/ProyectosController'
 import { checkAccess } from '../../middleware/checkAccess';
 
 const router = Router();
@@ -11,6 +11,9 @@ router.get('/:id', getProyecto);
 router.post('/', checkAccess('crear proyectos') ,createProyecto);
 
 router.put('/:id', updateProyecto);
+
+router.delete('/:id', checkAccess('eliminar proyectos'), deleteProyecto)
+
 
 
 

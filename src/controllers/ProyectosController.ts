@@ -211,4 +211,31 @@ export const updateProyecto = async (req: Request, res: Response) => {
 
 }
 
+export const deleteProyecto = async (req: Request, res: Response) => {
+                
+    const { id } = req.params;
+
+    try {
+        const proyecto = await Proyectos.findByPk(id);
+
+        if (proyecto) {
+            await proyecto.destroy();
+          
+            io.to(proyecto.usuariosProyecto.map((user: any) => user.id)).emit('proyecto:deleted', proyecto);
+
+            res.json({ proyecto });
+        }else{
+            res.status(400).json({
+                msg: 'No existe el proyecto'
+            });
+        }
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}   
+
 
