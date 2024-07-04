@@ -303,17 +303,18 @@ export const getRanking = async (req: Request, res: Response) => {
                     },
                 },
             ],
+            where: {
+                status: 'ACTIVO'
+            }
         });
-        
-    
-        const rankingUsuarios = usuarios.sort((a: any, b: any) => {
-            return b.rendimiento[0]?.resultadoFinal - a.rendimiento[0]?.resultadoFinal;
-        }).splice(0, 10);
 
-        const rankingCompetencias = usuarios.sort((a: any, b: any) => {
-            return b.rendimiento[0]?.resultadoCompetencias - a.rendimiento[0]?.resultadoCompetencias;
-        }).splice(0, 10);
-    
+        const rankingCompetencias = usuarios.filter((usuario: any) => usuario.rendimiento[0]?.resultadoCompetencias > 1)
+        .sort((a: any, b: any) => b.rendimiento[0]?.resultadoCompetencias - a.rendimiento[0]?.resultadoCompetencias)
+        .map((usuario: any) => usuario).splice(0, 10);
+
+        const rankingUsuarios = usuarios.filter((usuario: any) => usuario.rendimiento[0]?.resultadoFinal > 10)
+            .sort((a: any, b: any) => b.rendimiento[0]?.resultadoFinal - a.rendimiento[0]?.resultadoFinal)
+            .map((usuario: any) => usuario).splice(0, 10);
 
         res.json({ 
             rankingUsuarios,
