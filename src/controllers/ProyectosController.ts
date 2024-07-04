@@ -32,8 +32,13 @@ export const getProyectos = async (req: Request, res: Response) => {
                     attributes: []
                 },
                 attributes: userSingleAttr,
+            },{
+                model: Usuarios,
+                as: 'propietario',
+                attributes: userSingleAttr,
             }],
         });
+
         res.json({ proyectos });
 
     } catch (error) {
