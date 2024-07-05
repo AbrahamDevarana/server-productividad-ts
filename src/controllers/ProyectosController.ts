@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Op } from "sequelize";
-import { Proyectos, Usuarios} from "../models";
+import { Hitos, Proyectos, Task, Usuarios} from "../models";
 import { UsuarioInterface } from "../interfaces";
 import formidable from "formidable";
 import { uploadFile, deleteFile } from "../helpers/fileManagment";
@@ -119,6 +119,44 @@ export const createProyecto = async (req: Request, res: Response) => {
                 }],
             });
 
+            // Crear un hito por defecto
+
+            if(proyecto){
+                const hito = await Hitos.create({
+                    titulo: 'Nueva Sección',
+                    descripcion: 'Descripción de la sección',
+                    fechaInicio: proyecto.fechaInicio,
+                    fechaFin: proyecto.fechaFin,
+                    proyectoId: proyecto.id
+                });
+
+                if(!hito){
+                    res.status(400).json({
+                        msg: 'No se pudo crear el hito'
+                    });
+                }
+
+                const actividades = ['Actividad 1', 'Actividad 2']
+
+                if(hito){
+                    for(const actividad of actividades){
+                        await Task.create({
+                            nombre: actividad,
+                            taskeableId: hito.id,
+                            taskeableType: 'HITO',
+                            prioridad: 'Normal',
+                            status: 'SIN_INICIAR',
+                            progreso: 0,
+                            propietarioId: id,
+                            fechaFin: proyecto.fechaFin
+                        });
+                    }
+                }
+
+
+                io.to(participantes).emit('hito:created', hito);
+            }
+
 
             io.to(participantes).emit('proyecto:created', proyecto);
             res.json({ proyecto });
@@ -221,7 +259,7 @@ export const deleteProyecto = async (req: Request, res: Response) => {
         if (proyecto) {
             await proyecto.destroy();
           
-            io.to(proyecto.usuariosProyecto.map((user: any) => user.id)).emit('proyecto:deleted', proyecto);
+            // io.to(proyecto.usuariosProyecto.map((user: any) => user.id)).emit('proyecto:deleted', proyecto);
 
             res.json({ proyecto });
         }else{
