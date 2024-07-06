@@ -9,6 +9,12 @@ const includes = [
         model: Usuarios,
         as: 'propietario',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+    },
+    {
+        model: Usuarios,
+        as: 'coResponsables',
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+    
     }
 ]
 
@@ -91,7 +97,7 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso } = req.body;
+    const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso, coResponsables, created } = req.body;
 
     try {
         const task = await Task.findByPk(id);
@@ -143,6 +149,11 @@ export const updateTask = async (req: Request, res: Response) => {
         }
 
 
+        // CoResponsables
+        if(coResponsables){
+            task.setCoResponsables(coResponsables);
+        }
+
         await task.update({
             nombre,
             propietarioId,
@@ -150,8 +161,10 @@ export const updateTask = async (req: Request, res: Response) => {
             fechaFin,
             progreso: finalProgreso,
             status: finalStatus,
-            prioridad
+            prioridad,
+            created: created ? created : task.created
         });
+
 
         
 
