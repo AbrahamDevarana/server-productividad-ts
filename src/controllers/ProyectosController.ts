@@ -58,11 +58,18 @@ export const getProyecto = async (req: Request, res: Response) => {
     
             const proyecto = await Proyectos.findOne({
                 where,
-                include: [{   
-                    model: Usuarios,
-                    as: 'usuariosProyecto',
-                    attributes: userSingleAttr,
-                }],
+                include: [
+                    {
+                        model: Usuarios,
+                        as: 'usuariosProyecto',
+                        attributes: userSingleAttr,
+                    },
+                    {
+                        model: Usuarios,
+                        as: 'propietario',
+                        attributes: userSingleAttr,
+                    }
+                ],
             });       
 
             res.json({ proyecto });
