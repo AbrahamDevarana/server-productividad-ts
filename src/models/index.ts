@@ -38,6 +38,7 @@ import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, Evaluac
 import { HistorialPerformance } from './HistorialPerformance';
 import { Task } from './Task';
 import { Creditos } from './Creditos';
+import { PivotCoRespTask } from './pivot/PivotCoResponsablesTask';
 
 
 
@@ -58,6 +59,8 @@ Usuarios.hasOne(ConfiguracionUsuario, { as: 'configuracion', foreignKey: 'usuari
 Usuarios.belongsTo(Roles, { as: 'rol', foreignKey: 'rolId' });
 
 Usuarios.hasOne(Creditos, { as: 'creditos', foreignKey: 'usuarioId' });
+
+Usuarios.belongsToMany(Task, { through: PivotCoRespTask, as: 'coResponsables', foreignKey: 'coResponsableId' });
 
 // Áreas
 Areas.hasMany(Areas, { as: 'subAreas', foreignKey: 'parentId' });
@@ -218,6 +221,8 @@ Hitos.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constraints: false,
 
 
 Task.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+
+Task.belongsToMany(Usuarios, { through: PivotCoRespTask, as: 'coResponsables', foreignKey: 'taskId' });
 
 Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeableId', constraints: false,
     scope: {

@@ -15,6 +15,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     progreso: number;
     propietarioId: string;
     fechaFin: Date;
+    created?: Date;
     createdAt?: Date;
     updatedAt?: Date;
 
@@ -22,6 +23,9 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     getTaskResultadoClave: () => any;
     setTaskResultadoClave: (resultadoClave: any) => void;
     createTaskResultadoClave: (resultadoClave: any) => void;
+    addCoResponsables: (coResponsable: any) => void;
+    removeCoResponsables: (coResponsable: any) => void;
+    setCoResponsables: (coResponsables: any) => void;
 
 }
 
@@ -64,6 +68,10 @@ export const Task = database.define('tasks', {
     taskeableType: {
         type: Sequelize.TEXT,
     },
+    created:{
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -76,6 +84,17 @@ export const Task = database.define('tasks', {
     paranoid: true,
     timestamps: true,
     hooks: {
+        afterFind: async (task: TaskModel) => {
+            // if(Array.isArray(task)){
+            //    console.log('tasks', task[0].__proto__);
+               
+            // }else{
+            //     // @ts-ignore
+            //     console.log('task', task.__proto__);
+                
+            // }
+        },
+            
         afterUpdate: async (task: TaskModel) => {
             await updateProgreso(task);
         },
