@@ -99,6 +99,10 @@ export const updateTask = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso, coResponsables, created } = req.body;
 
+    
+    const coResponsablesIds = Array.isArray(coResponsables) ? coResponsables.map((coResponsable: any) => coResponsable.id) : coResponsables;
+
+
     try {
         const task = await Task.findByPk(id);
 
@@ -150,8 +154,8 @@ export const updateTask = async (req: Request, res: Response) => {
 
 
         // CoResponsables
-        if(coResponsables){
-            task.setCoResponsables(coResponsables);
+        if(coResponsablesIds){
+            task.setCoResponsables(coResponsablesIds);
         }
 
         await task.update({
@@ -165,8 +169,6 @@ export const updateTask = async (req: Request, res: Response) => {
             created: created ? created : task.created
         });
 
-
-        
 
         await task.reload({
             include: includes
