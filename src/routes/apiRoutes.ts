@@ -25,6 +25,7 @@ import evaluacionRoutes from "./api/evaluacionRoutes";
 import historialPerformanceRoutes from "./api/historialPerformanceRoutes";
 import gestionObjetivosRoutes from "./api/gestionObjetivosRoutes";
 import creditosRoutes from "./api/creditosRoutes";
+import minutasRoutes from "./api/minutasRoutes";
 
 
 const router = Router();
@@ -53,6 +54,7 @@ router.use('/reportes', reportesRoutes)
 router.use('/roles', rolesRoutes)
 router.use('/gestion-objetivos', gestionObjetivosRoutes)
 router.use('/creditos', creditosRoutes)
+router.use('/minutas', minutasRoutes)
 
 router.use('/galeria', galeriaRoutes)
 

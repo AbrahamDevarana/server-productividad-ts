@@ -39,6 +39,8 @@ import { HistorialPerformance } from './HistorialPerformance';
 import { Task } from './Task';
 import { Creditos } from './Creditos';
 import { PivotCoRespTask } from './pivot/PivotCoResponsablesTask';
+import { Minuta } from './Minutas';
+import {MinutasHistory} from './history/MinutasHistory';
 
 
 
@@ -258,6 +260,20 @@ Rendimiento.belongsToMany(ObjetivoOperativos, {
     foreignKey: 'rendimientoId'
 });
 
+Minuta.belongsTo(Usuarios, { as: 'autor', foreignKey: 'authorId' });
+
+Minuta.belongsTo(Proyectos, { as: 'proyecto', foreignKey: 'minuteableId', constraints: false,
+    scope: {
+        minuteableType: 'PROYECTO',
+    }
+});
+
+Proyectos.hasMany(Minuta, { as: 'minutas', foreignKey: 'minuteableId', constraints: false,
+    scope: {
+        minuteableType: 'PROYECTO',
+    }
+});
+
 export {
     Usuarios,
     Areas,
@@ -269,6 +285,8 @@ export {
     ObjetivoOperativos,
     ResultadosClave,
     Creditos,
+    Minuta,
+    MinutasHistory,
 
     Tareas,
     Proyectos,
