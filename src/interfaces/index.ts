@@ -6,3 +6,4 @@ export * from './Hitos';
 export * from './Tarea';
 export * from './Proyectos';
 export * from './Evaluacion'
+export * from './Minutas';
