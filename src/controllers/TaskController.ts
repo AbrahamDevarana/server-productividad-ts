@@ -100,7 +100,7 @@ export const updateTask = async (req: Request, res: Response) => {
     const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso, coResponsables, created } = req.body;
 
     
-    const coResponsablesIds = coResponsables.map((responsable: any) => {
+    const coResponsablesIds = coResponsables?.map((responsable: any) => {
         if (typeof responsable === 'object') {
             return responsable.id;
         } else {
