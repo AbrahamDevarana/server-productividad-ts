@@ -49,16 +49,13 @@ export const getMinuta = async (req: Request, res: Response) => {
 }
 
 export const createMinuta = async (req: Request, res: Response) => {
-    const { minuteableId, titulo, descripcion, fecha, minuteableType } = req.body as MinutasProps
+    const { minuteableId, minuteableType } = req.body as MinutasProps
     const {id} = req.user as {id: string};
     try {
         const minuta = await Minuta.create({ 
             minuteableId,
-            titulo,
-            descripcion,
             authorId: id,
-            fecha,
-            minuteableType,
+            minuteableType
          });
 
         // io.emit('minuta', minuta);
@@ -76,7 +73,7 @@ export const createMinuta = async (req: Request, res: Response) => {
 export const updateMinuta = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { titulo, descripcion, fecha, minuteableId, minuteableType } = req.body as MinutasProps;
-
+    
     try {
         const minuta = await Minuta.findByPk(id);
 

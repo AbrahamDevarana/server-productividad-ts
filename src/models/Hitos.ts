@@ -11,7 +11,7 @@ export const Hitos = database.define('hitos', {
     titulo: {
         type: Sequelize.STRING,
         allowNull: true,
-        defaultValue: 'Nuevo Hito...'
+        defaultValue: 'Nueva Sección...'
     },
     descripcion: {
         type: Sequelize.TEXT,

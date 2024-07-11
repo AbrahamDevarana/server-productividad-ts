@@ -100,8 +100,13 @@ export const updateTask = async (req: Request, res: Response) => {
     const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso, coResponsables, created } = req.body;
 
     
-    const coResponsablesIds = Array.isArray(coResponsables) ? coResponsables.map((coResponsable: any) => coResponsable.id) : coResponsables;
-
+    const coResponsablesIds = coResponsables.map((responsable: any) => {
+        if (typeof responsable === 'object') {
+            return responsable.id;
+        } else {
+            return responsable;
+        }
+    });    
 
     try {
         const task = await Task.findByPk(id);

@@ -6,9 +6,9 @@ import dayjs from "dayjs";
 export interface MinutaModel extends Model<InferAttributes<MinutaModel>, InferCreationAttributes<MinutaModel>> {
 
     id?: number;
-    titulo: string;
-    descripcion: string;
-    fecha: Date;
+    titulo?: string;
+    descripcion?: string;
+    fecha?: Date;
     minuteableId: string;
     minuteableType: 'PROYECTO' | 'OBJETIVO_OPERATIVO'
     authorId: string;
@@ -26,15 +26,14 @@ export const Minuta = database.define<MinutaModel>('minutas', {
     },
     titulo: {
         type: Sequelize.STRING,
-        allowNull: false
     },
     descripcion: {
         type: Sequelize.TEXT,
-        allowNull: false
     },
     fecha: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
+        defaultValue: Sequelize.NOW
     },
     minuteableId: {
         type: Sequelize.UUID,
@@ -68,29 +67,29 @@ export const Minuta = database.define<MinutaModel>('minutas', {
             // minuta.updatedAt = new Date();
             // await minuta.save();
 
-            const changedFields = minuta.changed() as (keyof MinutaModel)[] || [];
+            // const changedFields = minuta.changed() as (keyof MinutaModel)[] || [];
 
-            for (const field of changedFields) {
+            // for (const field of changedFields) {
 
-                let previousValue = minuta.previous(field as MinutaFields);
-                let finalValue = minuta.get(field as MinutaFields);
+            //     let previousValue = minuta.previous(field as MinutaFields);
+            //     let finalValue = minuta.get(field as MinutaFields);
 
-                if(field === 'fecha') {
-                    continue;
-                    previousValue = dayjs(previousValue).format('YYYY-MM-DD HH:mm:ss');
-                    finalValue = dayjs(finalValue).format('YYYY-MM-DD HH:mm:ss');
-                }
+            //     if(field === 'fecha') {
+            //         continue;
+            //         previousValue = dayjs(previousValue).format('YYYY-MM-DD HH:mm:ss');
+            //         finalValue = dayjs(finalValue).format('YYYY-MM-DD HH:mm:ss');
+            //     }
 
                 
-                await MinutasHistory.create({
-                    minutaId: minuta.id!,
-                    field,
-                    initialValue: previousValue as string,
-                    finalValue: finalValue as string,
-                    userId: minuta.authorId,
-                    date: new Date()
-                });
-            }
+            //     await MinutasHistory.create({
+            //         minutaId: minuta.id!,
+            //         field,
+            //         initialValue: previousValue as string,
+            //         finalValue: finalValue as string,
+            //         userId: minuta.authorId,
+            //         date: new Date()
+            //     });
+            // }
         }
     },
     defaultScope: {
