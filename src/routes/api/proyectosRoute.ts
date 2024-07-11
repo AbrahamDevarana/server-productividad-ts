@@ -6,13 +6,13 @@ const router = Router();
 
 // API url: /proyectos
 
-router.get('/', checkAccess('ver proyectos'), getProyectos);
+router.get('/', getProyectos);
 router.get('/:id', getProyecto);
-router.post('/', checkAccess('crear proyectos') ,createProyecto);
+router.post('/' ,createProyecto);
 
 router.put('/:id', updateProyecto);
 
-router.delete('/:id', checkAccess('eliminar proyectos'), deleteProyecto)
+router.delete('/:id', deleteProyecto)
 
 
 
