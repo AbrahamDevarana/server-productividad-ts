@@ -10,8 +10,8 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     descripcion?: string;
     taskeableId: string;
     taskeableType: 'RESULTADO_CLAVE' | 'HITO'
-    prioridad: 'Alta' | 'Normal' | 'Baja';
-    status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADO' | 'CANCELADO'
+    prioridad: 'ALTA' | 'MEDIA' | 'BAJA' | 'CRÍTICA'
+    status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADO' | 'CANCELADO' | 'DETENIDO' | 'RETRASADO';
     progreso: number;
     propietarioId: string;
     fechaFin: Date;
@@ -43,11 +43,11 @@ export const Task = database.define('tasks', {
         type: Sequelize.STRING,
     },
     prioridad: {
-        type: Sequelize.STRING(12),
-        defaultValue: 'NORMAL'
+        type: Sequelize.ENUM('ALTA', 'MEDIA', 'BAJA', 'CRÍTICA'),
+        defaultValue: 'MEDIA'
     },
     status: {
-        type: Sequelize.STRING(12),
+        type: Sequelize.ENUM('SIN_INICIAR', 'EN_PROCESO', 'FINALIZADO', 'CANCELADO', 'DETENIDO', 'RETRASADO'),
         defaultValue: 'SIN_INICIAR'
     },
     progreso: {
