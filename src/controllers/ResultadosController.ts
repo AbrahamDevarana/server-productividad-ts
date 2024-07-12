@@ -112,7 +112,7 @@ export const createResultadosClave = async (req: Request, res: Response) => {
                         propietarioId,
                         taskeableId: resultadoClave.id,
                         taskeableType: 'RESULTADO_CLAVE',
-                        prioridad: 'Normal',
+                        prioridad: 'MEDIA',
                         status: 'SIN_INICIAR',
                         progreso: 0,
                         fechaFin: resultadoClave.fechaFin,

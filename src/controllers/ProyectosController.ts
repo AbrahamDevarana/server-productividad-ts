@@ -151,7 +151,7 @@ export const createProyecto = async (req: Request, res: Response) => {
                             nombre: actividad,
                             taskeableId: hito.id,
                             taskeableType: 'HITO',
-                            prioridad: 'Normal',
+                            prioridad: 'MEDIA',
                             status: 'SIN_INICIAR',
                             progreso: 0,
                             propietarioId: id,
