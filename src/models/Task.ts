@@ -15,6 +15,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     progreso: number;
     propietarioId: string;
     fechaFin: Date;
+    visible?: boolean;
     created?: Date;
     createdAt?: Date;
     updatedAt?: Date;
@@ -67,6 +68,10 @@ export const Task = database.define('tasks', {
     },
     taskeableType: {
         type: Sequelize.TEXT,
+    },
+    visible: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
     },
     created:{
         type: Sequelize.DATE,

@@ -97,7 +97,7 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, propietarioId, taskeableId, status, fechaFin, prioridad, progreso, coResponsables, created } = req.body;
+    const { nombre, propietarioId, taskeableId, status, fechaFin, visible, prioridad, progreso, coResponsables, created } = req.body;
 
     
     const coResponsablesIds = coResponsables?.map((responsable: any) => {
@@ -168,6 +168,7 @@ export const updateTask = async (req: Request, res: Response) => {
             propietarioId,
             taskeableId,
             fechaFin,
+            visible,
             progreso: finalProgreso,
             status: finalStatus,
             prioridad,
