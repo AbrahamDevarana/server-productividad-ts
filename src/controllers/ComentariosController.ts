@@ -67,4 +67,31 @@ export const createComentario = async (req: Request, res: Response) => {
                 msg: 'Hable con el administrador'
             });
         }
+}
+
+export const deleteComentario = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        
+        const comentario = await Comentarios.findByPk(id);
+
+        if (!comentario) {
+            return res.status(404).json({
+                msg: 'No existe un comentario'
+            });
+        }
+
+        await comentario.destroy();
+        
+
+        res.json({comentario});
     }
+    catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}

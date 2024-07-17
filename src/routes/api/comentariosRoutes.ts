@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createComentario, getComentarios } from '../../controllers/ComentariosController'
+import { createComentario, getComentarios, deleteComentario } from '../../controllers/ComentariosController'
 
 const router = Router();
 
@@ -8,5 +8,7 @@ const router = Router();
 router.get('/', getComentarios);
 
 router.post('/', createComentario);
+
+router.delete('/:id', deleteComentario);
 
 export default router;
