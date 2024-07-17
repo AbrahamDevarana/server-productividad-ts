@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
-import { Task, Usuarios } from "../models";
+import { Comentarios, Task, Usuarios } from "../models";
 import { UsuarioInterface } from "../interfaces";
 import dayjs from "dayjs";
+import { literal, Op } from "sequelize";
+
+import sequelize from 'sequelize';
+
+const { fn, col } = sequelize;
 
 
 const includes = [
@@ -14,7 +19,15 @@ const includes = [
         model: Usuarios,
         as: 'coResponsables',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
-    
+    },
+    {
+        model: Comentarios,
+        as: 'comentarios',
+        attributes: ['id'],
+        required: false,
+        where: {
+            comentableType: 'TASK',
+        },
     }
 ]
 
@@ -50,8 +63,8 @@ export const getTasks = async (req: Request, res: Response) => {
             where: {
                 taskeableId
             },
-            include: includes
-        });
+            include: includes,
+        })
 
         res.json({ tasks });
     } catch (error) {
@@ -96,9 +109,12 @@ export const createTask = async (req: Request, res: Response) => {
 }   
 
 export const updateTask = async (req: Request, res: Response) => {
+
+    
     const { id } = req.params;
     const { nombre, propietarioId, taskeableId, status, fechaFin, visible, prioridad, progreso, coResponsables, created } = req.body;
 
+   
     
     const coResponsablesIds = coResponsables?.map((responsable: any) => {
         if (typeof responsable === 'object') {
@@ -116,6 +132,7 @@ export const updateTask = async (req: Request, res: Response) => {
                 msg: 'No existe una tarea'
             });
         }
+        
         
         let finalProgreso = progreso;
         let finalStatus = status;
@@ -179,8 +196,6 @@ export const updateTask = async (req: Request, res: Response) => {
         await task.reload({
             include: includes
         })
-
-
         res.json({ task });
 
     } catch (error) {

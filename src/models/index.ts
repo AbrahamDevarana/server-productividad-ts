@@ -238,6 +238,13 @@ Task.belongsTo(Hitos, { as: 'taskHito', foreignKey: 'taskeableId', constraints: 
     }
 });
 
+Task.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
+    scope: {
+        comentableType: 'TASK',
+    }
+});
+
+
 Usuarios.hasMany(Rendimiento, { as: 'rendimiento', foreignKey: 'usuarioId' });
 
 // Objetivo Operativo
