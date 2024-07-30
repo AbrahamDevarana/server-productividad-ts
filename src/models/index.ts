@@ -12,6 +12,8 @@ import { ResultadosClave } from './ResultadoClave';
 import { Proyectos } from './Proyectos';
 import { Hitos } from './Hitos';
 import { Roles } from './Roles';
+import { Comites } from './Comite';
+import { Listado } from './Listado';
 import { GaleriaDevarana } from './custom/GaleriaDevarana';
 import { CategoriaPreguntas } from './evaluacion/CategoriaPreguntas';
 
@@ -29,9 +31,7 @@ import { Permisos } from './Permisos';
 
 import UsuarioHitosOrden from './custom/UsuarioHitosOrden';
 import GaleriaUsuarios from './custom/GaleriaUsuarios';
-// import PivotObjetivoTacticoTrimestre from './pivot/PivotTacticoTrimestre';
 import ConfiguracionUsuario from './custom/ConfiguracionUsuario';
-// import Trimestre from './custom/Trimestre';
 
 
 import { Evaluacion, AsignacionPreguntaEvaluacion, AsignacionEvaluacion, EvaluacionPregunta, EvaluacionRespuesta } from './evaluacion'
@@ -41,6 +41,11 @@ import { Creditos } from './Creditos';
 import { PivotCoRespTask } from './pivot/PivotCoResponsablesTask';
 import { Minuta } from './Minutas';
 import {MinutasHistory} from './history/MinutasHistory';
+import { PivotComitesUsuarios } from './pivot/PivotComitesUsuarios';
+import UsuarioListadosOrden from './custom/UsuarioListadoOrden';
+
+import { CategoriaProyectos } from './CategoriaProyecto';
+import { PivotCategoriaProyecto } from './pivot/PivotProyectoCategoria';
 
 
 
@@ -50,18 +55,15 @@ import {MinutasHistory} from './history/MinutasHistory';
 
 Usuarios.hasMany(Usuarios, { as: 'subordinados', foreignKey: 'leaderId' });
 Usuarios.belongsTo(Usuarios, { as: 'lider', foreignKey: 'leaderId' });
-
 Usuarios.belongsTo(Departamentos, { as: 'departamento', foreignKey: 'departamentoId' });
 Usuarios.belongsTo(Direccion, { as: 'direccion', foreignKey: 'direccionId', onDelete: 'SET NULL' });
 Usuarios.belongsToMany(Proyectos, { through: PivotProyectoUsuarios, as: 'proyectos', foreignKey: 'usuarioId' });
-
 Usuarios.belongsToMany(Hitos, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'usuarioId' })
+Usuarios.belongsToMany(Listado, { through: UsuarioListadosOrden, as: 'ordenListado', foreignKey: 'usuarioId' })
 Usuarios.hasMany(GaleriaUsuarios, { as: 'galeria', foreignKey: 'usuarioId' });
 Usuarios.hasOne(ConfiguracionUsuario, { as: 'configuracion', foreignKey: 'usuarioId' });
 Usuarios.belongsTo(Roles, { as: 'rol', foreignKey: 'rolId' });
-
 Usuarios.hasOne(Creditos, { as: 'creditos', foreignKey: 'usuarioId' });
-
 Usuarios.belongsToMany(Task, { through: PivotCoRespTask, as: 'coResponsables', foreignKey: 'coResponsableId' });
 
 // Áreas
@@ -100,12 +102,6 @@ Tacticos.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', c
     }
 });
 
-// Core.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-// Core.hasMany(Comentarios, { as: 'comentarios', foreignKey: 'comentableId', constraints: false,
-//     scope: {
-//         comentableType: 'CORE',
-//     }
-// });
 
 // Objetivo Operativo
 ObjetivoOperativos.belongsTo(Tacticos, { as: 'tacticoOperativo', foreignKey: 'tacticoId', onDelete: 'SET NULL' });
@@ -121,15 +117,21 @@ Proyectos.hasMany(Hitos, { as: 'proyectosHito', foreignKey: 'proyectoId', onDele
 Proyectos.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 Proyectos.belongsToMany(Usuarios, { through: PivotProyectoUsuarios, as: 'usuariosProyecto', foreignKey: 'proyectoId' });
 
+Proyectos.belongsToMany(CategoriaProyectos, { through: PivotCategoriaProyecto, as: 'categorias', foreignKey: 'proyectoId' });
+CategoriaProyectos.belongsToMany(Proyectos, { through: PivotCategoriaProyecto, as: 'proyectos', foreignKey: 'categoriaId' });
 
 // Hitos
 Hitos.belongsTo(Proyectos, { as: 'hitosProyecto', foreignKey: 'proyectoId', onDelete: 'CASCADE' });
-// Hitos.hasMany(Tareas, { as: 'tareas', foreignKey: 'hitoId' });
 Hitos.belongsToMany(Usuarios, { through: UsuarioHitosOrden, as: 'ordenHito', foreignKey: 'hitoId' })
 
-// // Tareas 
-// Tareas.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
-// Tareas.belongsTo(Hitos, { as: 'tareas', foreignKey: 'hitoId' });
+// Comites 
+Comites.hasMany(Listado, { as: 'listados', foreignKey: 'comiteId' });
+Comites.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
+Comites.belongsToMany(Usuarios, { through: PivotComitesUsuarios, as: 'usuariosComite', foreignKey: 'comiteId' });
+
+
+Listado.belongsTo(Comites, { as: 'comite', foreignKey: 'comiteId' });
+Listado.belongsToMany(Usuarios, { through: UsuarioListadosOrden, as: 'ordenListado', foreignKey: 'listadoId' })
 
 
 Comentarios.belongsTo(Usuarios, { as: 'autor', foreignKey: 'autorId' });
@@ -147,29 +149,21 @@ Perspectivas.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico',  th
 
 // Tacticos, Core - Usuarios
 Tacticos.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
-// Core.belongsToMany(Usuarios, { as: 'responsables', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'tacticoId' });
 
 // Tacticos, Core - Departamentos
 Tacticos.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
-// Core.belongsTo(Departamentos, { as: 'departamentos', onDelete: 'CASCADE', foreignKey: 'departamentoId' });
 
 // Áreas - Tacticos
 Departamentos.hasMany(Tacticos, { as: 'tacticos',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
-// Departamentos.hasMany(Core, { as: 'core',  onDelete: 'CASCADE', foreignKey: 'departamentoId' });
 
 // Usuarios - Tacticos
 Usuarios.belongsToMany(Tacticos, { as: 'tacticos', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
-// Usuarios.belongsToMany(Core, { as: 'core', through: PivotRespTact, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 // Usuarios - Objetivo Estratégico
 Usuarios.belongsToMany(ObjetivoEstrategico, { as: 'objetivoEstrategico', through: PivotEstrResp, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 ObjetivoOperativos.belongsToMany(Usuarios, { as: 'operativosResponsable', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'objetivoOperativoId' });
 Usuarios.belongsToMany(ObjetivoOperativos, { as: 'objetivosOperativos', through: PivotOpUsuario, onDelete: 'CASCADE', foreignKey: 'usuarioId' });
-
-
-// Tareas.belongsToMany(Usuarios, { as: 'usuariosTarea', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'tareaId', });
-// Usuarios.belongsToMany(Tareas, { as: 'tareas', through: PivotTareasResponsables, onDelete: 'CASCADE', foreignKey: 'responsableId' });
 
 
 Roles.belongsToMany(Permisos, { through: 'pivot_permisos_roles', as: 'permisos', foreignKey: 'rolId' });
@@ -221,6 +215,12 @@ Hitos.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constraints: false,
     }
 });
 
+Listado.hasMany(Task, { as: 'task', foreignKey: 'taskeableId', constraints: false,
+    scope: {
+        taskeableType: 'LISTADO',
+    }
+});
+
 
 Task.belongsTo(Usuarios, { as: 'propietario', foreignKey: 'propietarioId' });
 
@@ -235,6 +235,12 @@ Task.belongsTo(ResultadosClave, { as: 'taskResultadoClave', foreignKey: 'taskeab
 Task.belongsTo(Hitos, { as: 'taskHito', foreignKey: 'taskeableId', constraints: false,
     scope: {
         taskeableType: 'HITO',
+    }
+});
+
+Task.belongsTo(Listado, { as: 'taskListado', foreignKey: 'taskeableId', constraints: false,
+    scope: {
+        taskeableType: 'LISTADO',
     }
 });
 
@@ -281,6 +287,7 @@ Proyectos.hasMany(Minuta, { as: 'minutas', foreignKey: 'minuteableId', constrain
     }
 });
 
+
 export {
     Usuarios,
     Areas,
@@ -294,33 +301,26 @@ export {
     Creditos,
     Minuta,
     MinutasHistory,
-
+    Comites,
+    Listado,
     Tareas,
     Proyectos,
     Hitos,
     Comentarios,
     Roles,
     Permisos,
-    // Trimestre,
     Rendimiento,
     Task,
-    // Core,
-
     PivotTareasResponsables,
     PivotPerspEstr,
     PivotRespTact,
-
     PivotEstrResp,
     PivotOpUsuario,
     PivotProyectoUsuarios,
-    // PivotObjetivoTacticoTrimestre,
-
-
     UsuarioHitosOrden,
     GaleriaUsuarios,
     GaleriaDevarana,
     ConfiguracionUsuario,
-
     Evaluacion,
     AsignacionEvaluacion,
     AsignacionPreguntaEvaluacion,

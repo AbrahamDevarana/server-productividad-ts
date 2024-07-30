@@ -5,12 +5,12 @@ import { io } from "../services/socketService";
 import type { MinutasProps } from "../interfaces";
 
 export const getMinutas = async (req: Request, res: Response) => {
-    const { proyectoId } = req.query;
+    const { minuteableId } = req.query;
 
     const where: any = {};
 
-    if (proyectoId) {
-        where.minuteableId = proyectoId;
+    if (minuteableId) {
+        where.minuteableId = minuteableId;
     }
 
     try {

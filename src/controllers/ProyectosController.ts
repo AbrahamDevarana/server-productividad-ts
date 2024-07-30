@@ -5,21 +5,26 @@ import { UsuarioInterface } from "../interfaces";
 import formidable from "formidable";
 import { uploadFile, deleteFile } from "../helpers/fileManagment";
 import { io } from "../services/socketService";
+import { CategoriaProyectos } from "../models/CategoriaProyecto";
 
 const userSingleAttr = ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'foto'];
 
 export const getProyectos = async (req: Request, res: Response) => {
     
-    const {} = req.body;
+    const {categoriaId} = req.query
     const { id } = req.user as UsuarioInterface
     const where: any = {};
-
-
+    
     where[Op.or] = [
         { propietarioId: id },
         { '$usuariosProyecto.id$': id }
     ];
 
+    if(!categoriaId){
+        where['$categorias.id$'] = null
+    }else if(categoriaId !== null){
+        where['$categorias.id$'] = categoriaId
+    }
 
     try {
 
@@ -36,7 +41,17 @@ export const getProyectos = async (req: Request, res: Response) => {
                 model: Usuarios,
                 as: 'propietario',
                 attributes: userSingleAttr,
-            }],
+            },
+            {
+                model: CategoriaProyectos,
+                as: 'categorias',
+                through: {
+                    attributes: []
+                },
+                required: categoriaId === null,
+            }
+
+        ],
         });
 
         res.json({ proyectos });
@@ -68,9 +83,18 @@ export const getProyecto = async (req: Request, res: Response) => {
                         model: Usuarios,
                         as: 'propietario',
                         attributes: userSingleAttr,
+                    },
+                    {
+                        model: CategoriaProyectos,
+                        as: 'categorias',
+                        through: {
+                            attributes: []
+                        },
                     }
                 ],
             });       
+
+            
 
             res.json({ proyecto });
     
@@ -93,7 +117,7 @@ export const createProyecto = async (req: Request, res: Response) => {
             console.error(err);
             res.status(500).send(err);
         }
-        const { titulo, descripcion, icono, fechaInicio, fechaFin, status } = fields
+        const { titulo, descripcion, icono, fechaInicio, fechaFin, status, categoriaId } = fields
         const { id } = req.user as UsuarioInterface
 
         const participantes = fields.participantes.toString().split(',');      
@@ -110,6 +134,10 @@ export const createProyecto = async (req: Request, res: Response) => {
                 status,
                 propietarioId: id
             });
+
+            if(categoriaId){
+                await proyecto.setCategorias([categoriaId])
+            }
 
             if (galeria) {
                 const [imagen] = await uploadFile({files:galeria, folder: 'proyectos'})                
@@ -192,7 +220,7 @@ export const updateProyecto = async (req: Request, res: Response) => {
             res.status(500).send(err);
         }
 
-        const { titulo, descripcion, icono, fechaInicio, fechaFin, status } = fields
+        const { titulo, descripcion, icono, fechaInicio, fechaFin, status, categoriaId } = fields
         
         const { id } = req.params;
         const participantes = fields.participantes.toString().split(',');
@@ -223,6 +251,13 @@ export const updateProyecto = async (req: Request, res: Response) => {
 
                         proyecto.imagen = imagen.url;
                     }
+
+
+                if(categoriaId){
+                    await proyecto.setCategorias([categoriaId])
+                }else {
+                    await proyecto.setCategorias([])
+                }
 
                 await proyecto.save();               
                 await proyecto.setUsuariosProyecto(participantes);

@@ -10,7 +10,7 @@ export interface MinutaModel extends Model<InferAttributes<MinutaModel>, InferCr
     descripcion?: string;
     fecha?: Date;
     minuteableId: string;
-    minuteableType: 'PROYECTO' | 'OBJETIVO_OPERATIVO'
+    minuteableType: 'PROYECTO' | 'OBJETIVO_OPERATIVO' | 'COMITÉ'
     authorId: string;
     createdAt?: Date;
     updatedAt?: Date;

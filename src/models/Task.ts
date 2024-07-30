@@ -9,7 +9,7 @@ export interface TaskModel extends Model<InferAttributes<TaskModel>, InferCreati
     nombre: string;
     descripcion?: string;
     taskeableId: string;
-    taskeableType: 'RESULTADO_CLAVE' | 'HITO'
+    taskeableType: 'RESULTADO_CLAVE' | 'HITO' | 'LISTADO'
     prioridad: 'ALTA' | 'MEDIA' | 'BAJA' | 'CRÍTICA'
     status: 'SIN_INICIAR' | 'EN_PROCESO' | 'FINALIZADO' | 'CANCELADO' | 'DETENIDO' | 'RETRASADO';
     progreso: number;
