@@ -45,8 +45,8 @@ export const getHitos = async (req: Request, res: Response) => {
     try {
     
         const hitos = await Hitos.findAll({
-        where,
-        include: getInclues({id})
+            where,
+            include: getInclues({id})
         });
         
         res.json({ hitos });
@@ -136,4 +136,62 @@ export const deleteHito = async (req: Request, res: Response) => {
             });
         }
         
+}
+
+export const duplicateHito = async (req: Request, res: Response) => {
+    const { hitoId } = req.params;
+
+    try {
+        const hito = await Hitos.findByPk(hitoId);
+
+        if (!hito) {
+            return res.status(404).json({
+                msg: 'No existe un hito con el id ' + hitoId
+            });
+        }
+
+    
+        const tasks = await Task.findAll({
+            where: {
+                taskeableId: hitoId,
+                taskeableType: 'HITO'
+            }
+        });
+
+        const nuevoHito = await Hitos.create({
+            titulo: hito.titulo,
+            descripcion: hito.descripcion,
+            fechaInicio: hito.fechaInicio,
+            fechaFin: hito.fechaFin,
+            status: hito.status,
+            proyectoId: hito.proyectoId,
+            color: hito.color
+        });
+
+        for (const task of tasks) {
+            await Task.create({
+                nombre: task.nombre,
+                descripcion: task.descripcion,
+                prioridad: task.prioridad,
+                propietarioId: task.propietarioId,
+                fechaFin: task.fechaFin,
+                status: task.status,
+                taskeableId: nuevoHito.id,
+                taskeableType: 'HITO',
+                progreso: task.progreso
+            });
+        }
+
+        await nuevoHito.reload({
+            include: getInclues({id: nuevoHito.id})
+        });
+
+        return res.json({ hito: nuevoHito });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
 }

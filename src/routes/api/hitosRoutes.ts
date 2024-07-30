@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { getHitos, createHito, deleteHito, updateHito } from '../../controllers/HitosController';
+import { getHitos, createHito, deleteHito, updateHito, duplicateHito } from '../../controllers/HitosController';
 
 const router = Router();
 
@@ -15,6 +15,8 @@ router.put('/:id', [
 );
 
 router.delete('/:id', deleteHito);
+
+router.post('/duplicate', duplicateHito);
 
 export default router;
 

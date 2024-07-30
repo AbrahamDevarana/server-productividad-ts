@@ -22,14 +22,14 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
                     const usuario = await Usuarios.findOne({ where: { id: decoded.id } });
                     if (!usuario) {
-                        return res.status(401).json({ message: 'No has iniciado sesión 1' })
+                        return res.status(401).json({ message: 'No has iniciado sesión' })
                     }else{
                         req.body.id = decoded.id;
                         req.user = usuario.dataValues as UsuarioInterface;
                         next();
                     }
                 }else{
-                    return res.status(401).json({ message: 'No has iniciado sesión 3' })
+                    return res.status(401).json({ message: 'No has iniciado sesión' })
                 }
             }
         })
