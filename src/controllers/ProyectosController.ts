@@ -48,12 +48,14 @@ export const getProyectos = async (req: Request, res: Response) => {
                 through: {
                     attributes: []
                 },
+                where: {
+                    propietarioId: id
+                },
                 required: categoriaId === null,
             }
 
         ],
         });
-
         res.json({ proyectos });
 
     } catch (error) {
@@ -111,8 +113,6 @@ export const createProyecto = async (req: Request, res: Response) => {
     const form = formidable({ multiples: true });
 
     form.parse(req, async (err:Error, fields, files) => {
-       
-
         if (err) {
             console.error(err);
             res.status(500).send(err);
