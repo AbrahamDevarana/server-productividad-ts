@@ -213,8 +213,6 @@ export const updateProyecto = async (req: Request, res: Response) => {
     const form = formidable({ multiples: true });
 
     form.parse(req, async (err:Error, fields, files) => {
-       
-
         if (err) {
             console.error(err);
             res.status(500).send(err);
@@ -226,7 +224,8 @@ export const updateProyecto = async (req: Request, res: Response) => {
         const participantes = fields.participantes.toString().split(',');
             
         const [galeria] = Object.values(files) as any
-
+        
+        
         
         try {
             
@@ -244,7 +243,7 @@ export const updateProyecto = async (req: Request, res: Response) => {
                     
                         const [imagen] = await uploadFile({files:galeria, folder: 'proyectos'})
                         // Eliminar imagen anterior
-                        if (proyecto.imagen && proyecto.imagen !== imagen.url) {
+                        if ( proyecto.imagen && proyecto.imagen !== imagen.url) {
                             const oldImage = proyecto.imagen;
                             await deleteFile([oldImage])
                         }
@@ -253,8 +252,13 @@ export const updateProyecto = async (req: Request, res: Response) => {
                     }
 
 
+                    
+                    
                 if(categoriaId){
-                    await proyecto.setCategorias([categoriaId])
+                    const categorias = await proyecto.getCategorias();
+                    if(!categorias.includes(categoriaId)){
+                        await proyecto.setCategorias([categoriaId])
+                    }
                 }else {
                     await proyecto.setCategorias([])
                 }
