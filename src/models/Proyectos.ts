@@ -53,6 +53,10 @@ export const Proyectos = database.define('proyectos', {
     timestamps: true,
     hooks: {
         beforeUpdate: async (proyecto: any) => {
+
+            
+            // console.log(proyecto.__proto__);
+            
         }
     },
     defaultScope: {
