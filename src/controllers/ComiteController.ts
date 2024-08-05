@@ -36,7 +36,8 @@ export const getComites = async (req: Request, res: Response) => {
                     as: 'propietario',
                     attributes: userSingleAttr
                 }
-            ]
+            ],
+            where
         });
 
         res.status(200).json({comites});
