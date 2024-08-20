@@ -62,8 +62,26 @@ export const getHitos = async (req: Request, res: Response) => {
 export const createHito = async (req: Request, res: Response) => {
 
     const { proyectoId } = req.body as HitosProps;
+    const {id} = req.user as UsuarioInterface;
     try {
         const hito = await Hitos.create({proyectoId});
+
+        const tasks = ['Actividad 1', 'Actividad 2'];
+
+        if (tasks) {
+            for (const task of tasks) {
+                await Task.create({
+                    nombre: task,
+                    propietarioId: id,
+                    taskeableId: hito.id,
+                    taskeableType: 'HITO',
+                    prioridad: 'MEDIA',
+                    status: 'SIN_INICIAR',
+                    progreso: 0,
+                    fechaFin: new Date()
+                });
+            }
+        }
 
         await hito.reload({
             include: getInclues({id: hito.id})
@@ -139,7 +157,7 @@ export const deleteHito = async (req: Request, res: Response) => {
 }
 
 export const duplicateHito = async (req: Request, res: Response) => {
-    const { hitoId } = req.params;
+    const { hitoId } = req.body
 
     try {
         const hito = await Hitos.findByPk(hitoId);
@@ -149,8 +167,6 @@ export const duplicateHito = async (req: Request, res: Response) => {
                 msg: 'No existe un hito con el id ' + hitoId
             });
         }
-
-    
         const tasks = await Task.findAll({
             where: {
                 taskeableId: hitoId,
@@ -186,7 +202,7 @@ export const duplicateHito = async (req: Request, res: Response) => {
             include: getInclues({id: nuevoHito.id})
         });
 
-        return res.json({ hito: nuevoHito });
+        return res.json(nuevoHito);
 
     } catch (error) {
         console.log(error);
