@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', getHitos);
 
+
 router.post('/', createHito);
 
 router.put('/:id', [
@@ -17,6 +18,8 @@ router.put('/:id', [
 router.delete('/:id', deleteHito);
 
 router.post('/duplicate', duplicateHito);
+
+
 
 export default router;
 
