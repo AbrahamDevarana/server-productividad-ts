@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento, Tacticos, ObjetivoEstrategico, Departamentos } from "../models";
+import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento, Tacticos, ObjetivoEstrategico, Departamentos, Comentarios } from "../models";
 import dayjs from "dayjs";
 import { Op, Transaction } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
@@ -53,6 +53,15 @@ const includes = [
                 model: Usuarios,
                 as: 'propietario',
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug', 'leaderId'],
+            },
+            {
+                model: Comentarios,
+                as: 'comentarios',
+                attributes: ['id'],
+                required: false,
+                where: {
+                    comentableType: 'TASK',
+                },
             }
         ]
         },
