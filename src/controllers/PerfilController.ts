@@ -117,10 +117,16 @@ export const getEquipo = async (req: Request, res: Response) => {
     if (!usuario) return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' })
 
     const lider = await usuario.getLider({
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto', 'leaderId', 'email']
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto', 'leaderId', 'email', 'status'],
+        where: {
+            status: 'ACTIVO'
+        }
     })
     const subordinados = await usuario.getSubordinados({
-        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto', 'leaderId', 'email']
+        attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'slug', 'iniciales', 'foto', 'leaderId', 'email', 'status'],
+        where: {
+            status: 'ACTIVO'
+        }
     })
 
     const equipo = [lider, usuario, ...subordinados]

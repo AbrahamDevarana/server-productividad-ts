@@ -16,7 +16,8 @@ export const getOrCreateRendimientoByUsuario = async (req: Request, res: Respons
                 [Op.or]: [
                     { id: usuarioId },
                     { slug: usuarioId }
-                ]
+                ],
+                status: 'ACTIVO'
             }
         });
 

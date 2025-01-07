@@ -25,7 +25,7 @@ const perfilInclude = [
 export const getUsuarios = async (req: Request, res: Response) => {
 
     const { search, status } = req.query
-    
+        
     let whereClause: any = {};
 
     if (search) {
