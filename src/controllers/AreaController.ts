@@ -18,11 +18,13 @@ const areaInclude = [
                 model: Usuarios,
                 as: 'usuario',
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+                where: { status: 'ACTIVO' }
             },
             {
                 model: Usuarios,
                 as: 'leader',
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+                where: { status: 'ACTIVO' }
             }
         ],
         
@@ -31,6 +33,7 @@ const areaInclude = [
         model: Usuarios,
         as: 'leader',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+        where: { status: 'ACTIVO' }
     },
     {
         model: Perspectivas,
