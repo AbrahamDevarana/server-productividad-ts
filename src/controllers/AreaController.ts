@@ -24,7 +24,7 @@ const areaInclude = [
                 model: Usuarios,
                 as: 'leader',
                 attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
-                where: { status: 'ACTIVO' }
+                // where: { status: 'ACTIVO' }
             }
         ],
         
