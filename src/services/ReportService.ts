@@ -152,7 +152,9 @@ export const generatePdfService = async (data: Report, options: Options): Promis
     
     try {
         if(process.env.CHROMIUM_PATH === undefined) {
-            browser = await puppeteer.launch({});
+            browser = await puppeteer.launch({
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            });
         } else {    
             browser = await puppeteerCore.launch({
                 executablePath: process.env.CHROMIUM_PATH,
