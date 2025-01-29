@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import { ObjetivoOperativos, Usuarios, ResultadosClave, PivotOpUsuario, Task, Rendimiento, Tacticos, ObjetivoEstrategico, Departamentos, Comentarios } from "../models";
 import dayjs from "dayjs";
-import { Op, Transaction } from "sequelize";
+import { Transaction } from "sequelize";
 import { updateRendimiento } from "../helpers/updateRendimiento";
-import { updateProgresoObjetivo } from "./ResultadosController";
 import { UsuarioInterface } from "../interfaces";
 
 import database from "../config/database";
+import { cierreCicloService, createObjectiveService, deleteObjectiveService, getObjectiveService, getObjectivesService, Ponderacion, updateObjectiveService, updatePonderacionesService } from "../services";
+import { updateRendimientoService } from "../services/rendimientoService";
 
 
 const includes = [
@@ -76,32 +77,14 @@ const includes = [
 ]
 
 
-export const getOperativos = async (req:any, res: Response) => {
-    
-    const { year, quarter, usuarioId, isCore } = req.query;
+export const getOperativos = async (req:Request, res: Response) => {
+    const { year, quarter, usuarioId } = req.query as { year: string, quarter: string, usuarioId: string };    
     try {
-        const operativos = await ObjetivoOperativos.findAll({
-            order: [['createdAt', 'ASC']],
-            include: includes,
-            where: {
-                [Op.and]: [
-                    {
-                        year
-                    },
-                    {
-                        quarter
-                    },
-                    
-                ]
-            }
-        });
-      
-        const filteredObjetivos = filtrarObjetivosUsuario(operativos, usuarioId)
-        res.json({ operativos: filteredObjetivos });
-    
+        const operativos = await getObjectivesService({year: parseInt(year), quarter: parseInt(quarter), usuarioId})     
+        
+        res.json({ operativos });
     } catch (error) {
         console.log(error);
-        
         res.status(500).json({
             msg: 'Hable con el administrador'
         });
@@ -110,69 +93,11 @@ export const getOperativos = async (req:any, res: Response) => {
 
 export const updateOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [] , tacticoId, propietarioId, year, quarter } = req.body;
-
-    const fechaInicial = dayjs(fechaInicio).toDate();
-    const fechaFinal = dayjs(fechaFin).toDate();
+    const data = req.body;
 
     try {
-        const operativo = await ObjetivoOperativos.findByPk(id);
-        if (!operativo) {
-            return res.status(404).json({
-                msg: `No existe un operativo`
-            });
-        }
-
-        if (operativo.status === 'CERRADO') {
-            return res.status(400).json({
-                msg: `No se puede actualizar un objetivo cerrado`
-            });
-        }
-
-        await operativo.update({
-            nombre,
-            meta,
-            indicador,
-            fechaInicio: fechaInicial,
-            fechaFin: fechaFinal,
-            tacticoId,
-        });
-
-
-        const setResponsables = new Set();
-
-        // si propietarioId es arrray tomar el primer valor
-
-        operativosResponsable.forEach( (responsable: string) => {
-            setResponsables.add(responsable);
-        });
-        
-        setResponsables.add( propietarioId );
-        
-        await operativo.setOperativosResponsable(Array.from(setResponsables));
-
-        const responsablesLista = await PivotOpUsuario.findAll({
-            where: {
-                objetivoOperativoId: operativo.id
-            }
-        });
-
-        for (const responsable of responsablesLista) {
-            const propietarioValue = responsable.usuarioId === propietarioId;
-        
-            await responsable.update({
-                propietario: propietarioValue,
-            });
-        }
-
-
-        await updateProgresoObjetivo({objetivoOperativoId: operativo.id});
-        
-        await operativo.reload( { include: includes } );
-
+        const operativo = await updateObjectiveService({id, data})
         res.json({operativo});
-    
     } catch (error) {
         console.log(error);
         
@@ -184,95 +109,10 @@ export const updateOperativo = async (req: Request, res: Response) => {
 
 export const createOperativo = async (req: Request, res: Response) => {
     
-    const { nombre, meta, indicador, fechaInicio, fechaFin, operativosResponsable = [], tacticoId, quarter, year, propietarioId} = req.body;
-
-    const fechaInicial = dayjs(fechaInicio).toDate();
-    const fechaFinal = dayjs(fechaFin).toDate();
+    const data = req.body;
 
     try {
-        const operativo = await ObjetivoOperativos.create({
-            nombre,
-            meta,
-            indicador,
-            fechaInicio: fechaInicial,
-            fechaFin: fechaFinal,
-            tacticoId: tacticoId ? tacticoId : null,
-            quarter,
-            year
-        });
-
-        if(!operativo) return res.status(400).json({ msg: 'No se pudo crear el operativo' });
-    
-        const setResponsables = new Set();
-        
-        operativosResponsable.forEach( (responsable: string) => {
-            setResponsables.add(responsable);
-        });
-
-        setResponsables.add(propietarioId);
-
-    
-        await operativo.setOperativosResponsable(Array.from(setResponsables));
-        
-        const responsablesLista = await PivotOpUsuario.findAll({
-            where: {
-                objetivoOperativoId: operativo.id
-            }
-        });
-
-        for (const responsable of responsablesLista) {
-            const propietarioValue = responsable.usuarioId === propietarioId;
-        
-            await responsable.update({
-                propietario: propietarioValue,
-            });
-        }
-    
-        // Crear resultado clave con 3 tasks
-
-       if(operativo.id){
-
-            const { year, quarter } = operativo;
-
-            const firstDay = dayjs().year(year).quarter(quarter).startOf('quarter').toDate();
-            const lastDay = dayjs().year(year).quarter(quarter).endOf('quarter').subtract(1, 'day').toDate();
-            const resultadoClave = await ResultadosClave.create({
-                nombre: operativo.nombre,
-                fechaInicio: firstDay,
-                fechaFin: lastDay,
-                operativoId: operativo.id,
-                status: 'SIN_INICIAR',
-                tipoProgreso: 'acciones',
-                progreso: 0,
-                propietarioId: propietarioId,
-                color: 'rgba(101, 106, 118, 1)'
-            })
-
-            if(!resultadoClave) return res.status(400).json({ msg: 'No se pudo crear el resultado clave' });
-
-            await resultadoClave.reload();
-
-            const nombres = ['Acción 1', 'Acción 2'];
-            
-            if(resultadoClave.id){
-                for (const nombre of nombres) {
-                    await Task.create({
-                        nombre,
-                        propietarioId,
-                        taskeableId: resultadoClave.id,
-                        taskeableType: 'RESULTADO_CLAVE',
-                        prioridad: 'MEDIA',
-                        status: 'SIN_INICIAR',
-                        progreso: 0,
-                        fechaFin: resultadoClave.fechaFin,
-                    })   
-
-                }
-            }
-
-        }
-
-        await operativo.reload( { include: includes });
+       const operativo = await createObjectiveService(data);
 
         res.json({operativo});
     
@@ -289,16 +129,12 @@ export const deleteOperativo = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const operativo = await ObjetivoOperativos.findByPk(id);
-        if (!operativo) {
-            return res.status(404).json({
-                msg: `No existe un operativo con el id ${id}`
-            });
-        }
+        await deleteObjectiveService(id);
 
-        await operativo.destroy();
-
-        res.json(operativo);
+        res.json({
+            ok: true,
+            msg: 'Objetivo eliminado'
+        });
     
     } catch (error) {
         console.log(error);
@@ -310,20 +146,9 @@ export const deleteOperativo = async (req: Request, res: Response) => {
 }
 
 export const getOperativo = async (req: Request, res: Response) => {
-
-    
     const { id } = req.params;
-
     try {
-        const operativo = await ObjetivoOperativos.findByPk(id, {
-            include: includes
-        });
-        if (!operativo) {
-            return res.status(404).json({
-                msg: `No existe un operativo con el id ${id}`
-            });
-        }
-
+        const operativo = await getObjectiveService(id);
         res.json({operativo});
     
     } catch (error) {
@@ -335,115 +160,45 @@ export const getOperativo = async (req: Request, res: Response) => {
     }
 }
 
-const filtrarObjetivosUsuario = (objetivos: any[], id: string) => {
-    // id or slug
-    const objetivoId = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.id === id));
-    if(objetivoId.length > 0) return objetivoId;
-    
-    const objetivoSlug = objetivos.filter( (obj: any) => obj.operativosResponsable.some( (res: any) => res.slug === id));
-    return objetivoSlug;
-}
-
 export const setPonderaciones = async (req: Request, res: Response) => {
-    const {id} = req.params;
-    const { ponderaciones} = req.body;
+    const { id: usuarioId } = req.params;
+    const { ponderaciones }: { ponderaciones: Ponderacion[] } = req.body;
 
     try {
+        if (!Array.isArray(ponderaciones)) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Las ponderaciones deben ser un arreglo válido',
+            });
+        }
 
-
-
-        ponderaciones.forEach( async (ponderacion: any) => {
-                const { objetivoId, progresoAsignado } = ponderacion;
-
-                const pivot = await PivotOpUsuario.findOne({
-                    where: {
-                        usuarioId: id,
-                        objetivoOperativoId: objetivoId
-                    }
-                });
-
-                if (pivot) {
-                    await pivot.update({
-                        progresoAsignado
-                    });
-                }
-        });
+        const updatedPonderaciones = await updatePonderacionesService(usuarioId, ponderaciones);
 
         return res.json({
             ok: true,
-            ponderaciones,
-            usuarioId: id
-        })
-        
-    } catch (error) {
-        console.log(error);
-
-        res.status(500).json({
-            ok: false,
-            msg: 'Hable con el administrador'
+            ponderaciones: updatedPonderaciones,
+            usuarioId,
         });
-        
+    } catch (error: any) {
+        console.error(error);
+
+        return res.status(500).json({
+            ok: false,
+            msg: error.message || 'Hable con el administrador',
+        });
     }
-}
+};
 
 export const cierreCiclo = async (req: Request, res: Response) => {
 
     const { usuarioId, year, quarter, objetivosId } = req.body;
     try {
+        await cierreCicloService({ usuarioId, year, quarter, objetivosId });
+        await updateRendimientoService({ usuarioId, year, quarter });
 
-        const objetivos = await ObjetivoOperativos.findAll({
-            where: {
-                year,
-                quarter,
-                id: objetivosId
-            }
-        });
-
-        const objetivoIds = objetivos.map( (obj: any) => obj.id );
-
-        const pivot = await PivotOpUsuario.findAll({
-            where: {
-                usuarioId,
-                objetivoOperativoId: objetivoIds
-            }
-        });
-
-        for (const pivotItem of pivot) {
-            await pivotItem.update({
-                status: 'CERRADO'
-            });
-        }
-
-        for (const objetivo of objetivos) {
-            await objetivo.update({
-                status: 'CERRADO'
-            });
-        }
-
-    
-        await updateRendimiento({ usuarioId, year, quarter });
-    
-        const rendimiento = await Rendimiento.findOne({
-            where: {
-                usuarioId,
-                year,
-                quarter
-            }
-        });
-    
-        if(rendimiento){
-            await rendimiento.update({
-                status: 'CERRADO'
-            });
-        }
-    
-    
         res.json({
             ok: true,
             msg: 'Ciclo cerrado',
-            rendimiento,
-            objetivos,
-            pivot
         })
         
     } catch (error) {
@@ -458,19 +213,20 @@ export const cierreCiclo = async (req: Request, res: Response) => {
     }
 }
 
+
+
+
+
+
 export const statusObjetivo = async (req: Request, res: Response) => {
 
     const { operativoId, checked } = req.body;
-
 
     try {
         const objetivo = await ObjetivoOperativos.findByPk(operativoId);
 
         if(!objetivo) return res.status(404).json({ msg: 'No existe un este objetivo' });
         if(objetivo.status === 'CERRADO') return res.status(400).json({ msg: 'Este objetivo ya esta cerrado' });
-
-
-
 
         if(checked){
             if(objetivo.status === 'NUEVO') {

@@ -2,11 +2,11 @@
 import { Usuarios, Departamentos, Direccion, ObjetivoOperativos, Proyectos, ResultadosClave, ConfiguracionUsuario } from "../models";
 import { Request, Response } from "express";
 import { Op, literal } from "sequelize";
-import { getPagination, getPagingData } from "../helpers/pagination";
 import dayjs from "dayjs";
 import formidable, { Files, Fields } from 'formidable';
 import { deleteFile, uploadFile } from "../helpers/fileManagment";
 import { UsuarioInterface } from "../interfaces";
+import { getUser, getUsuariosService } from "../services";
 
 
 const perfilInclude = [
@@ -25,65 +25,9 @@ const perfilInclude = [
 export const getUsuarios = async (req: Request, res: Response) => {
 
     const { search, status } = req.query
-        
-    let whereClause: any = {};
-
-    if (search) {
-        whereClause = {
-            [Op.or]: [
-                // literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
-                // literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
-                // literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
-                literal('usuarios.nombre LIKE :search'),
-                literal('usuarios.apellidoPaterno LIKE :search'),
-                literal('usuarios.apellidoMaterno LIKE :search'),
-                literal('usuarios.email LIKE :search'),
-            ]
-        };
-    }
-
-    if (status === 'ACTIVO' || status === 'INACTIVO') {
-        whereClause.status = status;
-    }
-
     try {
-        const usuarios = await Usuarios.findAndCountAll({
-            distinct: true,
-            include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
-            order: [
-                ['nombre', 'ASC'],
-            ],
-            where: whereClause,
-            // where: {
-            //     [Op.and]: [
-            //         search ? {
-            //             [Op.or]: [
-            //                 literal('CONCAT(usuarios.nombre, " ", apellidoPaterno) LIKE :search'),
-            //                 literal('CONCAT(usuarios.nombre, " ", apellidoMaterno) LIKE :search'),
-            //                 literal('CONCAT(usuarios.nombre, " ", apellidoPaterno, " ", apellidoMaterno) LIKE :search'),
-            //                 literal('usuarios.nombre LIKE :search'),
-            //                 literal('usuarios.apellidoPaterno LIKE :search'),
-            //                 literal('usuarios.apellidoMaterno LIKE :search'),
-            //                 literal('usuarios.email LIKE :search'),
-            //             ],
-            //         } : {},
-            //         status === 'ACTIVO' ? {
-            //             status: 'ACTIVO'
-            //         } : {},
-            //         status === 'INACTIVO' ? {
-            //             status: 'INACTIVO'
-            //         } : {},
-            //         status === 'ALL' ? {} : {}
-            //     ]
-            // },
-            replacements: {
-                search: `%${ search }%`
-            },
-        })
-
-        // const usuarios = getPagingData(result, Number(page), Number(size))    
-        
-        res.json({ usuarios });
+        const usuarios = await getUsuariosService({ search: search as string, status: status as string });
+        return res.json({ usuarios });
 
     } catch (error) {
         console.log(error);
@@ -99,11 +43,7 @@ export const getUsuario = async (req: Request, res: Response) => {
        
     
         try {
-            const usuario = await Usuarios.findByPk(id,
-                { 
-                    include: [{model: Departamentos, as: 'departamento', include: ['area']}, 'direccion'],
-                }
-            );
+            const usuario = await getUser({ id });
             if (usuario) {                
                 res.json({ usuario });
             } else {
@@ -154,7 +94,7 @@ export const updatePerfil = async (req: Request, res: Response) => {
 
 export const createUsuario = async (req: Request, res: Response) => {
         
-    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono } = req.body;    
+    const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, isEvaluable } = req.body;    
 
     try {
         const existeEmail = await Usuarios.findOne({
@@ -169,7 +109,7 @@ export const createUsuario = async (req: Request, res: Response) => {
             });
         }
 
-        const usuario = Usuarios.build({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, password: '123456' });
+        const usuario = Usuarios.build({ nombre, apellidoPaterno, apellidoMaterno, email, telefono, password: '123456', isEvaluable });
         await usuario.save();
 
         // 
@@ -191,7 +131,7 @@ export const createUsuario = async (req: Request, res: Response) => {
 export const updateUsuario = async (req: Request, res: Response) => {
         
         const { id } = req.params;
-        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId , puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId, status} = req.body;
+        const { nombre, apellidoPaterno, apellidoMaterno, email, telefono, departamentoId , puesto, fechaNacimiento, fechaIngreso, direccion = {}, descripcionPerfil, leaderId, status, isEvaluable} = req.body;
         
         try {
             const usuario = await Usuarios.findByPk(id,
@@ -221,7 +161,8 @@ export const updateUsuario = async (req: Request, res: Response) => {
                 descripcionPerfil: descripcionPerfil ? descripcionPerfil : usuario.descripcionPerfil,
                 leaderId: leaderId ? leaderId : usuario.leaderId,
                 departamentoId: departamentoId ? departamentoId : usuario.departamentoId,
-                status: status ? status : usuario.status
+                status: status ? status : usuario.status,
+                isEvaluable
             });            
 
             if(direccion){

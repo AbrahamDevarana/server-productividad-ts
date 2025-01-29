@@ -9,7 +9,7 @@ export interface ObjetivosOperativosModel extends Model<InferAttributes<Objetivo
     nombre: string;
     meta?: string;
     indicador?: string;
-    tacticoId?: string;
+    tacticoId?: string | null
     fechaInicio: Date;
     fechaFin: Date;
     quarter: number;

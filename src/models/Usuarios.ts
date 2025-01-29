@@ -1,10 +1,45 @@
-import Sequelize from "sequelize";
+import Sequelize, { Model, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManySetAssociationsMixin, HasManyAddAssociationMixin, HasManyAddAssociationsMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, HasOneGetAssociationMixin, HasOneSetAssociationMixin, HasOneCreateAssociationMixin, BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin, HasManyCreateAssociationMixin, BelongsToGetAssociationMixin } from "sequelize";
 import database from "../config/database";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import slugify from "slugify";
 import ConfiguracionUsuario from "./custom/ConfiguracionUsuario";
 import { Creditos } from "./Creditos";
+import { UsuarioInterface } from "../interfaces";
+import { DepartamentosInterface } from "./Departamentos";
+
+export interface UsuarioInstance extends Model<UsuarioInterface>, UsuarioInterface {
+    getSubordinados: HasManyGetAssociationsMixin<UsuarioInstance>;
+    countSubordinados: HasManyCountAssociationsMixin;
+    hasSubordinado: HasManyHasAssociationMixin<UsuarioInstance, number>;
+    hasSubordinados: HasManyHasAssociationsMixin<UsuarioInstance, number>;
+    setSubordinados: HasManySetAssociationsMixin<UsuarioInstance, number>;
+    addSubordinado: HasManyAddAssociationMixin<UsuarioInstance, number>;
+    addSubordinados: HasManyAddAssociationsMixin<UsuarioInstance, number>;
+    removeSubordinado: HasManyRemoveAssociationMixin<UsuarioInstance, number>;
+    removeSubordinados: HasManyRemoveAssociationsMixin<UsuarioInstance, number>;
+    createSubordinado: HasManyCreateAssociationMixin<UsuarioInstance>;
+  
+    // Métodos para líder (belongsTo)
+    getLider: BelongsToGetAssociationMixin<UsuarioInstance>;
+    setLider: BelongsToSetAssociationMixin<UsuarioInstance, number>;
+    createLider: BelongsToCreateAssociationMixin<UsuarioInstance>;
+  
+    // Métodos para departamento (belongsTo)
+    getDepartamento: BelongsToGetAssociationMixin<DepartamentosInterface>;
+    setDepartamento: BelongsToSetAssociationMixin<DepartamentosInterface, number>;
+    createDepartamento: BelongsToCreateAssociationMixin<DepartamentosInterface>;
+  
+    // Métodos para dirección (belongsTo)
+    // getDireccion: BelongsToGetAssociationMixin<DireccionInstance>;
+    // setDireccion: BelongsToSetAssociationMixin<DireccionInstance, number>;
+    // createDireccion: BelongsToCreateAssociationMixin<DireccionInstance>;
+  
+    // Métodos para proyectos (belongsToMany)
+    // getProyectos: BelongsToManyGetAssociationsMixin<ProyectoInstance>;
+    // countProyectos: BelongsToManyCountAssociationsMixin;
+  
+}
 
 
 export const Usuarios = database.define('usuarios', {
@@ -86,6 +121,11 @@ export const Usuarios = database.define('usuarios', {
         allowNull: false,
         defaultValue: 2
     },
+    isEvaluable: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
     createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -103,6 +143,17 @@ export const Usuarios = database.define('usuarios', {
     paranoid: true,
     timestamps: true,
     hooks: {
+        afterFind: async (usuarios: any) => {
+            if(usuarios){
+                // if(Array.isArray(usuarios)){
+                //     // @ts-ignore
+                //     console.log('usuarios', usuarios.__proto__);
+                    
+                // } else {
+                //     console.log('usuarios', usuarios.__proto__);
+                // }
+            }
+        },
         beforeCreate: async (usuario: any) => {
             usuario.password = await bcrypt.hash(usuario.password, 10);
             usuario.iniciales = `${usuario.nombre} ${usuario.apellidoPaterno} ${usuario.apellidoMaterno}`.normalize('NFD')

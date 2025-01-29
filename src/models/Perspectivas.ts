@@ -1,8 +1,17 @@
-import Sequelize from "sequelize";
+import Sequelize, { Model } from "sequelize";
 import database from "../config/database";
 import { v4 as uuidv4 } from 'uuid';
+import { PerspectivaProps } from "../interfaces";
 
-export const Perspectivas = database.define('perspectivas', {
+
+
+
+export interface PerspectivaInstance extends Model<PerspectivaProps>, PerspectivaProps {
+   
+}
+
+
+export const Perspectivas = database.define<PerspectivaInstance>('perspectivas', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,

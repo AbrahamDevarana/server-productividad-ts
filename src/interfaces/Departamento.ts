@@ -9,7 +9,7 @@ export interface DepartamentoInterface {
     slug:      string;
     area:      AreaInterface;
     leader:    UsuarioInterface;
-
+    color:     string;
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date | null;

@@ -159,3 +159,5 @@ package-lock.json
 /build
 
 .env.*
+
+/pdf

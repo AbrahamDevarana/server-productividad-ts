@@ -278,11 +278,15 @@ export const getObjetivosEstrategicoByPerspectiva:RequestHandler = async (req: R
 }
 
 export const getObjetivosEstrategicoByArea:RequestHandler = async (req: Request, res: Response) => {
-    const { year, slug } = req.query;
+    const { year, slug } = req.query as { year: string, slug: string };
 
     try {
         const area = await Areas.findOne({
             where: { slug },
+        });
+
+        if(!area) return res.status(404).json({
+            msg: `No existe un área con el slug ${slug}`
         });
 
         const perspectiva = await area.getPerspectivas()

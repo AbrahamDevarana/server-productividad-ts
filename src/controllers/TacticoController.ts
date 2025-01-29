@@ -195,7 +195,7 @@ export const getTacticosByEquipo = async (req: Request, res: Response) => {
 
         const participantes = await departamento?.getUsuario()
         const lider = await departamento?.getLeader()
-        const participantesIds = participantes?.map((participante: any) => participante.id);
+        const participantesIds = participantes?.map((participante) => participante.id) || []
            
 
         
@@ -286,9 +286,12 @@ export const getTacticosCoreByEquipo = async (req: Request, res: Response) => {
 
     try {
         if(!departamentoId) return res.status(400).json({msg: 'El departamentoId es requerido'})
-        const departamento = await Departamentos.findOne({ where: { [Op.or]: [{ id: departamentoId }, { slug: departamentoId }] } })
+        const departamento = await Departamentos.findOne({ where: { 
+            status: 'ACTIVO',
+            [Op.or]: [{ id: departamentoId }, { slug: departamentoId }]
+        } })
         const participantes = await departamento?.getUsuario()
-        const participantesIds = participantes?.map((participante: any) => participante.id);
+        const participantesIds = participantes?.map((participante) => participante.id) || []
 
         
 

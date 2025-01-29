@@ -15,12 +15,14 @@ const departamentoInclude = [
         model: Usuarios,
         as: 'leader',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+        required: false,
         where: { status: 'ACTIVO' }
     },
     {
         model: Usuarios,
         as: 'usuario',
         attributes: ['id', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'iniciales', 'email', 'foto', 'slug'],
+        required: false,
         where: { status: 'ACTIVO' }
     }
 ]
@@ -38,7 +40,7 @@ export const getDepartamentos = async (req: Request, res: Response) => {
         const result = await Departamentos.findAndCountAll({
             include: departamentoInclude,
             distinct: true,
-            attributes: ['id', 'nombre', 'areaId', 'leaderId', 'color', 'slug'],
+            attributes: ['id', 'nombre', 'areaId', 'leaderId', 'color', 'slug', 'isEvaluableDepartment'],
             where,
             limit,
             offset,
@@ -79,10 +81,10 @@ export const getDepartamento = async (req: Request, res: Response) => {
 }
 
 export const createDepartamento = async (req: Request, res: Response) => {
-    const { nombre, areaId, leaderId = null, color } = req.body;
+    const { nombre, areaId, leaderId = null, color, isEvaluableDepartment } = req.body;
 
     try {
-        const departamento = await Departamentos.create({ nombre, areaId, leaderId, color });
+        const departamento = await Departamentos.create({ nombre, areaId, leaderId, color, isEvaluableDepartment });
 
 
         departamento.reload({ include: departamentoInclude })
@@ -102,7 +104,7 @@ export const createDepartamento = async (req: Request, res: Response) => {
 
 export const updateDepartamento = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { nombre, areaId, leaderId, color } = req.body;
+    const { nombre, areaId, leaderId, color, isEvaluableDepartment } = req.body;
     try {
         const departamento = await Departamentos.findByPk(id);
 
@@ -112,6 +114,7 @@ export const updateDepartamento = async (req: Request, res: Response) => {
                 areaId: areaId? areaId : departamento.areaId,
                 leaderId: leaderId? leaderId : departamento.leaderId,
                 color: color ? color : departamento.color,
+                isEvaluableDepartment
             });
             await departamento.reload({ include: departamentoInclude })
             res.json({ departamento });

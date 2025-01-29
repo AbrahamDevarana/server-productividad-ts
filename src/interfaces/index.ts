@@ -8,3 +8,4 @@ export * from './Proyectos';
 export * from './Evaluacion'
 export * from './Minutas';
 export * from './Comites';
+export * from './Perspectivas';
