@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Perspectivas, ObjetivoEstrategico, Usuarios, Tacticos, Comentarios, Areas } from "../models";
+import { PerspectivaProps } from "../interfaces";
 
 
 export const getPerspectivas = async (req: Request, res: Response) => {
@@ -89,7 +90,7 @@ export const getPerspectiva = async (req: Request, res: Response) => {
 
 export const createPerspectiva = async (req: Request, res: Response) => {
     
-    const { nombre, descripcion, color } = req.body;
+    const { nombre, descripcion, color } = req.body as PerspectivaProps;
 
     try {
         const perspectiva = await Perspectivas.create({ nombre, descripcion, color});

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { generarReporteRendimiento, obtenerRendimiento } from '../../controllers/ReportesController';
+import { generarReporteRendimientoExcel, obtenerRendimiento, generateReport } from '../../controllers/ReportesController';
 
 const router = Router();
 
@@ -7,6 +7,7 @@ const router = Router();
 // /api/reportes
 
 router.get('/usuarios', obtenerRendimiento);
-router.get('/usuarios/generar', generarReporteRendimiento);
+router.get('/usuarios/generar', generarReporteRendimientoExcel);
+router.post('/generate-report', generateReport )
 
 export default router;

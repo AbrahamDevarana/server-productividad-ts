@@ -1,12 +1,14 @@
 import { UsuarioInterface } from "./";
 
 export interface AreaInterface {
-    id:        number;
+    id?:        number;
     nombre:    string;
     parentId:  UsuarioInterface;
-    leaderId:  AreaInterface;
-    slug:      string;
-    status:    boolean;
+    leaderId:  string;
+    codigo?:    string;
+    order?:     number;
+    slug?:      string;
+    status?:    boolean;
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date | null;

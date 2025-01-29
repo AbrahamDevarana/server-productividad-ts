@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import axios from 'axios';
-import { authToken } from '../services/cronAuth';
+import { authToken } from '../services/cronAuthService';
 
 
 const API_URL = `http://127.0.0.0:5010/api`;

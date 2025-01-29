@@ -3,6 +3,10 @@ import { Usuarios, Rendimiento} from '../models'
 import ExcelJS from 'exceljs'
 import { Op, Sequelize, literal } from 'sequelize'
 import { updateRendimiento } from '../helpers/updateRendimiento'
+import { generatePdfService, generateReportService, getUsuariosRendimientoService, sendEmailWithAttachmentService } from '../services'
+import { getBono } from '../helpers/getBono'
+import { getQuarterMonths } from '../helpers/getQuarterMonths'
+import { getBodyReportHtml } from '../html/mailReportHtml'
 
 const VALOR_OBJETIVOS = 90
 const VALOR_COMPETENCIAS = 10
@@ -29,9 +33,9 @@ export const obtenerRendimiento = async (req: Request, res: Response) => {
     })  
 }
 
-export const generarReporteRendimiento = async (req: Request, res: Response) => {
+export const generarReporteRendimientoExcel = async (req: Request, res: Response) => {
 
-    const { year, quarter, search, status, statusUsuario} = req.query
+    const { year, quarter, search, status, statusUsuario} = req.query as { year: string, quarter: string, search: string, status: string, statusUsuario: string }
 
     if( !year || !quarter ) {
         return res.status(400).json({
@@ -39,31 +43,33 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
         })
     }
 
-    await obtenerUsuarios({year, quarter, search, status, statusUsuario}).then( (usuarios) => {
+    await getUsuariosRendimientoService({year: Number(year), quarter:Number(quarter), search, status, statusUsuario}).then( (usuarios) => {
 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Reporte de rendimiento');
         
-        worksheet.addRow(['Nombre', 'Apellido Paterno', 'Apellido Materno', 'Total Objetivos', 'Objetivos', 'Competencias', 'Resultado final', 'Bono', 'Status'])
-        usuarios && usuarios.forEach( (usuario) => {
-            const { nombre, apellidoPaterno, apellidoMaterno, rendimiento } = usuario
-            const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, bono, status, countObjetivos } = rendimiento
+        worksheet.addRow(['No','Área', 'Departamento', 'Nombre', 'Apellido Paterno', 'Apellido Materno', 'Objetivos', 'Competencias', 'Resultado final', 'Bono', 'Status'])
+        usuarios && usuarios.forEach( (usuario, index) => {
 
+            const { nombre, apellidoPaterno, apellidoMaterno, rendimiento, area, departamento } = usuario
+            const { resultadoObjetivos, resultadoCompetencias, resultadoFinal, bono, status } = rendimiento
             let statusObjetivos = status === 'ABIERTO' ? 'EN EJECUCIÓN' : status
         
             worksheet.addRow( 
                 [ 
-                    nombre, 
+                    index+1,
+                    area,
+                    departamento,
+                    nombre,
                     apellidoPaterno, 
                     apellidoMaterno, 
-                    Number(countObjetivos), 
                     Math.trunc(Number(resultadoObjetivos) * 100) / 100,
                     Math.trunc(Number(resultadoCompetencias) * 100) / 100,
                     Math.trunc(Number(resultadoFinal) * 100) / 100,
                     Number(bono), 
                     statusObjetivos
                 ]
-                )
+            )
         })
 
         workbook.xlsx.writeBuffer().then( (buffer) => {
@@ -86,36 +92,6 @@ export const generarReporteRendimiento = async (req: Request, res: Response) => 
 
 
 }
-
-
-export const calcularBono = (total: number) => {
-
-    const rangos: { [key: number]: number } = {
-        0: 0,
-        85: 0,
-        86: 75,
-        88: 80,
-        90: 85,
-        92: 90,
-        94: 95,
-        96: 100,
-        98: 105,
-        100: 110,
-    };
-
-    let puntuacion = 0;
-    for (let rango in rangos) {
-        if (total >= parseInt(rango)) {                
-            puntuacion = rangos[rango];
-        } else {
-            break;
-        }
-    }
-
-    return puntuacion;
-
-} 
-
 
 export const obtenerUsuarios = async ({year, quarter, search, status, statusUsuario}: any) => {
     let where = {}
@@ -145,7 +121,7 @@ export const obtenerUsuarios = async ({year, quarter, search, status, statusUsua
                     [Op.and]: [
                         { year },
                         { quarter },
-                        status ? { status } : {}
+                        status ? { status } : {},
                     ]
                 },
                 attributes: [
@@ -159,7 +135,8 @@ export const obtenerUsuarios = async ({year, quarter, search, status, statusUsua
             where: {
                 [Op.and]: [
                     { status: statusUsuarios },
-                    where
+                    where,
+                    // { isEvaluable: true }
                 ],
             },
             replacements: {
@@ -196,7 +173,7 @@ export const obtenerUsuarios = async ({year, quarter, search, status, statusUsua
                     resultadoObjetivos,
                     resultadoCompetencias,
                     resultadoFinal,
-                    bono: calcularBono(resultadoFinal),
+                    bono: getBono(resultadoFinal),
                     status
                 }
             }
@@ -205,5 +182,53 @@ export const obtenerUsuarios = async ({year, quarter, search, status, statusUsua
 
     } catch (error) {
         console.log(error)
+    }
+}
+
+export const generateReport = async (req: Request, res: Response) => {
+
+    const { areaId, departamentosIds, sign, send, quarter, year} = req.body as { areaId: number, departamentosIds: number[], sign: boolean, send: boolean, quarter: number, year: number }
+
+    
+    const areaReport = {
+        id: areaId,
+        departamentosIds,
+        sign,
+        send
+    }
+    
+    try {
+        const report = await generateReportService({areaReport, options: { quarter, year, sign, send }})
+        const pdfBuffer = await generatePdfService(report, { quarter, year, sign, send })
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+
+        const { months } = getQuarterMonths(quarter, year)
+
+        const periodo = `${months[0]} - ${months[1]}`
+        const liderName = `${report.leader.nombre} ${report.leader.apellidoPaterno} ${report.leader.apellidoMaterno}`
+
+        if(send){
+            sendEmailWithAttachmentService({
+                attachment: pdfBuffer, 
+                body: getBodyReportHtml({ fullName: liderName, periodo, year }),
+                to:['abrahamalvarado@devarana.mx', 'maximilianogonzalez@devarana.mx'], 
+                replyTo: 'maximilianogonzalez@devarana.mx',
+                filename: `Reporte-${report.nombre}-${Date.now()}.pdf`, 
+                subject: `Reporte de desempeño trimestre ${periodo} ${year}`,                
+        })
+        }
+
+        const base64File = pdfBuffer.toString('base64');
+
+        return res.json({fileName: `Reporte-${report.nombre}-${Date.now()}.pdf`, file: base64File})
+    } catch (error) {
+        console.log("❌ Error al generar el reporte:", error); // Debug
+        return res.status(500).json({
+            msg: 'Error al generar el reporte',
+            error
+        })
     }
 }

@@ -1,9 +1,12 @@
-import Sequelize, { InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import Sequelize, {HasManyCountAssociationsMixin, HasManyGetAssociationsMixin, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import database from "../config/database";
 import slugify from "slugify";
+import { UsuarioInstance } from "./Usuarios";
 
 
-export interface DepartamentosModel extends Model<InferAttributes<DepartamentosModel>, InferCreationAttributes<DepartamentosModel>> {
+
+
+export interface DepartamentosInterface extends Model<InferAttributes<DepartamentosInterface>, InferCreationAttributes<DepartamentosInterface>> {
 
     id?: number;
     nombre: string;
@@ -17,17 +20,15 @@ export interface DepartamentosModel extends Model<InferAttributes<DepartamentosM
     updatedAt?: Date;
     leader?: any
     area?: any
+    isEvaluableDepartment?: boolean
+    
 
 
     getArea: () => any,
     setArea: () => any,
     createArea: () => any,
-    getUsuario: () => any,
-    countUsuario: () => any,
-    hasUsuario: () => any,
-    setUsuario: () => any,
-    addUsuario: () => any,
-    removeUsuario: () => any,
+    getUsuario: HasManyGetAssociationsMixin<UsuarioInstance>; // Obtener usuarios relacionados
+    countUsuario: HasManyCountAssociationsMixin; // Contar usuarios relacionados
     createUsuario: () => any,
     getLeader: () => any,
     setLeader: () => any,
@@ -52,7 +53,7 @@ export interface DepartamentosModel extends Model<InferAttributes<DepartamentosM
     
 }
 
-export const Departamentos = database.define<DepartamentosModel>('departamentos', {
+export const Departamentos = database.define<DepartamentosInterface>('departamentos', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -84,6 +85,10 @@ export const Departamentos = database.define<DepartamentosModel>('departamentos'
     order: {
         type: Sequelize.INTEGER,
         defaultValue: 2
+    },
+    isEvaluableDepartment: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
     },
     createdAt: {
         type: Sequelize.DATE,
