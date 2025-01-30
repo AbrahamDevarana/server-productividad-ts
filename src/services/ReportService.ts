@@ -153,7 +153,6 @@ export const generatePdfService = async (data: Report, options: Options): Promis
     try {
         if(process.env.CHROMIUM_PATH === undefined) {
             browser = await puppeteer.launch({
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
             });
         } else {    
             browser = await puppeteerCore.launch({
@@ -163,7 +162,6 @@ export const generatePdfService = async (data: Report, options: Options): Promis
             });
         } 
 
-            browser = await puppeteer.launch({})
             const ruta = path.join(__dirname, `../../public/reports/${options.year}-${options.quarter}-${ new Date().getTime() }.pdf`);
             const page = await browser.newPage();
     
