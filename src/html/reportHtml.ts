@@ -75,11 +75,11 @@ export const generateHtmlReport = (data: Report, options: Options): string => {
     }
 
     @page :left {
-        margin: 30px 10px;
+        margin: 30px 20px;
     }
 
     @page :right {
-        margin: 30px 10px;
+        margin: 30px 20px;
     }
 
     body{
