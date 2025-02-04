@@ -162,7 +162,7 @@ export const generatePdfService = async (data: Report, options: Options): Promis
             });
         } 
 
-            const ruta = path.join(__dirname, `../../public/reports/${options.year}-${options.quarter}-${ new Date().getTime() }.pdf`);
+            const ruta = path.join(process.cwd(), `public/reports/${options.year}-${options.quarter}-${ new Date().getTime() }.pdf`);
             const page = await browser.newPage();
     
             const htmlContent = generateHtmlReport(data, options);
